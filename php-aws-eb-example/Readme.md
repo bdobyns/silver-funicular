@@ -29,7 +29,8 @@ shown below are NOT working keys)
 
     export AWS_ACCESS_KEY=AKIAJF6PZAUYG6ASVNIL
     export AWS_SECRET_KEY=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
-
+    export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
+    export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_KEY
 
 ### Locate A Sensible SSH keypair (Tech Leads)
 
@@ -114,12 +115,6 @@ patient.
 
     eb create develop 
 
-`eb create` is NOT idempotent, so you only get to use it once, unless you `eb terminate` and try again.
-As the tech lead, you should record the arguments you gave to `eb create` in a simple bash script.
-
-    eb terminate develop
-    eb create develop [ better options here ]
-
 With no other args, `eb create` sets up a load balancer, a web tier,
 autoscaling group, security group, cloud watch alarms, and assigns an
 s3 bucket for your environment, using the keyname and the region you
@@ -134,12 +129,12 @@ and will start up apache in that instance to run your PHP code.
 documented in other examples, and in the aws documentation for [eb
 create](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-create.html).
 
-Probably the options you want learn first are to specify the instance
+Probably the first options you want learn first are to specify the instance
 type, and to add some tags to the launched instances.  Normally eb
 launches with only one tag, `Name=$environment` and you probably want
 to do something else.
 
-    eb create develop --instance_type t2.micro --tags Name=`basename $PWD`,Blame=$USER,Env=develop
+    eb create develop --instance_type m3.medium--tags Name=`basename $PWD`,Blame=$USER,Env=develop
 
 ### Use An Environment (Regular Developerss)
 
@@ -156,6 +151,31 @@ if you want to see how many instances are deployed and some more
 details, you can ask for that with
 
     eb list -v
+
+### Changing Config After The Fact
+
+`eb create` is NOT idempotent, however you can easily change any of
+the (many) parameters by using `eb config` to edit the yaml
+configuration document that describes your environment
+
+    export EDITOR=emacs
+    eb config
+
+After you edit your config (or even if you didn't edit it) it's
+probably a good idea to always record the current configuration, and
+check it into git.  you need to explicitly `git add` the config file
+because the .elasticbeanstalk directory is normally excluded by a
+.gitignore (created by `eb init` thankyouverymuch).
+
+    export EDITOR=vi
+    eb config
+    eb config save --cfg mostexcellent
+    git add .elasticbeanstalk/saved_configs/mostexcellent.cfg.yml
+
+
+As always, the [Amazon
+documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/environment-configuration-methods-after.html)
+on this matter are lengthy and hard to grok in a single go.
 
 ### Change Some Code and Copy It To Your Instance - NOT PRODUCTION
 
