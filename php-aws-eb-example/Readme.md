@@ -2,9 +2,21 @@
 
 This is the simplest possible PHP example, with no mysql database, and no extra frills and options.
 
+The AWS documentation for Elastic Beanstalk talks about using both the
+EB CLI `eb verb` and the AWS CLI `aws elasticbeanstalk verb`, but you
+should try to limit your actual behavior to using only the EB CLI.
+That's because the AWS CLI operates at a lower level of abstraction,
+supplies few if any sensible default values, and is generally much
+harder to use.
+
+Conceptually, the AWS CLI for `aws elasticbeanstalk verb` simply wraps
+the AWS REST API in the thinnest possible wrapper.  Nobody wants to
+`curl` at raw endpoints unless they have to, and the AWS CLI is just
+that.
+
 ## Pre-requisites
 
-### AWS CLI
+### AWS Tools
 
 you need to install the AWS CLI, and the AWS ElasticBeanstalk CLI and on Mac OSX this is easiest with homebrew
 
@@ -36,6 +48,8 @@ shown below are NOT working keys)
 The reason there's two names is that some older AWS CLI tools used the
 old names but the EB CLI uses the new names.
 
+## Technical Leaders Create The Project (ElasticBeanstalk "Application")
+
 ### Locate A Sensible SSH keypair (Tech Leads)
 
 Put the private key in your `~/.ssh` directory and name it the same as
@@ -54,8 +68,6 @@ private part of the key to the rest of the team, along with the name
 you just gave it in the dashboard.
 
 using `eb init` without a keypair argument will offer to create a keypair.
-
-## Technical Leaders Create The Project (ElasticBeanstalk "Application")
 
 ### Create An Empty Project (Tech Leads)
 
@@ -135,11 +147,6 @@ to do something else.
 
     eb create develop --instance_type m3.medium--tags Name=`basename $PWD`,Blame=$USER,Env=develop
 
-### Use An Environment (Regular Developerss)
-
-When you did `eb init` after you checked out the application, it
-automatically pulled down the environments created by your tech lead.
-
 ### Changing Config After The Fact
 
 `eb create` is NOT idempotent, however you can easily change any of
@@ -148,6 +155,11 @@ configuration document that describes your environment
 
     export EDITOR=emacs
     eb config
+
+Note that `eb config` tries to apply those changes *right now* so be
+careful.  There's some other ways to get configuration changes into
+your environment that include creating and using [saved
+configuration](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/environment-configuration-methods-during.html#configuration-options-during-console-savedconfig) or using project local [configuration files](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/environment-configuration-methods-during.html#configuration-options-during-ebcli-ebextensions)
 
 After you edit your config (or even if you didn't edit it) it's
 probably a good idea to always record the current configuration, and
@@ -204,9 +216,12 @@ the cool module.
 
 You'll pick the "cool module" project that already exists.        
 
-This will also pull down environments, you shouldn't need to create
-any.  Select the environment you want to use by listing them, and then
-choosing one
+### Use An Environment (Developerss)
+
+When you did `eb init` after you checked out the application, it
+automatically pulled down the environments created by your tech lead.
+You shouldn't need to create any.  Select the environment you want to
+use by listing them, and then choosing one
 
     eb list
     eb use develop
@@ -219,7 +234,7 @@ to ensure zero-downtime), then it's pretty easy.  `eb deploy` packs
 everything up again and deploys it to /var/www/html in your instance.
 
     emacs somecode.php
-    git commit -am "I made some more changes"
+    git commit -am "I made some more changes again"
     git push origin
     eb deploy
 
@@ -234,16 +249,6 @@ production doesn't cause a service outage for EBS, and your tech lead
 should pick one and advise you on how it's done in your project.
 Better yet, he'll encapsulate the details in a simple `deploy.sh`
 script for everyone to use.
-
-### Switch Between Environments
-
-Select the environment you want to use by listing them, and then
-choosing one.  `eb deploy` deploys by default to the envronment you
-
-last selected with `eb use`.
-
-    eb list
-    eb use develop
 
 ### Get SSH Access To Your Instance
 
