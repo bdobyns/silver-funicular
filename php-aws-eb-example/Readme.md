@@ -21,7 +21,7 @@ Check that you have both installed and a sensible version of both
 ### AWS IAM Role and a Secret Key
 
 make sure you have an access key and secret key for your AWS account,
-these are typically tied to an IAM role that you were granted
+these are typically tied to an IAM role that you were granted.
 
 put your AWS Access key and secret key in your environment (which is
 what the AWS CLI tools want) perhaps in your `.bash_profile` (the keys
@@ -29,8 +29,12 @@ shown below are NOT working keys)
 
     export AWS_ACCESS_KEY=AKIAJF6PZAUYG6ASVNIL
     export AWS_SECRET_KEY=vXGKk19xV6IkVbXJ8g3ZNsBCZX7Xe5PYYaDTkeF3
+
     export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
     export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_KEY
+
+The reason there's two names is that some older AWS CLI tools used the
+old names but the EB CLI uses the new names.
 
 ### Locate A Sensible SSH keypair (Tech Leads)
 
@@ -49,16 +53,11 @@ upload the *public* part of the key here.  You will distribute the
 private part of the key to the rest of the team, along with the name
 you just gave it in the dashboard.
 
-### Locate A Sensible SSH keypair (Developers)
+using `eb init` without a keypair argument will offer to create a keypair.
 
-If your project is shared, the SSH public and private keypair will be
-given to you by the tech lead.  This key has likely been alread added
-to the list of keypairs in the EC2 dashboard, and you'll need the name
-from the EC2 dashboard, as well as the *private* key of the keypair.
+## Technical Leaders Create The Project (ElasticBeanstalk "Application")
 
-## Ready Set Code!
-
-### Create An Empty Project (ElasticBeanstalk "Application")
+### Create An Empty Project (Tech Leads)
 
 create a directory for your project and then initialize your new project with elastic beanstalk.   
 
@@ -83,7 +82,7 @@ chooses, and with those options, it will do nothing.  If there is
 already an application with that name, `eb init` updates the
 application.
 
-### Convert An Existing Tree Of Code (ElasticBeanstalk "Application")
+### Convert An Existing Tree Of Code (Tech leads)
 
 if you already have a directory full of php code, it might be
 sufficient to `eb init` at the top of the hierarcy, where "top" means
@@ -138,19 +137,8 @@ to do something else.
 
 ### Use An Environment (Regular Developerss)
 
-when you create an environment, it's a little bit like "checking out"
-a branch in git, the environment choice is persisted locally. You can
-switch the active environment with `eb use` and you can see what your
-choices are with `eb list`.  If your tech lead has already created 
-environments for you, then you will:
-
-    eb list
-    eb use develop
-
-if you want to see how many instances are deployed and some more
-details, you can ask for that with
-
-    eb list -v
+When you did `eb init` after you checked out the application, it
+automatically pulled down the environments created by your tech lead.
 
 ### Changing Config After The Fact
 
@@ -177,6 +165,52 @@ As always, the [Amazon
 documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/environment-configuration-methods-after.html)
 on this matter are lengthy and hard to grok in a single go.
 
+## General Development
+
+### Locate A Sensible SSH keypair (Developers)
+
+If your project is shared, the SSH public and private keypair will be
+given to you by the tech lead.  
+
+This key has likely been alread added to the list of keypairs in the
+EC2 dashboard, and you'll need the name from the EC2 dashboard, as
+well as the *private* key of the keypair.  The name SHOULD be the same
+as the filename of the private key.
+
+Without renaming the private key, put it in your `~/.ssh` directory.
+
+If you only got the private key, you can create the public key with
+ssh-keygen, but you don't actually need to do so because you never
+need the public key for anything.  eb already has it and stuffs it
+into instances it starts so that you can ssh into them later.
+
+    ssh-keygen -y -f some_private_key
+
+
+### Join an existing project (Developers)
+
+`eb init` with no arguments lets you choose an existing application
+that has already been created, or to create a new one.  If you're
+joining an existing project, then the eb "application" and
+"environment" artifacts should already have been created.  You just
+need to connect to them.
+
+Lets say you've been brought onto some excellent project to work on
+the cool module.
+
+    git clone git@github.com:productOps/some-excellent-project.git 
+    cd some-excellent-project/cool-module
+    eb init  
+
+You'll pick the "cool module" project that already exists.        
+
+This will also pull down environments, you shouldn't need to create
+any.  Select the environment you want to use by listing them, and then
+choosing one
+
+    eb list
+    eb use develop
+
 ### Change Some Code and Copy It To Your Instance - NOT PRODUCTION
 
 After you change something (and check it in with git) you might want
@@ -189,7 +223,29 @@ everything up again and deploys it to /var/www/html in your instance.
     git push origin
     eb deploy
 
-### Get Access To Your Instance
+This is not suitable for production because it may cause a momentary
+service outage while the code is literally copied into and unzipped in
+a running instance.  That's okay for development or staging instances,
+probably, but not for an app that may be used by many end-users *at
+this very moment*.   
+
+AWS has several different ways to ensure that redeployment to
+production doesn't cause a service outage for EBS, and your tech lead
+should pick one and advise you on how it's done in your project.
+Better yet, he'll encapsulate the details in a simple `deploy.sh`
+script for everyone to use.
+
+### Switch Between Environments
+
+Select the environment you want to use by listing them, and then
+choosing one.  `eb deploy` deploys by default to the envronment you
+
+last selected with `eb use`.
+
+    eb list
+    eb use develop
+
+### Get SSH Access To Your Instance
 
 Sometimes you're unlucky and you need to get into the instance to
 figure out what happened, and why your excellent code changes didn't
@@ -203,7 +259,7 @@ the case of an autoscaling event, so you always want to make changes
 to the source code on your development computer (laptop), and commit
 those, rather than changing things in the deployed instance.
 
-# Applications With Bad Hygiene 
+### Applications With Bad Hygiene 
 
 Sometimes applications like wordpress come "unconfigured" and the
 first time you access the application in the browser, you "configure"
