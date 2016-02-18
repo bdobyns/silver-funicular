@@ -2,6 +2,23 @@
 
 This is the simplest possible PHP example, with no mysql database, and no extra frills and options.
 
+## Deployment Tools Why
+
+The purpose of deployment tools is to ensure that we have complete
+provenance for all the bits that make our applications work right in
+production.  
+
+We should be able to have *every* instance that we've launched fail or
+catch fire, and be able to completely redeploy from saved artifacts
+(in S3, git etc) without manual configuration.
+
+Generally, if you *must* ssh into an application after it's deployed
+in order to accomplish a task, then you've not done your job.  Those
+things that you would have done manually need to be converted into
+scripted instructions that are run at every new deployment.
+
+## Elastic Beanstalk Background
+
 The AWS documentation for Elastic Beanstalk talks about using both the
 EB CLI `eb verb` and the AWS CLI `aws elasticbeanstalk verb`, but you
 should try to limit your actual behavior to using only the EB CLI.
@@ -13,6 +30,18 @@ Conceptually, the AWS CLI for `aws elasticbeanstalk verb` simply wraps
 the AWS REST API in the thinnest possible wrapper.  Nobody wants to
 `curl` at raw endpoints unless they have to, and the AWS CLI is just
 that.
+
+AWS documentation for eb and git integration assume that the top of
+the git repository (where you did `git init`) and the top of the eb
+repository (where you `eb init`) are the same directory.  This is not
+necessary, and most real projects contain several components, or
+modules all in the same git repository.  you can safely `eb init` in
+any subdirectory in the git repository, and when eb packages up
+everything in a deployment event, it doesn't take things all the way
+to the git root, but only to the top of the directory where you did
+`eb init`.
+
+----
 
 ## Pre-requisites
 
@@ -47,6 +76,8 @@ shown below are NOT working keys)
 
 The reason there's two names is that some older AWS CLI tools used the
 old names but the EB CLI uses the new names.
+
+----
 
 ## Technical Leaders Create The Project (ElasticBeanstalk "Application")
 
@@ -94,7 +125,7 @@ application.
 
 if you already have a directory full of php code, it might be
 sufficient to `eb init` at the top of the hierarcy, where "top" means
-the directory where the index.html or index.php is.
+the directory where the `index.html` or `index.php` is.
 
 Note well that your ElasticBeanstalk application name will be the
 directory name of the directory in which you run the `eb init` so if
@@ -104,9 +135,10 @@ not a very good name.  So you might want to rename the directory that
 contains the root first, using `git mv` if necessary.
 
     cd ~/customer/excellent-project-website
-    git mv var/www this-excellent-project
+    git mv var/www this-excellent-module
     git commit -am "had to rename the toplevel dir because elasticbeanstalk"
-    cd this-excellent-project
+    git push
+    cd this-excellent-module
 
     eb init -p PHP --region us-west-2 --keyname my_key
 
@@ -172,6 +204,8 @@ because the .elasticbeanstalk directory is normally excluded by a
 As always, the [Amazon
 documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/environment-configuration-methods-after.html)
 on this matter are lengthy and hard to grok in a single go.
+
+----
 
 ## General Development
 
@@ -240,10 +274,12 @@ a running instance.  That's okay for development or staging instances,
 probably, but not for an app that may be used by many end-users *at
 this very moment*.   
 
+### Change Some Code And Deploy To Production
+
 AWS has several different ways to ensure that redeployment to
 production doesn't cause a service outage for EBS, and your tech lead
 should pick one and advise you on how it's done in your project.
-Better yet, he'll encapsulate the details in a simple `deploy.sh`
+Better yet, he or she will encapsulate the details in a simple `deploy.sh`
 script for everyone to use.
 
 ### Get SSH Access To Your Instance
@@ -256,9 +292,10 @@ the instance.
     eb ssh
 
 Remember that changes you make inside a running instance are lost in
-the case of an autoscaling event, so you always want to make changes
-to the source code on your development computer (laptop), and commit
-those, rather than changing things in the deployed instance.
+the case of an autoscaling event or redeployment, so you always want
+to make changes to the source code on your development computer
+(laptop), and commit those, rather than changing things in the
+deployed instance.
 
 ### Applications With Bad Hygiene 
 
