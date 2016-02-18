@@ -1,5 +1,7 @@
 # PHP Example for AWS Elastic Beanstalk
 
+This is the simplest possible PHP example, with no mysql database, and no extra frills and options.
+
 ## Pre-requisites
 
 ### AWS CLI
@@ -53,7 +55,7 @@ you just gave it in the dashboard.
 
 ## Ready Set Code!
 
-### Create An Empty Project
+### Create An Empty Project (ElasticBeanstalk "Application")
 
 create a directory for your project and then initialize your new project with elastic beanstalk.   
 
@@ -61,9 +63,15 @@ create a directory for your project and then initialize your new project with el
     cd    my-excellent-project
     eb init -p PHP --region us-west-2 --keyname my_key
 
-note that `eb init` relies on your `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` being set to working values.
+note that `eb init` relies on your `AWS_ACCESS_KEY` and
+`AWS_SECRET_KEY` being set to working values.
 
-### Convert An Existing Tree Of Code
+This example project already includes a copy of Michael Fortin's
+markdown viewer for PHP library and a trivial php app that displays
+this readme.  If you don't want this (and you probably don't for your
+real project), you can just delete `index.php` and `lib/Michaelf`. .
+
+### Convert An Existing Tree Of Code (ElasticBeanstalk "Application")
 
 if you already have a directory full of php code, it might be
 sufficient to `eb init` at the top of the hierarcy, where "top" means
@@ -80,33 +88,26 @@ contains the root first, using `git mv` if necessary.
     git mv var/www this-excellent-project
     git commit -am "had to rename the toplevel dir because elasticbeanstalk"
     cd this-excellent-project
+
     eb init -p PHP --region us-west-2 --keyname my_key
 
-### Write Some Code If Necessary
+### Create An Environment (Tech Leads)
 
-The purpose of this example is not to show you how to write PHP, so
-we'll just fetch a very simple example application from
-http://php-html.net/tutorials/model-view-controller-in-php/
+Typically, you have several environments, most commonly [ *dev* *prod*
+] or [ *dev* *staging* *production* ] or [ *dev* *test* *prod* ].
+Typically the tech lead will create environments for you, or if you
+are the tech lead, you can create some environments.  Sadly, EB
+requires environment names be at least four characters long, so *dev*
+is not a legal name.  `eb create` takes a minute or two, so be
+patient.
 
-    wget http://downloads.sourceforge.net/project/mvc-php/mvc.zip
-    unzip mvc.zip
-    mv mvc/* .
-    rm -rf mvc mvc.zip
+    eb create develop 
 
-the business of fetching some code for you is encapsulated in
-`fetch-example.sh` - while this is a PHP example, no actual PHP code
-is included.
+`eb create` is NOT idempotent, so you only get to use it once, unless you `eb terminate` and try again.
+As the tech lead, you record the arguments you gave to `eb create` in a simple bash script.
 
-### Create An Environment
-
-Typically, you have several environments, most commonly *dev*
-*staging* and *production* or *dev* *test* and *prod*.  Typically the
-tech lead will create environments for you, or if you are the tech
-lead, you can create some environments.  Sadly, EB requires
-environment names be at least four characters long, so *dev* is not a
-legal name.  `eb create` takes a minute or two, so be patient.
-
-    eb create develop
+    eb terminate develop
+    eb create develop [ better options here ]
 
 With no other args, `eb create` sets up a load balancer, a web tier,
 autoscaling group, security group, cloud watch alarms, and assigns an
@@ -118,10 +119,24 @@ ALSO, this will launch an EC2 instance, and deploy everything in the
 current directory into /var/www/html in your newly launched instance,
 and will start up apache in that instance to run your PHP code.
 
+`eb create` can do a lot of other dangerous things too - this is
+documented in other examples, and in the aws documentation for [eb
+create](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-create.html).
+
+Probably the options you want learn first are to specify the instance
+type, and to add some tags to the launched instances.  Normally eb
+launches with only one tag, `Name=$environment` and you probably want
+to do something else.
+
+    eb create develop --instance_type t2.micro --tags Name=`basename $PWD`,Blame=$USER,Env=develop
+
+### Use An Environment (Regular Developerss)
+
 when you create an environment, it's a little bit like "checking out"
 a branch in git, the environment choice is persisted locally. You can
-switch the active environment with `eb use` and you can see
-what your choices are with `eb list`
+switch the active environment with `eb use` and you can see what your
+choices are with `eb list`.  If your tech lead has already created 
+environments for you, then you will:
 
     eb list
     eb use develop
