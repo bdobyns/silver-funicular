@@ -78,7 +78,9 @@ this readme.md file.  You can use it by:
 
 `eb init` is idempotent, meaning you can run it again and again, and
 it doesn't hurt.  If there is already an application with the name eb
-chooses, and with those options, it will do nothing.
+chooses, and with those options, it will do nothing.  If there is
+already an application with that name, `eb init` updates the
+application.
 
 ### Convert An Existing Tree Of Code (ElasticBeanstalk "Application")
 
@@ -113,7 +115,7 @@ patient.
     eb create develop 
 
 `eb create` is NOT idempotent, so you only get to use it once, unless you `eb terminate` and try again.
-As the tech lead, you record the arguments you gave to `eb create` in a simple bash script.
+As the tech lead, you should record the arguments you gave to `eb create` in a simple bash script.
 
     eb terminate develop
     eb create develop [ better options here ]
