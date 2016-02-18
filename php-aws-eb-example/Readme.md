@@ -24,7 +24,7 @@ make sure you have an access key and secret key for your AWS account,
 these are typically tied to an IAM role that you were granted
 
 put your AWS Access key and secret key in your environment (which is
-what the AWS CLI tools want) perhaps in your .bash_profile (the keys
+what the AWS CLI tools want) perhaps in your `.bash_profile` (the keys
 shown below are NOT working keys)
 
     export AWS_ACCESS_KEY=AKIAJF6PZAUYG6ASVNIL
