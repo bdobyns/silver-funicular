@@ -52,10 +52,6 @@ old names but the EB CLI uses the new names.
 
 ### Locate A Sensible SSH keypair (Tech Leads)
 
-Put the private key in your `~/.ssh` directory and name it the same as
-the name from the EC2 dashboard.  So if the EC2 dashboard says the key
-is named 'my_key' you should have a private key named `~/.ssh/my_key`
-
 If you're the tech lead, look in the EC2 dashboard and pick `Key
 Pairs` from the `Network & Security` section in the left-hand panel.
 Try to figure out if you already have the private key for any of the
@@ -196,7 +192,7 @@ ssh-keygen, but you don't actually need to do so because you never
 need the public key for anything.  eb already has it and stuffs it
 into instances it starts so that you can ssh into them later.
 
-    ssh-keygen -y -f some_private_key
+    ssh-keygen -y -f ~/.ssh/some_key >~/.ssh/some_key.pub
 
 
 ### Join an existing project (Developers)
@@ -207,8 +203,8 @@ joining an existing project, then the eb "application" and
 "environment" artifacts should already have been created.  You just
 need to connect to them.
 
-Lets say you've been brought onto some excellent project to work on
-the cool module.
+Lets say you've been brought onto "some excellent project" to work on
+the "cool module".  Lucky you!
 
     git clone git@github.com:productOps/some-excellent-project.git 
     cd some-excellent-project/cool-module
