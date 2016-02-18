@@ -31,12 +31,7 @@ shown below are NOT working keys)
     export AWS_SECRET_KEY=vXGKk19xV6IkVbXJ8g3ZNsBCZX7Xe5PYYaDTkeF3
 
 
-### Locate A Sensible SSH keypair
-
-if your project is shared, the SSH key will be given to you by the
-tech lead.  This key has likely been alread added to the list of
-keypairs in the EC2 dashboard, and you'll need the name from the EC2
-dashboard, as well as the *private* key of the keypair.  
+### Locate A Sensible SSH keypair (Tech Leads)
 
 Put the private key in your `~/.ssh` directory and name it the same as
 the name from the EC2 dashboard.  So if the EC2 dashboard says the key
@@ -53,6 +48,13 @@ upload the *public* part of the key here.  You will distribute the
 private part of the key to the rest of the team, along with the name
 you just gave it in the dashboard.
 
+### Locate A Sensible SSH keypair (Developers)
+
+If your project is shared, the SSH public and private keypair will be
+given to you by the tech lead.  This key has likely been alread added
+to the list of keypairs in the EC2 dashboard, and you'll need the name
+from the EC2 dashboard, as well as the *private* key of the keypair.
+
 ## Ready Set Code!
 
 ### Create An Empty Project (ElasticBeanstalk "Application")
@@ -68,8 +70,15 @@ note that `eb init` relies on your `AWS_ACCESS_KEY` and
 
 This example project already includes a copy of Michael Fortin's
 markdown viewer for PHP library and a trivial php app that displays
-this readme.  If you don't want this (and you probably don't for your
-real project), you can just delete `index.php` and `lib/Michaelf`. .
+this readme.md file.  You can use it by:
+
+    git clone git@github.com:productOps/best-practices.git
+    cd best-practices/php-aws-eb-example
+    eb init -p PHP --region us-west-2 --keyname my_key
+
+`eb init` is idempotent, meaning you can run it again and again, and
+it doesn't hurt.  If there is already an application with the name eb
+chooses, and with those options, it will do nothing.
 
 ### Convert An Existing Tree Of Code (ElasticBeanstalk "Application")
 
