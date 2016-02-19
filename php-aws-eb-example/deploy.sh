@@ -23,6 +23,13 @@ usage:
         $ME [env] open             open a browser on the box 
         $ME local run              run a local copy of the app
 
+        $ME [env] cname            display the cname of the lb
+        $ME [env] describe         describe the environment
+        $ME [env] id               get instance id
+        $ME [env] ipaddr           get instance ipaddress
+        $ME [env] instance         describe the instance
+        $ME [env] sg               get security group id
+        $ME [env] security         describe security group 
 EOF
 	exit 7
 }
@@ -85,6 +92,15 @@ whatsmyip() {
     curl -s http://www.whatsmyip.website/api/plaintext | head -1
 }
 
+ebsgn() {
+    ID=`ebinstance`
+    aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecurityGroups[].GroupName | tr -d \" 
+}
+
+ebcname() {
+    aws elasticbeanstalk describe-environments --environment-names $ENV | jq .Environments[].CNAME | tr -d \"
+}
+
 EC2USER=ec2-user
 
 # ----------------------------------------------------------------------
@@ -118,7 +134,8 @@ else
 	    echo WARNING: this works best if the application `basename $PWD` exists and is sane
 mkdir -p .ebextensions
 MYIP=`whatsmyip`
-cat >.ebextensions/security.config <<EOF	    
+#cat >.ebextensions/security.config <<EOF	    
+cat >/dev/null <<EOF
 AWSEBSecurityGroup:
     Type: “AWS::EC2::SecurityGroup”
     Properties:
@@ -130,7 +147,7 @@ AWSEBSecurityGroup:
         - {CidrIp: “0.0.0.0/0″, IpProtocol: “tcp“, FromPort: “80”, ToPort: “80”}
         - {CidrIp: “$MYIP/32″, IpProtocol: “tcp“, FromPort: “22”, ToPort: “22”}
 EOF
-#            eb init `basename $PWD` --region $REGION
+            eb init `basename $PWD` --region $REGION
 	    exit
 	    ;;
 	list)
@@ -165,13 +182,12 @@ fi
 
 # ----------------------------------------------------------------------
 # now parse the 'action' keyword
+set -x
 case $ACTION in
     update|deploy)
-	set -x
 	eb deploy 
 	;;
     ssh)
-	set -x
 	eb ssh
 	;;
     put|get)
@@ -183,7 +199,8 @@ case $ACTION in
 	    # INSTANCE=`eb list -v | grep $ENV | cut -d \' -f 2`
 	    INSTANCE=` ebinstance `
 	    IPADDR=` instanceipaddr $INSTANCE `
-	    set -x
+	    # do this to open port 22
+	    cat /dev/null | eb ssh -o
 	    if [ $ACTION = put ] ; then 
 		scp $* ${EC2USER}@${IPADDR}:/home/$EC2USER
 	    elif [ $ACTION = get ] ; then
@@ -193,13 +210,34 @@ case $ACTION in
 		echo "ERROR: don't know how to $ME $ENV $ACTION" >&2
 		exit 13
 	    fi
+	    # do this to close port 22
+	    cat /dev/null | eb ssh 
 	fi
 	;;
     open)
-	set -x
 	eb open
 	;;
-
+    id)
+	ebinstance
+	;;
+    ipaddr)
+	instanceipaddr `ebinstance`
+	;;
+    instance)
+	aws ec2 describe-instances --instance-ids `ebinstance`
+	;;
+    sgn)
+	ebsgn
+	;;
+    security)
+	aws ec2 describe-security-groups --group-names `ebsgn`
+	;;
+    cname)
+	ebcname
+	;;
+    describe)
+	aws elasticbeanstalk describe-environments --environment-names $ENV 
+	;;
     *)
 	givehelp
 	;;
