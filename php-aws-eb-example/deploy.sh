@@ -24,22 +24,21 @@ EOF
 }
 
 # ----------------------------------------------------------------------
-# check to see if we've run `eb init` yet
-if [ $1 != init ] && [ ! -d `dirname $0`/.elasticbeanstalk ] ; then
-    echo "ERROR: you must run '$ME init' first before anything else"
-    echo " "
-    givehelp
-    exit 9
-fi
-
-# ----------------------------------------------------------------------
 # detect no args at all
 if [ -z $1 ] ; then
     givehelp
     exit
 else
-    # first arg is always the Environment
+    # first arg is usually the Environment
     ENV=$1
+
+    # check to see if we've run `eb init` yet
+    if [ $1 != init ] && [ ! -d `dirname $0`/.elasticbeanstalk ] ; then
+	echo "ERROR: you must run '$ME init' first before anything else"
+	echo " "
+	givehelp
+	exit 9
+    fi
 
     case $ENV in
 	init)
