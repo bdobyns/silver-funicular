@@ -12,24 +12,26 @@ givehelp()
 cat <<EOF
 
 usage: 
-        $ME init                   initialize elastic beanstalk
-        $ME list                   list available environments
+        $ME init                 initialize elastic beanstalk
+        $ME list                 list available environments
+        $ME myip                 find out what my (laptop) ip is
 
-	$ME [env] deploy           deploy to the given environment
-	$ME [env] update           just update the artifact 
-	$ME [env] ssh              ssh to the given box
-	$ME [env] put here there   copy a file to /home/ec2-user/there
-	$ME [env] get there here   copy a file from there to here
-        $ME [env] open             open a browser on the box 
-        $ME local run              run a local copy of the app
+	$ME env deploy           deploy to the given environment
+	$ME env update           just update the artifact 
+	$ME env ssh              ssh to the given box
+	$ME env put here there   copy a file to /home/ec2-user/there
+	$ME env get there here   copy a file from there to here
+        $ME env open             open a browser on the box 
+        $ME local run            run a local copy of the app
 
-        $ME [env] cname            display the cname of the lb
-        $ME [env] describe         describe the environment
-        $ME [env] id               get instance id
-        $ME [env] ipaddr           get instance ipaddress
-        $ME [env] instance         describe the instance
-        $ME [env] sg               get security group id
-        $ME [env] security         describe security group 
+        $ME env cname            display the cname of the lb
+        $ME env describe         describe the environment
+        $ME env id               get instance id
+        $ME env ipaddr           get instance ipaddress
+        $ME env instance         describe the instance
+        $ME env sg               get security group id
+        $ME env security         describe security group 
+        $ME env r53cname foo     wire up a route53 name 'foo'
 EOF
 	exit 7
 }
@@ -67,13 +69,13 @@ ebkeyname() {
 }
 
 ebinstance() {
+    # INSTANCE=`eb list -v | grep $ENV | cut -d \' -f 2`
     if [ -n $1 ] ; then 
 	ORDINAL=$1
     else
 	ORDINAL=0
     fi
     aws elasticbeanstalk describe-environment-resources  --environment-name $ENV | jq .EnvironmentResources.Instances[${ORDINAL}].Id | tr -d \" 
-
 }
 
 instanceipaddr() {
@@ -100,6 +102,50 @@ ebsgn() {
 ebcname() {
     aws elasticbeanstalk describe-environments --environment-names $ENV | jq .Environments[].CNAME | tr -d \"
 }
+
+route53wire() {
+# something like 
+#    route53wire `ebcname` foo.example.com
+TONAME=$1
+R53NAME=$2
+# assume it's three-part, not four
+R53DOMAIN=`echo $R53NAME | cut -f 2-3 -d .`
+# now get the zone id
+ZID=`aws route53 list-hosted-zones-by-name --dns-name $R53DOMAIN | jq .HostedZones[].Id | tr -d \" | cut -d / -f 3`
+if [ -z $ZID ] ; then
+    echo "ERROR $R53DOMAIN is not hosted in aws route53"
+    exit 12
+fi
+
+# create a resource record to update this guy
+RESREC=/tmp/route53.$$.json
+cat >$RESREC <<EOF
+{
+  "Comment": "$0 elasticbeanstalk by '$USER' on '$HOSTNAME' in '$PWD'", 
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "$R53NAME",
+        "Type": "CNAME",
+        "ResourceRecords": [
+          {
+            "Value": "$TONAME"
+          }
+        ],
+        "TTL": 300
+      }
+    }
+  ]
+}
+EOF
+
+# now actually write the record
+aws route53 change-resource-record-sets --hosted-zone-id $ZID --change-batch file://$RESREC
+rm $RESREC
+}
+
+
 
 EC2USER=ec2-user
 
@@ -132,21 +178,6 @@ else
 		REGION=us-west-2
 	    fi
 	    echo WARNING: this works best if the application `basename $PWD` exists and is sane
-mkdir -p .ebextensions
-MYIP=`whatsmyip`
-#cat >.ebextensions/security.config <<EOF	    
-cat >/dev/null <<EOF
-AWSEBSecurityGroup:
-    Type: “AWS::EC2::SecurityGroup”
-    Properties:
-      GroupDescription: “Security group to allow HTTP, HTTPS,SSH”
-      SecurityGroupIngress:
-        - {CidrIp: “0.0.0.0/0″, IpProtocol: “tcp“, FromPort: “8080”, ToPort: “8080”}
-        - {CidrIp: “0.0.0.0/0″, IpProtocol: “tcp“, FromPort: “8443”, ToPort: “8443”}
-        - {CidrIp: “0.0.0.0/0″, IpProtocol: “tcp“, FromPort: “443”, ToPort: “443”}
-        - {CidrIp: “0.0.0.0/0″, IpProtocol: “tcp“, FromPort: “80”, ToPort: “80”}
-        - {CidrIp: “$MYIP/32″, IpProtocol: “tcp“, FromPort: “22”, ToPort: “22”}
-EOF
             eb init `basename $PWD` --region $REGION
 	    exit
 	    ;;
@@ -160,14 +191,18 @@ EOF
 	    givehelp
 	    exit
 	    ;;
-	test|prod)
-	    ;;
-
-	# detect bad environment name by trying to switch to it
-	*)
-	    eb use $1 || exit
+	myip)
+	    whatsmyip
+	    exit
 	    ;;
     esac
+fi
+
+# detect bad environment name by trying to switch to it
+if ! eb use $ENV 1>/dev/null 2>/dev/null; then
+    # also try variants like test-appname where you only pass in 'test'
+    ENV=${ENV}-`basename $PWD`
+    eb use $ENV || exit
 fi
 
 if [ -z $2 ] ; then
@@ -182,7 +217,6 @@ fi
 
 # ----------------------------------------------------------------------
 # now parse the 'action' keyword
-set -x
 case $ACTION in
     update|deploy)
 	eb deploy 
@@ -196,7 +230,6 @@ case $ACTION in
 	    givehelp
 	    exit 11
         else
-	    # INSTANCE=`eb list -v | grep $ENV | cut -d \' -f 2`
 	    INSTANCE=` ebinstance `
 	    IPADDR=` instanceipaddr $INSTANCE `
 	    # do this to open port 22
@@ -237,6 +270,13 @@ case $ACTION in
 	;;
     describe)
 	aws elasticbeanstalk describe-environments --environment-names $ENV 
+	;;
+    r53cname|route53cname)
+	if [ -n $1 ] ; then 
+	    route53wire `ebcname` $1
+	else
+	    echo "ERROR: no target name to wire up"
+	fi
 	;;
     *)
 	givehelp
