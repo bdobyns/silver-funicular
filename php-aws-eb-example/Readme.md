@@ -77,6 +77,14 @@ shown below are NOT working keys)
 The reason there's two names is that some older AWS CLI tools used the
 old names but the EB CLI uses the new names.
 
+It's also convenient to run `aws configure`
+
+    $ aws configure
+    AWS Access Key ID [None]: AKIAJF6PZAUYG6ASVNIL
+    AWS Secret Access Key [None]: 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
+    Default region name [None]: us-west-2
+    Default output format [None]: 
+
 ----
 
 ## Technical Leaders Create The Project (ElasticBeanstalk "Application")
