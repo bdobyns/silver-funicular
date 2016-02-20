@@ -47,10 +47,10 @@ ELASTIC BEANSTALK VERBS:
         $ME env cooldown n       cooldown in seconds between asg actions
 
 TECH LEAD VERBS:
-        $ME new                  create application based on this dir name
-        $ME new appname          create application appname
-        $ME create env           create environment 'env-appname'
-        $ME create env [more args]
+        $ME newapp               create application based on this dir name
+        $ME newapp appname       create application 'appname'
+        $ME createenv env        create environment 'env-appname'
+        $ME createenv env [more args]
         $ME env limitip          limit ssh ip to my public ip
         $ME env limitip cidr     limit ssh ip e.g. 0.0.0.0/0
 EOF
@@ -246,11 +246,12 @@ else
     # first arg is usually the Environment, 
     # but sometiemes it's a verb
     case $1 in
-	new)
+	new|newapp)
 #        $ME new                  create application based on this dir name
 #        $ME new appname          create application appname
             # new will always create, for use by tech leads
 	    eb init $APPNAME --region $REGION
+	    exit
 	    ;;
         init)
 #        $ME init                 initialize elastic beanstalk (after git clone)
@@ -265,7 +266,7 @@ else
 	    fi
 	    exit
 	    ;;
-	create)
+	create|createenv)
 #        $ME create env           create environment 'env-appname'
 	    shift
 	    if [ -z $1 ] ; then 
@@ -279,6 +280,7 @@ else
 	    echo " BE PATIENT: THIS MAY TAKE A WHILE AND WILL DEPLOY AT LEAST ONE INSTANCE ALONG THE WAY "
 	    shift 
 	    eb create $ENVNAME $*
+	    exit
 	    ;;
 	list)
 #        $ME list                 list available environments
