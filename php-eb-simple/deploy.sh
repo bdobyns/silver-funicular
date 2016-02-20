@@ -220,13 +220,26 @@ fi
 
 # ----------------------------------------------------------------------
 # detect bad environment name by trying to switch to it
-if ! eb use $ENV 1>/dev/null 2>/dev/null; then
-    # also try variants like test-appname where you only pass in 'test'
-    ENV=${1}-` cat $EBCONFIG | yaml2json | jq .global.application_name | tr -d \"  `
-    if !  eb use $ENV 1>/dev/null 2>/dev/null ; then
-	ENV=${1}-`basename $PWD`
-	eb use $ENV || exit
-    fi
+
+ENV1=$ENV
+ENV2=${1}-` cat $EBCONFIG | yaml2json | jq .global.application_name | tr -d \"  `
+ENV3=${1}-`basename $PWD`
+if  eb use $ENV1 1>/dev/null 2>/dev/null; then
+    true
+elif eb use $ENV2 1>/dev/null 2>/dev/null ; then
+    true
+elif eb use $ENV3 1>/dev/null 2>/dev/null ; then
+    true
+else 
+cat >&2 <<EOF    
+ERROR: cannot find a working environment
+ERROR: environment '$ENV1' does not exist
+ERROR: environment '$ENV2' does not exist
+ERROR: environment '$ENV3' does not exist
+  maybe you want one of these:
+EOF
+eb list
+exit
 fi
 
 if [ -z $2 ] ; then
@@ -313,13 +326,13 @@ case $ACTION in
 	if [ -n $1 ] ; then 
 	    route53wire `ebcname` $1
 	else
-	    echo "ERROR: no target name to wire up"
+	    echo "ERROR: no target name to wire up" >&2
 	fi
 	;;
     scale)
 #        $ME env scale min max    set asg min and max 
 	if [ -z $1 ] || [ -z $2 ] ; then
-	    echo ERROR must specify min and max
+	    echo ERROR must specify min and max >&2
 	else    
 	    aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --min-size $1 --max-size $2
 	    asgdescribe | grep Size
@@ -328,7 +341,7 @@ case $ACTION in
     cooldown)
 #        $ME env cooldown n       cooldown in seconds between asg actions
 	if [ -z $1 ] ; then 
-	    echo ERROR must specify cooldown value
+	    echo ERROR must specify cooldown value >&2
 	else    
 	    aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --default-cooldown $1
 	    asgdescribe | grep Cooldown
@@ -337,7 +350,7 @@ case $ACTION in
     count)
 #        $ME env count n          set asg max and min to n
 	if [ -z $1 ] ; then 
-	    echo ERROR must specify instance count value
+	    echo ERROR must specify instance count value >&2
 	else    
 	    # eb scale $1
 	    aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --desired-capacity $1 
