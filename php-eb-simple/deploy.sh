@@ -121,7 +121,7 @@ fi
 RESREC=/tmp/route53.$$.json
 cat >$RESREC <<EOF
 {
-  "Comment": "$0 elasticbeanstalk by '$USER' on '$HOSTNAME' in '$PWD'", 
+  "Comment": "$0 for AWS EB by '$USER' on '$HOSTNAME' in '$PWD'", 
   "Changes": [
     {
       "Action": "UPSERT",
@@ -201,8 +201,11 @@ fi
 # detect bad environment name by trying to switch to it
 if ! eb use $ENV 1>/dev/null 2>/dev/null; then
     # also try variants like test-appname where you only pass in 'test'
-    ENV=${ENV}-`basename $PWD`
-    eb use $ENV || exit
+    ENV=${1}-`basename $PWD`
+    if !  eb use $ENV 1>/dev/null 2>/dev/null ; then
+	ENV=${1}-` cat $EBCONFIG | yaml2json | jq .global.application_name | tr -d \"  `
+	eb use $ENV || exit
+    fi
 fi
 
 if [ -z $2 ] ; then
