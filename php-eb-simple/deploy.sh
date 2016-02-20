@@ -259,14 +259,19 @@ else
 	    if aws elasticbeanstalk describe-environments | grep $APPNAME >/dev/null; then
 		eb init $APPNAME --region $REGION		    
 	    else
-		echo "ERROR: appname $APPNAME does not exist"
-		echo "   maybe you meant to use one of these:"
-		aws elasticbeanstalk describe-environments | jq .Environments[].ApplicationName | sort -u
+		echo "ERROR: appname $APPNAME does not exist" >&2
+		echo "   maybe you meant to use one of these:" >&2
+		aws elasticbeanstalk describe-environments | jq .Environments[].ApplicationName | sort -u >&2
 	    fi
 	    exit
 	    ;;
 	create)
 #        $ME create env           create environment 'env-appname'
+	    shift
+	    if [ -z $1 ] ; then 
+		echo "ERROR: you must specify an environment name prefix like 'test' or 'prod'" >&2
+		exit
+	    fi
 	    ENVNAME=${1}-` appname `
 	    if [ $ENVNAME = ${1}- ] ; then 
 		ENVNAME=${1}-`basename $PWD`
