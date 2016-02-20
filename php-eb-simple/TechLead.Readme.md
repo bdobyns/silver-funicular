@@ -1,4 +1,35 @@
-## Technical Leaders Create The Project (ElasticBeanstalk "Application")
+# Technical Leaders Create The Project (ElasticBeanstalk "Application")
+
+read thru the background and pre-requisites documented in the Readme.md
+
+## Elastic Beanstalk Background
+
+The AWS documentation for Elastic Beanstalk talks about using both the
+EB CLI `eb verb` and the AWS CLI `aws elasticbeanstalk verb` nearly
+interchangably, but they are NOT equivalent. You should try to limit
+your actual behavior to using only the EB CLI, and only using the AWS
+CLI when you absolutely have to.  That's because the AWS CLI operates
+at a lower level of abstraction, supplies few if any sensible default
+values, and is generally much harder to use.
+
+Conceptually, the AWS CLI for `aws elasticbeanstalk verb` simply wraps
+the AWS REST API in the thinnest possible wrapper.  Nobody wants to
+`curl` at raw endpoints unless they have to, and the AWS CLI is hardly
+any better than that.
+
+AWS documentation for eb and git integration assume that the top of
+the git repository (where you did `git init`) and the top of the eb
+repository (where you `eb init`) are the same directory.  This is *not
+necessary*, and most real projects contain several components, or
+modules all in the same git repository.  you can safely `eb init` in
+any subdirectory in the git repository, and when eb packages up
+everything in a deployment event, it doesn't take things all the way
+to the git root, but only to the top of the directory where you did
+`eb init`.
+
+----
+
+## Create A Project
 
 ### Locate A Sensible SSH keypair (Tech Leads)
 
