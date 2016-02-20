@@ -11,11 +11,7 @@ givehelp()
 {
 cat <<EOF
 
-usage: 
-        $ME init                 initialize elastic beanstalk
-        $ME list                 list available environments
-        $ME myip                 find out what my (laptop) ip is
-
+STANDARD VERBS:
 	$ME env deploy           deploy to the given environment
 	$ME env update           just update the artifact 
 	$ME env ssh              ssh to the given box
@@ -24,6 +20,13 @@ usage:
         $ME env open             open a browser on the box 
         $ME local run            run a local copy of the app
         
+SPECIAL VERBS:
+        $ME init                 initialize elastic beanstalk (after git clone)
+        $ME init appname         initialize elastic beanstalk (after git clone)
+        $ME list                 list available environments
+        $ME myip                 find out what my (laptop) ip is
+
+ELASTIC BEANSTALK VERBS:
         $ME env count n          set asg max and min to n
         $ME env scale min max    set asg min and max 
         $ME env cname            display the cname of the lb
@@ -200,12 +203,13 @@ else
     esac
 fi
 
+# ----------------------------------------------------------------------
 # detect bad environment name by trying to switch to it
 if ! eb use $ENV 1>/dev/null 2>/dev/null; then
     # also try variants like test-appname where you only pass in 'test'
-    ENV=${1}-`basename $PWD`
+    ENV=${1}-` cat $EBCONFIG | yaml2json | jq .global.application_name | tr -d \"  `
     if !  eb use $ENV 1>/dev/null 2>/dev/null ; then
-	ENV=${1}-` cat $EBCONFIG | yaml2json | jq .global.application_name | tr -d \"  `
+	ENV=${1}-`basename $PWD`
 	eb use $ENV || exit
     fi
 fi
