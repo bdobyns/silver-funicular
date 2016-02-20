@@ -1,4 +1,6 @@
 #!/bin/bash -e
+# blame: barry@productops.com  Feb 2016
+# you can run this -x to learn what it does under the hood
 
 if [ `dirname $0` = . ] ; then
     EBCONFIG=".elasticbeanstalk/config.yml"
@@ -44,6 +46,13 @@ ELASTIC BEANSTALK VERBS:
         $ME env scale min max    set asg min and max 
         $ME env cooldown n       cooldown in seconds between asg actions
 
+TECH LEAD VERBS:
+        $ME new                  create application based on this dir name
+        $ME new appname          create application appname
+        $ME create env           create environment 'env-appname'
+        $ME create env [more args]
+        $ME env limitip          limit ssh ip to my public ip
+        $ME env limitip cidr     limit ssh ip e.g. 0.0.0.0/0
 EOF
 	exit 7
 }
@@ -82,7 +91,7 @@ ebkeyname() {
 
 ebinstance() {
     # INSTANCE=`eb list -v | grep $ENV | cut -d \' -f 2`
-    if [ -n $1 ] ; then 
+    if [ ! -z $1 ] ; then 
 	ORDINAL=$1
     else
 	ORDINAL=0
@@ -92,7 +101,7 @@ ebinstance() {
 
 instanceipaddr() {
     INSTANCE=$1
-    if [ -n $INSTANCE ] ; then
+    if [ ! -z $INSTANCE ] ; then
 	aws ec2 describe-instances --instance-ids $INSTANCE | jq .Reservations[].Instances[].PublicIpAddress | tr -d \"
     fi
 }
@@ -158,13 +167,47 @@ rm $RESREC
 }
 
 asgname() {
-	ID=`ebinstance`
-	DESCRIBE=`aws ec2 describe-instances --instance-ids $ID`
-	echo $DESCRIBE | jq .Reservations[].Instances[].Tags[].Value | tr -d \" | grep -v ^AWSEBAutoScalingGroup | grep AWSEBAutoScalingGroup | tail -1
+    ID=`ebinstance`
+    aws ec2 describe-instances --instance-ids $ID  | jq .Reservations[].Instances[].Tags[].Value | tr -d \" | grep -v ^AWSEBAutoScalingGroup | grep AWSEBAutoScalingGroup | tail -1
 }
 
 asgdescribe() {
-	aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names `asgname`
+    aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names `asgname`
+}
+
+appname() {
+    cat $EBCONFIG | yaml2json | jq .global.application_name | tr -d \"  
+}
+
+# create an ed script for editing a configuration as produced by `eb config`
+# export EDITOR="cat $FILE | ed" ; eb config
+editconfig() {
+EFILE=$1
+shift
+if [ ! -z $EFILE ] ; then rm -rf $EFILE ; fi
+while [ ! -z $3 ] 
+do
+SECTION=$1
+KEY=$2
+VAL=$3
+cat >>$EFILE <<EOF
+/$SECTION/
+/$KEY/d
+a
+    $KEY: $VAL
+.
+
+EOF
+shift ; shift ; shift 
+done
+cat >>$EFILE <<EOF
+w
+q
+
+EOF
+#echo ' ------'
+#cat $EFILE
+#echo ' ------'
 }
 
 EC2USER=ec2-user
@@ -175,33 +218,65 @@ if [ -z $1 ] ; then
     givehelp
     exit
 else
-    # first arg is usually the Environment
-    ENV=$1
-
     # check to see if we've run `eb init` yet
-    if [ $1 != init ] && [ ! -f $EBCONFIG ] ; then
-	echo "ERROR: you must run '$ME init' first before anything else" >&2
-	echo " " >&2
-	givehelp
-	exit 9
+    if [ $1 != init ] || [ $1 != new ] ; then 
+	if [ ! -f $EBCONFIG ] ; then
+	    echo "ERROR: you must run '$ME init' first before anything else" >&2
+	    echo " " >&2
+	    givehelp
+	    exit 9
+	fi
     fi
 
-    case $ENV in
-	init)
-	    if [ -f ~/.aws/config ] ; then 
-		# get the region out of your aws config
-		# REGION=`cat ~/.aws/config | grep ^region | head -1 | cut -f 2 -d =`
-		REGION=`cfgget ~/.aws/config default region`
+    # get the region out of your aws config
+    if [ -f ~/.aws/config ] ; then 
+	# REGION=`cat ~/.aws/config | grep ^region | head -1 | cut -f 2 -d =`
+	REGION=`cfgget ~/.aws/config default region`
+    fi
+    if [ -z $REGION ] ; then
+	# pick a sensible default
+	REGION=us-west-2
+    fi
+
+    if [ -z $2 ] ; then
+	APPNAME=`basename $PWD`
+    else
+	APPNAME=$2
+    fi
+    # first arg is usually the Environment, 
+    # but sometiemes it's a verb
+    case $1 in
+	new)
+#        $ME new                  create application based on this dir name
+#        $ME new appname          create application appname
+            # new will always create, for use by tech leads
+	    eb init $APPNAME --region $REGION
+	    ;;
+        init)
+#        $ME init                 initialize elastic beanstalk (after git clone)
+#        $ME init appname         initialize elastic beanstalk (after git clone)
+	    # this is for use by regular developers
+	    if aws elasticbeanstalk describe-environments | grep $APPNAME >/dev/null; then
+		eb init $APPNAME --region $REGION		    
+	    else
+		echo "ERROR: appname $APPNAME does not exist"
+		echo "   maybe you meant to use one of these:"
+		aws elasticbeanstalk describe-environments | jq .Environments[].ApplicationName | sort -u
 	    fi
-	    if [ -z $REGION ] ; then
-		# pick a sensible default
-		REGION=us-west-2
-	    fi
-	    echo WARNING: this works best if the application `basename $PWD` exists and is sane
-            eb init `basename $PWD` --region $REGION
 	    exit
 	    ;;
+	create)
+#        $ME create env           create environment 'env-appname'
+	    ENVNAME=${1}-` appname `
+	    if [ $ENVNAME = ${1}- ] ; then 
+		ENVNAME=${1}-`basename $PWD`
+	    fi
+	    echo " BE PATIENT: THIS MAY TAKE A WHILE AND WILL DEPLOY AT LEAST ONE INSTANCE ALONG THE WAY "
+	    shift 
+	    eb create $ENVNAME $*
+	    ;;
 	list)
+#        $ME list                 list available environments
 	    eb list
 	    exit
 	    ;;
@@ -212,6 +287,7 @@ else
 	    exit
 	    ;;
 	myip)
+#        $ME myip                 find out what my (laptop) ip is
 	    whatsmyip
 	    exit
 	    ;;
@@ -221,15 +297,17 @@ fi
 # ----------------------------------------------------------------------
 # detect bad environment name by trying to switch to it
 
-ENV1=$ENV
-ENV2=${1}-` cat $EBCONFIG | yaml2json | jq .global.application_name | tr -d \"  `
+# first arg is usually the Environment
+# try several likely combinations
+ENV1=$1
+ENV2=${1}-` appname `
 ENV3=${1}-`basename $PWD`
 if  eb use $ENV1 1>/dev/null 2>/dev/null; then
-    true
+    ENV=$ENV1
 elif eb use $ENV2 1>/dev/null 2>/dev/null ; then
-    true
+    ENV=$ENV2
 elif eb use $ENV3 1>/dev/null 2>/dev/null ; then
-    true
+    ENV=$ENV3
 else 
 cat >&2 <<EOF    
 ERROR: cannot find a working environment
@@ -323,7 +401,7 @@ case $ACTION in
 	;;
     r53cname|route53cname)
 #        $ME env r53cname foo     wire up a route53 name 'foo'
-	if [ -n $1 ] ; then 
+	if [ ! -z $1 ] ; then 
 	    route53wire `ebcname` $1
 	else
 	    echo "ERROR: no target name to wire up" >&2
@@ -334,6 +412,7 @@ case $ACTION in
 	if [ -z $1 ] || [ -z $2 ] ; then
 	    echo ERROR must specify min and max >&2
 	else    
+	    # should be rewritten to use the editconfig hack
 	    aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --min-size $1 --max-size $2
 	    asgdescribe | grep Size
 	fi
@@ -343,6 +422,7 @@ case $ACTION in
 	if [ -z $1 ] ; then 
 	    echo ERROR must specify cooldown value >&2
 	else    
+	    # should be rewritten to use the editconfig hack
 	    aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --default-cooldown $1
 	    asgdescribe | grep Cooldown
 	fi
@@ -352,8 +432,7 @@ case $ACTION in
 	if [ -z $1 ] ; then 
 	    echo ERROR must specify instance count value >&2
 	else    
-	    # eb scale $1
-	    aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --desired-capacity $1 
+	    eb scale $1
 	    asgdescribe | grep Size
 	fi
 	;;
@@ -364,6 +443,24 @@ case $ACTION in
     asgdescribe)
 #        $ME env asgdescribe      describe the autoscaling group
 	asgdescribe
+	;;
+    limitip)
+#        $ME env limitip          limit ssh ip to my public ip	
+	if [ -z $1 ] ; then
+	    CIDR=`whatsmyip`/32
+	else
+	    CIDR=$1
+	    if ! echo $CIDR | grep / >/dev/null ; then
+		echo "ERROR: $CIDR is not in CIDR a.b.c.d/m form" >&2
+		exit
+	    fi
+	fi
+	echo  INFO: About To Set SSHSourceRestriction: tcp,22,22,$CIDR
+	TMPED=/tmp/ebconfig.hack.$$ 
+	editconfig $TMPED aws:autoscaling:launchconfiguration: SSHSourceRestriction tcp,22,22,$CIDR
+        export EDITOR="cat $TMPED | ed >/dev/null "
+	eb config
+	rm $TMPED
 	;;
     *)
 	givehelp
