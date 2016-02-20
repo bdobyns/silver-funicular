@@ -27,16 +27,23 @@ SPECIAL VERBS:
         $ME myip                 find out what my (laptop) ip is
 
 ELASTIC BEANSTALK VERBS:
-        $ME env count n          set asg max and min to n
-        $ME env scale min max    set asg min and max 
-        $ME env cname            display the cname of the lb
         $ME env describe         describe the environment
+
         $ME env id               get instance id
         $ME env ipaddr           get instance ipaddress
         $ME env instance         describe the instance
-        $ME env sg               get security group id
+
+        $ME env sgn              get security group id
         $ME env security         describe security group 
+
+        $ME env cname            display the cname of the lb
         $ME env r53cname foo     wire up a route53 name 'foo'
+
+        $ME env asg              get autoscaling group name
+        $ME env asgdescribe      describe the autoscaling group
+        $ME env scale min max    set asg min and max 
+        $ME env cooldown n       cooldown in seconds between asg actions
+
 EOF
 	exit 7
 }
@@ -150,7 +157,15 @@ aws route53 change-resource-record-sets --hosted-zone-id $ZID --change-batch fil
 rm $RESREC
 }
 
+asgname() {
+	ID=`ebinstance`
+	DESCRIBE=`aws ec2 describe-instances --instance-ids $ID`
+	echo $DESCRIBE | jq .Reservations[].Instances[].Tags[].Value | tr -d \" | grep -v ^AWSEBAutoScalingGroup | grep AWSEBAutoScalingGroup | tail -1
+}
 
+asgdescribe() {
+	aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names `asgname`
+}
 
 EC2USER=ec2-user
 
@@ -228,12 +243,17 @@ fi
 # now parse the 'action' keyword
 case $ACTION in
     update|deploy)
+#	$ME env deploy           deploy to the given environment
+#	$ME env update           just update the artifact 
 	eb deploy 
 	;;
     ssh)
+#	$ME env ssh              ssh to the given box
 	eb ssh
 	;;
     put|get)
+#	$ME env put here there   copy a file to /home/ec2-user/there
+#	$ME env get there here   copy a file from there to here
 	if [ -z $1 ] || [ -z $2 ] ; then
 	    echo "ERROR - no files to $ACTION" >&2
 	    givehelp
@@ -257,30 +277,39 @@ case $ACTION in
 	fi
 	;;
     open)
+#        $ME env open             open a browser on the box 
 	eb open
 	;;
     id)
+#        $ME env id               get instance id
 	ebinstance
 	;;
     ipaddr)
+#        $ME env ipaddr           get instance ipaddress
 	instanceipaddr `ebinstance`
 	;;
     instance)
+#        $ME env instance         describe the instance
 	aws ec2 describe-instances --instance-ids `ebinstance`
 	;;
     sgn)
+#        $ME env sgn              get security group id
 	ebsgn
 	;;
     security)
+#        $ME env security         describe security group 
 	aws ec2 describe-security-groups --group-names `ebsgn`
 	;;
     cname)
+#        $ME env cname            display the cname of the lb
 	ebcname
 	;;
     describe)
+#        $ME env describe         describe the environment
 	aws elasticbeanstalk describe-environments --environment-names $ENV 
 	;;
     r53cname|route53cname)
+#        $ME env r53cname foo     wire up a route53 name 'foo'
 	if [ -n $1 ] ; then 
 	    route53wire `ebcname` $1
 	else
@@ -288,10 +317,40 @@ case $ACTION in
 	fi
 	;;
     scale)
-	echo "ERROR: not implemented yet"
+#        $ME env scale min max    set asg min and max 
+	if [ -z $1 ] || [ -z $2 ] ; then
+	    echo ERROR must specify min and max
+	else    
+	    aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --min-size $1 --max-size $2
+	    asgdescribe | grep Size
+	fi
+	;;
+    cooldown)
+#        $ME env cooldown n       cooldown in seconds between asg actions
+	if [ -z $1 ] ; then 
+	    echo ERROR must specify cooldown value
+	else    
+	    aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --default-cooldown $1
+	    asgdescribe | grep Cooldown
+	fi
 	;;
     count)
-	eb scale $1
+#        $ME env count n          set asg max and min to n
+	if [ -z $1 ] ; then 
+	    echo ERROR must specify instance count value
+	else    
+	    # eb scale $1
+	    aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --desired-capacity $1 
+	    asgdescribe | grep Size
+	fi
+	;;
+    asg)
+#        $ME env asg              get autoscaling group name
+	asgname
+	;;
+    asgdescribe)
+#        $ME env asgdescribe      describe the autoscaling group
+	asgdescribe
 	;;
     *)
 	givehelp
