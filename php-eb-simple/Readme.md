@@ -2,6 +2,12 @@
 
 This is the simplest possible PHP example, with no mysql database, and no extra frills and options.
 
+Instructions for technical leads to begin a new project are in
+TechLead.Readme.md and if you are starting a new project, you should
+- read the *Pre-requisites* here, 
+- read and follow in the TechLead.Readme.md next, 
+- then come back to this document to make sure the *General Development* section is correct here.
+
 ## Deployment Tools Why
 
 The purpose of deployment tools is to ensure that we have complete
@@ -61,10 +67,6 @@ It's also convenient to run `aws configure`
     AWS Secret Access Key [None]: vXGKk19xV6IkVbXJ8g3ZNsBCZX7Xe5PYYaDTkeF3
     Default region name [None]: us-west-2
     Default output format [None]: 
-
----
-
-Instructions for technical leads to begin a new project are in `Readme.TechLead.md`
 
 ----
 
