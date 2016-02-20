@@ -23,7 +23,9 @@ usage:
 	$ME env get there here   copy a file from there to here
         $ME env open             open a browser on the box 
         $ME local run            run a local copy of the app
-
+        
+        $ME env count n          set asg max and min to n
+        $ME env scale min max    set asg min and max 
         $ME env cname            display the cname of the lb
         $ME env describe         describe the environment
         $ME env id               get instance id
@@ -280,6 +282,12 @@ case $ACTION in
 	else
 	    echo "ERROR: no target name to wire up"
 	fi
+	;;
+    scale)
+	echo "ERROR: not implemented yet"
+	;;
+    count)
+	eb scale $1
 	;;
     *)
 	givehelp
