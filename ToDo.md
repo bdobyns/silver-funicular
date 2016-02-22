@@ -1,6 +1,6 @@
 # ElasticBeanstalk ToDo List
 
-- rewrite readme.md in ph-eb-simple to show usage of the `deploy.sh` script
+- rewrite Readme.md in ph-eb-simple to show usage of the `deploy.sh` script
 - show how to have other ports open than just 80 and 8080
 - show how to have better security when you `eb ssh` by limiting the open port to just your public ip address
 - show how to connect a debugger (like netbeans or intellij) from my laptop to the cloud instance
