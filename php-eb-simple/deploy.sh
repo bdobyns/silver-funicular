@@ -20,6 +20,7 @@ STANDARD VERBS:
 	$ME env put here there   copy a file to /home/ec2-user/there
 	$ME env get there here   copy a file from there to here
         $ME env open             open a browser on the box 
+        $ME env use              use environment env (not necessary)
         $ME local run            run a local copy of the app
         
 SPECIAL VERBS:
@@ -54,7 +55,7 @@ TECH LEAD VERBS:
         $ME env limitip          limit ssh ip to my public ip
         $ME env limitip cidr     limit ssh ip e.g. 0.0.0.0/0
 EOF
-	exit 7
+	exit 3
 }
 
 # ----------------------------------------------------------------------
@@ -135,7 +136,7 @@ R53DOMAIN=`echo $R53NAME | cut -f 2-3 -d .`
 ZID=`aws route53 list-hosted-zones-by-name --dns-name $R53DOMAIN | jq .HostedZones[].Id | tr -d \" | cut -d / -f 3`
 if [ -z $ZID ] ; then
     echo "ERROR $R53DOMAIN is not hosted in aws route53"
-    exit 12
+    exit 5
 fi
 
 # create a resource record to update this guy
@@ -180,16 +181,17 @@ appname() {
 }
 
 # create an ed script for editing a configuration as produced by `eb config`
-# export EDITOR="cat $FILE | ed" ; eb config
+# and then execute it with
+#     export EDITOR="cat $FILE | ed" ; eb config
 editconfig() {
-EFILE=$1
-shift
-if [ ! -z $EFILE ] ; then rm -rf $EFILE ; fi
-while [ ! -z $3 ] 
-do
-SECTION=$1
-KEY=$2
-VAL=$3
+    EFILE=/tmp/ebconfig.hack.$$
+    if [  -f $EFILE ] ; then rm -rf $EFILE ; fi
+
+    while [ ! -z $3 ] 
+    do
+	SECTION=$1
+	KEY=$2
+	VAL=$3
 cat >>$EFILE <<EOF
 /$SECTION/
 /$KEY/d
@@ -205,9 +207,13 @@ w
 q
 
 EOF
-#echo ' ------'
-#cat $EFILE
-#echo ' ------'
+    #echo ' ------'
+    #cat $EFILE
+    #echo ' ------'
+
+    export EDITOR="cat $EFILE | ed >/dev/null "
+    eb config
+    rm $EFILE
 }
 
 EC2USER=ec2-user
@@ -216,7 +222,7 @@ EC2USER=ec2-user
 # detect no args at all
 if [ -z $1 ] ; then
     givehelp
-    exit
+    exit 7
 else
     # check to see if we've run `eb init` yet
     if [ $1 != init ] || [ $1 != new ] ; then 
@@ -224,7 +230,7 @@ else
 	    echo "ERROR: you must run '$ME init' first before anything else" >&2
 	    echo " " >&2
 	    givehelp
-	    exit 9
+	    exit 11
 	fi
     fi
 
@@ -251,7 +257,7 @@ else
 #        $ME new appname          create application appname
             # new will always create, for use by tech leads
 	    eb init $APPNAME --region $REGION
-	    exit
+	    exit 13
 	    ;;
         init)
 #        $ME init                 initialize elastic beanstalk (after git clone)
@@ -264,7 +270,7 @@ else
 		echo "   maybe you meant to use one of these:" >&2
 		aws elasticbeanstalk describe-environments | jq .Environments[].ApplicationName | sort -u >&2
 	    fi
-	    exit
+	    exit 17
 	    ;;
 	create|createenv)
 #        $ME create env           create environment 'env-appname'
@@ -280,23 +286,23 @@ else
 	    echo " BE PATIENT: THIS MAY TAKE A WHILE AND WILL DEPLOY AT LEAST ONE INSTANCE ALONG THE WAY "
 	    shift 
 	    eb create $ENVNAME $*
-	    exit
+	    exit 23
 	    ;;
 	list)
 #        $ME list                 list available environments
 	    eb list
-	    exit
+	    exit 29
 	    ;;
         # use "fail" as a special case environment
 	local)
 	    echo "ERROR: '$ME local $2' is not supported" >&2
 	    givehelp
-	    exit
+	    exit 31
 	    ;;
 	myip)
 #        $ME myip                 find out what my (laptop) ip is
 	    whatsmyip
-	    exit
+	    exit 37
 	    ;;
     esac
 fi
@@ -324,12 +330,12 @@ ERROR: environment '$ENV3' does not exist
   maybe you want one of these:
 EOF
 eb list
-exit
+exit 41
 fi
 
 if [ -z $2 ] ; then
     givehelp
-    exit
+    exit 43
 else
     ACTION=$2
     shift; shift
@@ -340,6 +346,10 @@ fi
 # ----------------------------------------------------------------------
 # now parse the 'action' keyword
 case $ACTION in
+    use)
+#        $ME env use              use environment env (not necessary)
+	;;
+
     update|deploy)
 #	$ME env deploy           deploy to the given environment
 #	$ME env update           just update the artifact 
@@ -355,7 +365,7 @@ case $ACTION in
 	if [ -z $1 ] || [ -z $2 ] ; then
 	    echo "ERROR - no files to $ACTION" >&2
 	    givehelp
-	    exit 11
+	    exit 53
         else
 	    INSTANCE=` ebinstance `
 	    IPADDR=` instanceipaddr $INSTANCE `
@@ -368,7 +378,7 @@ case $ACTION in
 	    else
 		# unreachable
 		echo "ERROR: don't know how to $ME $ENV $ACTION" >&2
-		exit 13
+		exit 59
 	    fi
 	    # do this to close port 22
 	    cat /dev/null | eb ssh 
@@ -412,25 +422,34 @@ case $ACTION in
 	    route53wire `ebcname` $1
 	else
 	    echo "ERROR: no target name to wire up" >&2
+	    exit 61
 	fi
 	;;
     scale)
 #        $ME env scale min max    set asg min and max 
 	if [ -z $1 ] || [ -z $2 ] ; then
 	    echo ERROR must specify min and max >&2
-	else    
-	    # should be rewritten to use the editconfig hack
-	    aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --min-size $1 --max-size $2
-	    asgdescribe | grep Size
+	    exit 67
+	elif [ $1 -lt $2 ] ; then
+	    MIN=$1
+	    MAX=$2
+	else
+	    # swap the args if we need to
+	    MIN=$2
+	    MAX=$1
 	fi
+	# aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --min-size $1 --max-size $2
+	editconfig aws:autoscaling:asg: MinSize $MIN aws:autoscaling:asg: MaxSize $MAX
+	asgdescribe | grep Size
 	;;
     cooldown)
 #        $ME env cooldown n       cooldown in seconds between asg actions
 	if [ -z $1 ] ; then 
 	    echo ERROR must specify cooldown value >&2
+	    exit 71
 	else    
-	    # should be rewritten to use the editconfig hack
-	    aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --default-cooldown $1
+	    # aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --default-cooldown $1
+	    editconfig aws:autoscaling:asg: Cooldown $1
 	    asgdescribe | grep Cooldown
 	fi
 	;;
@@ -459,15 +478,11 @@ case $ACTION in
 	    CIDR=$1
 	    if ! echo $CIDR | grep / >/dev/null ; then
 		echo "ERROR: $CIDR is not in CIDR a.b.c.d/m form" >&2
-		exit
+		exit 73
 	    fi
 	fi
 	echo  INFO: About To Set SSHSourceRestriction: tcp,22,22,$CIDR
-	TMPED=/tmp/ebconfig.hack.$$ 
-	editconfig $TMPED aws:autoscaling:launchconfiguration: SSHSourceRestriction tcp,22,22,$CIDR
-        export EDITOR="cat $TMPED | ed >/dev/null "
-	eb config
-	rm $TMPED
+	editconfig aws:autoscaling:launchconfiguration: SSHSourceRestriction tcp,22,22,$CIDR
 	;;
     *)
 	givehelp

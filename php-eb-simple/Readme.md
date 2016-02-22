@@ -127,10 +127,10 @@ This will try to pick the "cool-module" application which should alrady exist.
 When you did `./deploy.sh init` after you checked out the application, it
 automatically pulled down the environments created by your tech lead.
 You shouldn't need to create any.  Select the environment you want to
-use by listing them, and then choosing one
+use by listing them, and then choosing one.
 
     ./deploy.sh list
-    ./deploy.sh use develop
+    ./deploy.sh test use
 
 If your tech lead sensibly named the environments, then you can use
 "short names" like "test" or "prod" to refer to longer names that help
@@ -147,7 +147,7 @@ everything up again and deploys it to /var/www/html in your instance.
     emacs somecode.php
     git commit -am "I made some more changes again"
     git push origin
-    ./deploy.sh deploy
+    ./deploy.sh test deploy
 
 This may not be suitable for production because it might cause a
 momentary service outage while the code is literally copied into and
@@ -159,17 +159,18 @@ this very moment*.
 ### Change Some Code And Deploy To Production
 
 AWS has several different ways to ensure that redeployment to
-production doesn't cause a service outage for EBS, and your tech lead
-should pick one and advise you on how it's done in your project.
+production doesn't cause a service outage for EB applications, and
+your tech lead should pick one and advise you on how it's done in your
+project.
 
-Your tech lead should also have modified the `deploy.sh` script so
+Your tech lead should *also* have modified the `deploy.sh` script so
 that you don't need to stress on the distinction between prod and
 test.  If this is the case, then you can work the same way for both:
 
     vi somecode.php
     git commit -am "fixing stuff Chuck broke. again."
     git push origin
-    ./deploy.sh deploy
+    ./deploy.sh prod deploy
 
 ### Get SSH Access To Your Instance
 
@@ -178,9 +179,9 @@ figure out what happened, and why your excellent code changes didn't
 work as you expected.  eb understands and `./deploy.sh ssh` will get
 you into the instance.
 
-    ./deploy.sh ssh
+    ./deploy.sh test ssh
 
-Remember that changes you make inside a running instance are lost in
+Remember that changes you make inside a running instance are *lost* in
 the case of an autoscaling event or redeployment, so you always want
 to make changes to the source code on your development computer
 (laptop), and commit those, rather than changing things in the
