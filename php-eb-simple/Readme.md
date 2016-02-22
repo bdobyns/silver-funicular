@@ -3,9 +3,9 @@
 This is the simplest possible PHP example, with no mysql database, and no extra frills and options.
 
 Instructions for technical leads to begin a new project are in
-(TechLead.Readme.md)[TechLead.Readme.md] and if you are starting a new project, you should
+*TechLead.Readme.md* and if you are starting a new project, you should
 - read the *Pre-requisites* here, 
-- read and follow in the {TechLead.Readme.md)[TechLead.Readme.md] next, 
+- read and follow in the *TechLead.Readme.md*  next, 
 - then come back to this document to make sure the *General Development* section is correct here.
 
 ## Deployment Tools Why
@@ -50,7 +50,7 @@ Check that you have both installed and a sensible version of both
 
 We assume that the project has multiple developers, and a techincal
 lead who has already set up everyting, per the instructions in
-(TechLead.Readme.md)[TechLeadReadme.md].
+*TechLead.Readme.md*.
 
 We assume that the project has multiple components, and that a single
 git repo might have a directory structure where different components
