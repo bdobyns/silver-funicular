@@ -46,11 +46,13 @@ ELASTIC BEANSTALK VERBS:
         $ME env asgdescribe      describe the autoscaling group
         $ME env scale min max    set asg min and max 
         $ME env cooldown n       cooldown in seconds between asg actions
-        $ME env itype type       set instance type, like t1.micro or m3.medium
+        $ME env getitype type    get instance type
+        $ME env setitype type    set instance type, like t1.micro or m3.medium
 
 TECH LEAD VERBS:
-        $ME newapp               create application based on this dir name
-        $ME newapp appname       create application 'appname'
+        $ME new                  create application based on this dir name
+        $ME new appname          create application 'appname'
+        $ME new appname args..   create application appname
         $ME createenv env        create environment 'env-appname'
         $ME createenv env [more args]
         $ME env limitip          limit ssh ip to my public ip
@@ -96,7 +98,7 @@ ebinstance() {
     if [ ! -z $1 ] ; then 
 	ORDINAL=$1
     else
-	ORDINAL=0
+	ORDINAL=
     fi
     aws elasticbeanstalk describe-environment-resources  --environment-name $ENV | jq .EnvironmentResources.Instances[${ORDINAL}].Id | tr -d \" 
 }
@@ -184,7 +186,7 @@ appname() {
 # create an ed script for editing a configuration as produced by `eb config`
 # and then execute it with
 #     export EDITOR="cat $FILE | ed" ; eb config
-editconfig() {
+ebeditconfig() {
     EFILE=/tmp/ebconfig.hack.$$
     if [  -f $EFILE ] ; then rm -rf $EFILE ; fi
 
@@ -193,9 +195,14 @@ editconfig() {
 	SECTION=$1
 	KEY=$2
 	VAL=$3
+# find the section
+# delete the key
+# go back to the top of the section
+# insert the new key right after the section header
 cat >>$EFILE <<EOF
-/$SECTION/
-/$KEY/d
+/  $SECTION/
+/$KEY:/d
+/  $SECTION/
 a
     $KEY: $VAL
 .
@@ -208,14 +215,32 @@ w
 q
 
 EOF
-    #echo ' ------'
-    #cat $EFILE
-    #echo ' ------'
-
     export EDITOR="cat $EFILE | ed >/dev/null "
-    eb config
-    rm $EFILE
+    eb config && rm $EFILE
 }
+
+eblistapps() {
+    aws elasticbeanstalk describe-applications | jq .Applications[].ApplicationName
+}
+
+youhavebeenwarned() {
+    echo "WARNING: THIS MAY KILL ALL THE INSTANCES IN YOUR ENVIRONMENT"
+    echo "  you can avoid a service outage by:" 
+    echo "    - create a new environment"
+    echo "    - change the instance type there"
+    echo "    - use 'eb swap' to interchange the environments"
+    echo "    - delete the extra environment"
+    echo -n "ARE YOU ABSOLUTELY SURE YOU WANT TO PROCEED? "
+    read ANSWER
+    if [ $ANSWER = y ] || [ $ANSWER = yes ] ||  [ $ANSWER = Y ] || [ $ANSWER = Yes ] ; then 
+	echo " --- YOU HAVE BEEN WARNED! ---"
+	true
+    else 
+	false
+    fi
+}
+
+
 
 EC2USER=ec2-user
 
@@ -245,41 +270,52 @@ else
 	REGION=us-west-2
     fi
 
-    if [ -z $2 ] ; then
-	APPNAME=`basename $PWD`
-	shift
-    else
-	APPNAME=$2
-	shift ; shift
-    fi
     # first arg is usually the Environment, 
     # but sometiemes it's a verb
     case $1 in
-	new|newapp)
+	new)
 #        $ME new                  create application based on this dir name
 #        $ME new appname          create application appname
-	    if ! aws elasticbeanstalk describe-environments | grep $APPNAME >/dev/null; then
-		eb init -p PHP $APPNAME --region $REGION $*
+	    if [ -z $2 ] ; then
+		APPNAME=`basename $PWD`
+		shift
 	    else
-		echo "ERROR: appname $APPNAME already exists" >&2
-		echo "     maybe you want to pick a different name (not in the list below)" >&2
-		aws elasticbeanstalk describe-environments | jq .Environments[].ApplicationName | sort -u >&2
+		APPNAME=$2
+		shift ; shift
 	    fi
-	    exit
-	    ;;
-        init)
+	    if [ $# -eq 0 ] ; then # no other args
+		if ! eblistapps | grep '"'$APPNAME'"' >/dev/null; then
+		    eb init $APPNAME -p PHP --region $REGION 
+		else
+		    echo "ERROR: appname $APPNAME already exists" >&2
+		    echo "     maybe you want to pick a different name (not in the list below)" >&2
+		    eblistapps 
+		fi
+	    else
+#        $ME new appname args..     create application appname
+		    # if they gave us a bunch of args, just pass them all thru as if they know what they're doing
+                 eb init $APPNAME $*
+	     fi
+	     exit
+	     ;;
+	 init)
 #        $ME init                 initialize elastic beanstalk (after git clone)
 #        $ME init appname         initialize elastic beanstalk (after git clone)
-	    # this is for use by regular developers
-	    if aws elasticbeanstalk describe-environments | grep $APPNAME >/dev/null; then
-		eb init $APPNAME --region $REGION		    
+	    if [ -z $2 ] ; then
+		APPNAME=`basename $PWD`
 	    else
-		echo "ERROR: appname $APPNAME does not exist" >&2
-		echo "   maybe you meant to use one of these:" >&2
-		aws elasticbeanstalk describe-environments | jq .Environments[].ApplicationName | sort -u >&2
+		APPNAME=$2
 	    fi
-	    exit
-	    ;;
+	    # this is for use by regular developers
+	     if  eblistapps | grep '"'$APPNAME'"' >/dev/null; then
+		 eb init $APPNAME --region $REGION		    
+	     else
+		 echo "ERROR: appname $APPNAME does not exist" >&2
+		 echo "   maybe you meant to use one of these:" >&2
+		 eblistapps 
+	     fi
+	     exit
+	     ;;
 	create|createenv)
 #        $ME create env           create environment 'env-appname'
 	    shift
@@ -301,8 +337,9 @@ else
 	    eb list
 	    exit 
 	    ;;
-        # use "fail" as a special case environment
 	local)
+#        $ME local run            run a local copy of the app
+	    # could probably vagrant or docker to do this, but not today
 	    echo "ERROR: '$ME local $2' is not supported" >&2
 	    givehelp
 	    exit 
@@ -430,54 +467,89 @@ case $ACTION in
 	    route53wire `ebcname` $1
 	else
 	    echo "ERROR: no target name to wire up" >&2
-	    exit 61
 	fi
 	;;
     scale)
 #        $ME env scale min max    set asg min and max 
 	if [ -z $1 ] || [ -z $2 ] ; then
-	    echo ERROR must specify min and max >&2
-	    exit 67
-	elif [ $1 -lt $2 ] ; then
-	    MIN=$1
-	    MAX=$2
+	    echo " --- current values ---"
+	    asgdescribe | egrep 'Size|Desired'
 	else
-	    # swap the args if we need to
-	    MIN=$2
-	    MAX=$1
+	    if [ $1 -lt $2 ] ; then
+		MINV=$1
+		MAXV=$2
+	    else
+	        # swap the args if we need to
+		MINV=$2
+		MAXV=$1
+	    fi
+	    # set the MinInstancesInService to something sensible, based on max
+	    MAXBATCH="aws:autoscaling:updatepolicy:rollingupdate: MaxBatchSize '1'"
+	    MIN="aws:autoscaling:asg: MinSize '$MINV'"
+	    MAX="aws:autoscaling:asg: MaxSize '$MAXV'"
+	    ROLLUPTRUE="aws:autoscaling:updatepolicy:rollingupdate: RollingUpdateEnabled 'true'"
+	    if [ $MAXV -eq 1 ] ; then 
+		MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '0'"
+	    elif [ $MAXV -gt $MINV ] ; then 
+		MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '$MINV'"
+	    else 
+		MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '1'"	    
+	    fi
+	    ebeditconfig $MIN $MAX $MAXBATCH $MININSTANCES $ROLLUPTRUE
+	    asgdescribe | egrep 'Size|Desired|MinInstancesInService|RollingUpdate|MaxBatchSize'
 	fi
-	# aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --min-size $1 --max-size $2
-	editconfig aws:autoscaling:asg: MinSize $MIN aws:autoscaling:asg: MaxSize $MAX
-	asgdescribe | grep Size
 	;;
     cooldown)
 #        $ME env cooldown n       cooldown in seconds between asg actions
 	if [ -z $1 ] ; then 
-	    echo ERROR must specify cooldown value >&2
-	    exit 71
+	    echo " --- current values ---"
 	else    
 	    # aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --default-cooldown $1
-	    editconfig aws:autoscaling:asg: Cooldown $1
-	    asgdescribe | grep Cooldown
+	    ebeditconfig aws:autoscaling:asg: Cooldown $1
 	fi
+	asgdescribe | grep Cooldown
 	;;
     count)
 #        $ME env count n          set asg max and min to n
 	if [ -z $1 ] ; then 
-	    echo ERROR must specify instance count value >&2
+	    echo " --- current values ---"
 	else    
+	    # we could probably the scale code above, just with MIN = MAX
+	    # BUT 'eb scale' sets AutoScalingGroups[].DesiredCapacity which is NOT in the config
 	    eb scale $1
-	    asgdescribe | grep Size
 	fi
+	asgdescribe | egrep 'Size|Desired'
 	;;
-    itype)
-#        $ME env itype type       set instance type, like t1.micro or m3.medium
+    setitype)
+#        $ME env setitype type    set instance type, like t1.micro or m3.medium
 	if [ -z $1 ] ; then 
 	    echo ERROR must specify instance type value >&2
 	else    
-	    editconfig  aws:autoscaling:launchconfiguration: InstanceType $1
-	    asgdescribe | grep InstanceType
+	    # if MinInstancesInService is set to 0 you may get a service outage
+	    MAXSIZE=`asgdescribe | jq .AutoScalingGroups[].MaxSize`
+	    MINSIZE=`asgdescribe | jq .AutoScalingGroups[].MaxSize`
+	    MAXBATCH="aws:autoscaling:updatepolicy:rollingupdate: MaxBatchSize '1'"
+	    MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '$MINSIZE'"
+	    ROLLUPTRUE="aws:autoscaling:updatepolicy:rollingupdate: RollingUpdateEnabled 'true'"
+	    if [ $MAXSIZE -eq 1 ] || [ $MAXSIZE -eq $MINSIZE ] ; then
+		NEWMAX=$[ $MAXSIZE + 1 ]
+		echo "INFO: Auto Scaling Group MaxSize Increased To $NEWMAX"
+		BUMPMAX="aws:autoscaling:asg: MaxSize '$NEWMAX'"
+	    fi	    
+	    # if youhavebeenwarned ; then 
+		if ! ebeditconfig $MAXBATCH $MININSTANCES $BUMPMAX  $ROLLUPTRUE aws:autoscaling:launchconfiguration: InstanceType $1
+		then 
+		    echo "If you failed due to the dreaded VPC problem, read"
+		    echo '  https://mike-thomson.com/blog/?p=2103#more-2103'
+		fi
+            # fi
+	    asgdescribe | egrep 'Size|Desired|MinInstancesInService|RollingUpdate|MaxBatchSize'
 	fi
+	aws ec2 describe-instances --instance-ids `ebinstance` | grep InstanceType
+	;;
+    getitype)
+#        $ME env getitype type    get instance type
+	aws ec2 describe-instances --instance-ids `ebinstance` | grep InstanceType
 	;;
     asg)
 #        $ME env asg              get autoscaling group name
@@ -499,7 +571,7 @@ case $ACTION in
 	    fi
 	fi
 	echo  INFO: About To Set SSHSourceRestriction: tcp,22,22,$CIDR
-	editconfig aws:autoscaling:launchconfiguration: SSHSourceRestriction tcp,22,22,$CIDR
+	ebeditconfig aws:autoscaling:launchconfiguration: SSHSourceRestriction tcp,22,22,$CIDR
 	;;
     *)
 	givehelp

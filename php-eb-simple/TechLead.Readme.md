@@ -59,7 +59,6 @@ create a directory for your project and then initialize your new project with el
 
     mkdir my-excellent-project
     cd    my-excellent-project
-    # eb init -p PHP --region us-west-2 --keyname my_key
     ./deploy.sh newapp 
 
 The `deploy newapp` is a thin wrapper around `eb init`, but first
@@ -79,13 +78,13 @@ this readme.md file.  You can use it by:
 
     git clone git@github.com:productOps/best-practices.git
     cd best-practices/php-aws-eb-example
-    # eb init -p PHP --region us-west-2 --keyname my_key
+    ./deploy.sh new php-aws-eb-example -p PHP --region us-west-2 --keyname my_key
 
 `eb init` is idempotent, meaning you can run it again and again, and
-it doesn't hurt.  If there is already an application with the name eb
+it doesn't hurt.  If there is already an application defined in AWS with the name eb
 chooses, and with those options, it will do nothing.  If there is
 already an application with that name, `eb init` updates the
-application.
+application.  
 
 ### Convert An Existing Tree Of Code (Tech leads)
 

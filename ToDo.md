@@ -10,6 +10,20 @@
 - show an example with two tiers (web, service) and multiple SOA components in each tier, plus RDS
 - refactor deploy.sh into a library, so it can be "wrapped" by a project-specific deploy.sh
 
+done 2/23/2016:
+- fixup new verb in the edge case where the TechLead gives lots of args
+- fixup new verb to properly check for app already existing
+- refactor check for existing app to use 'aws elasticbeanstalk describe-applicaitons' instead of '... describe-environments' which would fail if the app had no environments yet
+- fix bug introduced in all commands that take the env as arg1. sigh.
+- fix bug in editconfig when the KEY in question appeared at the end of the section
+- fix service outage bug in setitype by changing max instance count in asg
+- fiddle with max instance count when doing a scale operation
+- try and detect problem 'Launching a new EC2 instance. Status Reason: The specified instance type can only be used in a VPC. A subnet ID or network interface ID is required to carry out the request. Launching EC2 instance failed.' and give a helfpul error message
+- scale with no args gives current values
+- count with no args gives current values
+- cooldown with no args gives current values
+- fiddle with asg parameters when changing instance type so there's no service outages
+
 done 2/22/2016:
 - rewrite Readme.md in ph-eb-simple to show usage of the `deploy.sh` script
 - add changing instance type to ./deploy.sh
