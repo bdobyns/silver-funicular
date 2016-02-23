@@ -8,6 +8,8 @@ else
     EBCONFIG=`dirname $0`/".elasticbeanstalk/config.yml"
 fi
 ME=`basename $0`
+EC2USER=ec2-user
+
 
 givehelp()
 {
@@ -32,7 +34,7 @@ SPECIAL VERBS:
 ELASTIC BEANSTALK VERBS:
         $ME env describe         describe the environment
 
-        $ME env id               get instance id
+        $ME env id               get instance id (of first instance)
         $ME env ipaddr           get instance ipaddress
         $ME env instance         describe the instance
 
@@ -46,7 +48,6 @@ ELASTIC BEANSTALK VERBS:
         $ME env asgdescribe      describe the autoscaling group
         $ME env scale min max    set asg min and max 
         $ME env cooldown n       cooldown in seconds between asg actions
-        $ME env getitype type    get instance type
         $ME env setitype type    set instance type, like t1.micro or m3.medium
 
 TECH LEAD VERBS:
@@ -62,7 +63,10 @@ EOF
 }
 
 # ----------------------------------------------------------------------
-# some helper methods
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+
+# some helper methods/functions
 
 # get a config value from a config file
 cfgget() {
@@ -94,6 +98,7 @@ ebkeyname() {
 }
 
 ebinstance() {
+#        $ME env id               get instance id
     # INSTANCE=`eb list -v | grep $ENV | cut -d \' -f 2`
     if [ ! -z $1 ] ; then 
 	ORDINAL=$1
@@ -104,6 +109,7 @@ ebinstance() {
 }
 
 instanceipaddr() {
+#        $ME env ipaddr           get instance ipaddress
     INSTANCE=$1
     if [ ! -z $INSTANCE ] ; then
 	aws ec2 describe-instances --instance-ids $INSTANCE | jq .Reservations[].Instances[].PublicIpAddress | tr -d \"
@@ -116,15 +122,18 @@ ebdefaultenv() {
 }
 
 whatsmyip() {
+#        $ME myip                 find out what my (laptop) ip is
     curl -s http://www.whatsmyip.website/api/plaintext | head -1
 }
 
 ebsgn() {
+#        $ME env sgn              get security group id
     ID=`ebinstance`
     aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecurityGroups[].GroupName | tr -d \" 
 }
 
 ebcname() {
+#        $ME env cname            display the cname of the lb
     aws elasticbeanstalk describe-environments --environment-names $ENV | jq .Environments[].CNAME | tr -d \"
 }
 
@@ -171,11 +180,13 @@ rm $RESREC
 }
 
 asgname() {
+#        $ME env asg              get autoscaling group name
     ID=`ebinstance`
     aws ec2 describe-instances --instance-ids $ID  | jq .Reservations[].Instances[].Tags[].Value | tr -d \" | grep -v ^AWSEBAutoScalingGroup | grep AWSEBAutoScalingGroup | tail -1
 }
 
 asgdescribe() {
+#        $ME env asgdescribe      describe the autoscaling group
     aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names `asgname`
 }
 
@@ -223,6 +234,103 @@ eblistapps() {
     aws elasticbeanstalk describe-applications | jq .Applications[].ApplicationName
 }
 
+eblimitip() {
+#        $ME env limitip          limit ssh ip to my public ip	
+	if [ -z $1 ] ; then
+	    CIDR=`whatsmyip`/32
+	else
+	    CIDR=$1
+	    if ! echo $CIDR | grep / >/dev/null ; then
+		echo "ERROR: $CIDR is not in CIDR a.b.c.d/m form" >&2
+		exit 73
+	    fi
+	fi
+	echo  INFO: About To Set SSHSourceRestriction: tcp,22,22,$CIDR
+	ebeditconfig aws:autoscaling:launchconfiguration: SSHSourceRestriction tcp,22,22,$CIDR
+}
+
+ebsetitype() {
+#        $ME env setitype type    set instance type, like t1.micro or m3.medium
+	if [ -z $1 ] ; then 
+	    echo " --- current value ---"
+	else
+	    # if MinInstancesInService is set to 0 you may get a service outage
+	    MAXSIZE=`asgdescribe | jq .AutoScalingGroups[].MaxSize`
+	    MINSIZE=`asgdescribe | jq .AutoScalingGroups[].MaxSize`
+	    MAXBATCH="aws:autoscaling:updatepolicy:rollingupdate: MaxBatchSize '1'"
+	    MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '$MINSIZE'"
+	    ROLLUPTRUE="aws:autoscaling:updatepolicy:rollingupdate: RollingUpdateEnabled 'true'"
+	    if [ $MAXSIZE -eq 1 ] || [ $MAXSIZE -eq $MINSIZE ] ; then
+		NEWMAX=$[ $MAXSIZE + 1 ]
+		echo "INFO: Auto Scaling Group MaxSize Increased To $NEWMAX"
+		BUMPMAX="aws:autoscaling:asg: MaxSize '$NEWMAX'"
+	    fi	    
+	    # if youhavebeenwarned ; then 
+		if ! ebeditconfig $MAXBATCH $MININSTANCES $BUMPMAX  $ROLLUPTRUE aws:autoscaling:launchconfiguration: InstanceType $1
+		then 
+		    echo "If you failed due to the dreaded VPC problem, read"
+		    echo '  https://mike-thomson.com/blog/?p=2103#more-2103'
+		fi
+            # fi
+	    asgdescribe | egrep 'Size|Desired|MinInstancesInService|RollingUpdate|MaxBatchSize'
+	fi
+	aws ec2 describe-instances --instance-ids `ebinstance` | grep InstanceType
+}
+
+ebsetcount() {
+#        $ME env count n          set asg max and min to n
+	if [ -z $1 ] ; then 
+	    echo " --- current values ---"
+	else    
+	    # we could probably the scale code above, just with MIN = MAX
+	    # BUT 'eb scale' sets AutoScalingGroups[].DesiredCapacity which is NOT in the config
+	    eb scale $1
+	fi
+	asgdescribe | egrep 'Size|Desired'
+}
+
+ebsetcooldown() {
+#        $ME env cooldown n       cooldown in seconds between asg actions
+	if [ -z $1 ] ; then 
+	    echo " --- current values ---"
+	else    
+	    # aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --default-cooldown $1
+	    ebeditconfig aws:autoscaling:asg: Cooldown $1
+	fi
+	asgdescribe | grep Cooldown
+}
+
+ebsetscale() {
+#        $ME env scale min max    set asg min and max 
+	if [ -z $1 ] || [ -z $2 ] ; then
+	    echo " --- current values ---"
+	    asgdescribe | egrep 'Size|Desired'
+	else
+	    if [ $1 -lt $2 ] ; then
+		MINV=$1
+		MAXV=$2
+	    else
+	        # swap the args if we need to
+		MINV=$2
+		MAXV=$1
+	    fi
+	    # set the MinInstancesInService to something sensible, based on max
+	    MAXBATCH="aws:autoscaling:updatepolicy:rollingupdate: MaxBatchSize '1'"
+	    MIN="aws:autoscaling:asg: MinSize '$MINV'"
+	    MAX="aws:autoscaling:asg: MaxSize '$MAXV'"
+	    ROLLUPTRUE="aws:autoscaling:updatepolicy:rollingupdate: RollingUpdateEnabled 'true'"
+	    if [ $MAXV -eq 1 ] ; then 
+		MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '0'"
+	    elif [ $MAXV -gt $MINV ] ; then 
+		MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '$MINV'"
+	    else 
+		MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '1'"	    
+	    fi
+	    ebeditconfig $MIN $MAX $MAXBATCH $MININSTANCES $ROLLUPTRUE
+	    asgdescribe | egrep 'Size|Desired|MinInstancesInService|RollingUpdate|MaxBatchSize'
+	fi
+}
+
 youhavebeenwarned() {
     echo "WARNING: THIS MAY KILL ALL THE INSTANCES IN YOUR ENVIRONMENT"
     echo "  you can avoid a service outage by:" 
@@ -241,10 +349,10 @@ youhavebeenwarned() {
 }
 
 
-
-EC2USER=ec2-user
-
 # ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+
 # detect no args at all
 if [ -z $1 ] ; then
     givehelp
@@ -270,9 +378,14 @@ else
 	REGION=us-west-2
     fi
 
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+
+# Process the 'no env' verbs
+    case $1 in
     # first arg is usually the Environment, 
     # but sometiemes it's a verb
-    case $1 in
 	new)
 #        $ME new                  create application based on this dir name
 #        $ME new appname          create application appname
@@ -389,6 +502,10 @@ fi
 
 
 # ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+
+# Process all other verbs
 # now parse the 'action' keyword
 case $ACTION in
     use)
@@ -471,85 +588,19 @@ case $ACTION in
 	;;
     scale)
 #        $ME env scale min max    set asg min and max 
-	if [ -z $1 ] || [ -z $2 ] ; then
-	    echo " --- current values ---"
-	    asgdescribe | egrep 'Size|Desired'
-	else
-	    if [ $1 -lt $2 ] ; then
-		MINV=$1
-		MAXV=$2
-	    else
-	        # swap the args if we need to
-		MINV=$2
-		MAXV=$1
-	    fi
-	    # set the MinInstancesInService to something sensible, based on max
-	    MAXBATCH="aws:autoscaling:updatepolicy:rollingupdate: MaxBatchSize '1'"
-	    MIN="aws:autoscaling:asg: MinSize '$MINV'"
-	    MAX="aws:autoscaling:asg: MaxSize '$MAXV'"
-	    ROLLUPTRUE="aws:autoscaling:updatepolicy:rollingupdate: RollingUpdateEnabled 'true'"
-	    if [ $MAXV -eq 1 ] ; then 
-		MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '0'"
-	    elif [ $MAXV -gt $MINV ] ; then 
-		MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '$MINV'"
-	    else 
-		MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '1'"	    
-	    fi
-	    ebeditconfig $MIN $MAX $MAXBATCH $MININSTANCES $ROLLUPTRUE
-	    asgdescribe | egrep 'Size|Desired|MinInstancesInService|RollingUpdate|MaxBatchSize'
-	fi
+	ebsetscale $1 $2
 	;;
     cooldown)
 #        $ME env cooldown n       cooldown in seconds between asg actions
-	if [ -z $1 ] ; then 
-	    echo " --- current values ---"
-	else    
-	    # aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --default-cooldown $1
-	    ebeditconfig aws:autoscaling:asg: Cooldown $1
-	fi
-	asgdescribe | grep Cooldown
+	ebsetcooldown $1
 	;;
     count)
 #        $ME env count n          set asg max and min to n
-	if [ -z $1 ] ; then 
-	    echo " --- current values ---"
-	else    
-	    # we could probably the scale code above, just with MIN = MAX
-	    # BUT 'eb scale' sets AutoScalingGroups[].DesiredCapacity which is NOT in the config
-	    eb scale $1
-	fi
-	asgdescribe | egrep 'Size|Desired'
+	ebsetcount $1
 	;;
     setitype)
 #        $ME env setitype type    set instance type, like t1.micro or m3.medium
-	if [ -z $1 ] ; then 
-	    echo ERROR must specify instance type value >&2
-	else    
-	    # if MinInstancesInService is set to 0 you may get a service outage
-	    MAXSIZE=`asgdescribe | jq .AutoScalingGroups[].MaxSize`
-	    MINSIZE=`asgdescribe | jq .AutoScalingGroups[].MaxSize`
-	    MAXBATCH="aws:autoscaling:updatepolicy:rollingupdate: MaxBatchSize '1'"
-	    MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '$MINSIZE'"
-	    ROLLUPTRUE="aws:autoscaling:updatepolicy:rollingupdate: RollingUpdateEnabled 'true'"
-	    if [ $MAXSIZE -eq 1 ] || [ $MAXSIZE -eq $MINSIZE ] ; then
-		NEWMAX=$[ $MAXSIZE + 1 ]
-		echo "INFO: Auto Scaling Group MaxSize Increased To $NEWMAX"
-		BUMPMAX="aws:autoscaling:asg: MaxSize '$NEWMAX'"
-	    fi	    
-	    # if youhavebeenwarned ; then 
-		if ! ebeditconfig $MAXBATCH $MININSTANCES $BUMPMAX  $ROLLUPTRUE aws:autoscaling:launchconfiguration: InstanceType $1
-		then 
-		    echo "If you failed due to the dreaded VPC problem, read"
-		    echo '  https://mike-thomson.com/blog/?p=2103#more-2103'
-		fi
-            # fi
-	    asgdescribe | egrep 'Size|Desired|MinInstancesInService|RollingUpdate|MaxBatchSize'
-	fi
-	aws ec2 describe-instances --instance-ids `ebinstance` | grep InstanceType
-	;;
-    getitype)
-#        $ME env getitype type    get instance type
-	aws ec2 describe-instances --instance-ids `ebinstance` | grep InstanceType
+	ebsetitype $1
 	;;
     asg)
 #        $ME env asg              get autoscaling group name
@@ -561,17 +612,7 @@ case $ACTION in
 	;;
     limitip)
 #        $ME env limitip          limit ssh ip to my public ip	
-	if [ -z $1 ] ; then
-	    CIDR=`whatsmyip`/32
-	else
-	    CIDR=$1
-	    if ! echo $CIDR | grep / >/dev/null ; then
-		echo "ERROR: $CIDR is not in CIDR a.b.c.d/m form" >&2
-		exit 73
-	    fi
-	fi
-	echo  INFO: About To Set SSHSourceRestriction: tcp,22,22,$CIDR
-	ebeditconfig aws:autoscaling:launchconfiguration: SSHSourceRestriction tcp,22,22,$CIDR
+	eblimitip $1
 	;;
     *)
 	givehelp

@@ -9,6 +9,7 @@
 - show an example with bad hygiene (wordpress)
 - show an example with two tiers (web, service) and multiple SOA components in each tier, plus RDS
 - refactor deploy.sh into a library, so it can be "wrapped" by a project-specific deploy.sh
+- refactor route53wire so we can show the current wirings
 
 done 2/23/2016:
 - fixup new verb in the edge case where the TechLead gives lots of args
@@ -22,7 +23,11 @@ done 2/23/2016:
 - scale with no args gives current values
 - count with no args gives current values
 - cooldown with no args gives current values
-- fiddle with asg parameters when changing instance type so there's no service outages
+- fiddle with asg parameters in setitype so there's no service outages
+- remove getitype in favor of no-arg default for get
+- setitype with no args gives current values
+
+- refactor and move some code out of the big case statement at the bottom into library-like methods
 
 done 2/22/2016:
 - rewrite Readme.md in ph-eb-simple to show usage of the `deploy.sh` script
