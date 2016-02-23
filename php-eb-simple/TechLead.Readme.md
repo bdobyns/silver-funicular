@@ -31,6 +31,13 @@ to the git root, but only to the top of the directory where you did
 
 ## Create A Project
 
+### Using `deploy.sh` Or Not.  Up To You.
+
+The accompanying `./deploy.sh` script is mostly for the convenience of
+the developers who join your project after you've set it up.  However,
+several features in it have been designed to make life easier for you,
+the tech lead.
+
 ### Locate A Sensible SSH keypair (Tech Leads)
 
 If you're the tech lead, look in the EC2 dashboard and pick `Key
@@ -44,7 +51,7 @@ upload the *public* part of the key here.  You will distribute the
 private part of the key to the rest of the team, along with the name
 you just gave it in the dashboard.
 
-using `eb init` without a keypair argument will offer to create a keypair.
+using `eb init` (or `./deploy.sh newapp`) without a keypair argument will offer to create a keypair.
 
 ### Create An Empty Project (Tech Leads)
 
@@ -52,7 +59,16 @@ create a directory for your project and then initialize your new project with el
 
     mkdir my-excellent-project
     cd    my-excellent-project
-    eb init -p PHP --region us-west-2 --keyname my_key
+    # eb init -p PHP --region us-west-2 --keyname my_key
+    ./deploy.sh newapp 
+
+The `deploy newapp` is a thin wrapper around `eb init`, but first
+checks that the appname you use does not yet exist (so you don't
+destroy someone else's 'most-excellent-app).  It will also try to to
+guess a sensible name for your app (where sensible is `basename
+$PWD`), pick up the current region as defined in your `~/.aws/config`
+default region.  `eb init` will try to guess the type af app by
+looking for source code in the various supported languages.
 
 note that `eb init` relies on your `AWS_ACCESS_KEY` and
 `AWS_SECRET_KEY` being set to working values.
@@ -63,7 +79,7 @@ this readme.md file.  You can use it by:
 
     git clone git@github.com:productOps/best-practices.git
     cd best-practices/php-aws-eb-example
-    eb init -p PHP --region us-west-2 --keyname my_key
+    # eb init -p PHP --region us-west-2 --keyname my_key
 
 `eb init` is idempotent, meaning you can run it again and again, and
 it doesn't hurt.  If there is already an application with the name eb
@@ -102,7 +118,11 @@ requires environment names be at least four characters long, so *dev*
 is not a legal name.  `eb create` takes a minute or two, so be
 patient.
 
-    eb create develop 
+    ./deploy.sh createenv test
+
+Here, `./deploy.sh createenv`  wraps `eb create` so that  you and your
+devs can  use a  short name like  'test' and  under the hood,  it will
+append the appname and create test-$appname.
 
 With no other args, `eb create` sets up a load balancer, a web tier,
 autoscaling group, security group, cloud watch alarms, and assigns an
@@ -123,7 +143,7 @@ type, and to add some tags to the launched instances.  Normally eb
 launches with only one tag, `Name=$environment` and you probably want
 to do something else.
 
-    eb create develop --instance_type m3.medium--tags Name=`basename $PWD`,Blame=$USER,Env=develop
+    eb create test --instance_type m3.medium--tags Name=`basename $PWD`,Blame=$USER,Env=develop
 
 ### Changing Config After The Fact
 
@@ -151,9 +171,43 @@ because the .elasticbeanstalk directory is normally excluded by a
     git add .elasticbeanstalk/saved_configs/mostexcellent.cfg.yml
 
 
+Of special interest for a php app might be the settings that get
+stuffed into the php.ini, found in the
+`aws:elasticbeanstalk:container:php:phpini:` section.  It might be
+useful to turn on display_errors in the test environment, and turn up
+the memory_limit if you have picked a bigger instance size than
+t1.micro
+
 As always, the [Amazon
 documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/environment-configuration-methods-after.html)
 on this matter are lengthy and hard to grok in a single go.
+
+### Special Config Changes
+
+The deploy script implements several of the most common configuration
+edits directly with command line parameters.
+
+Set the upper and lower bound of the number of instances in the
+auto-scaling-group with
+
+    ./deploy.sh env scale min  max
+
+Set the count (both upper and lower bound) of the number of instances in the
+auto-scaling-group with
+
+    ./deploy.sh env count n
+
+Set the "cooldown" period for the auto-scaling-group (how long after
+the last change (add or remove an instance) before it permits another) in minutes.
+
+    ./deploy.sh env cooldown n
+
+Set the instance type for the auto-scaling-group (this will re-deploy all the instances.  ouch.)
+
+    ./deploy.sh env itype m3.medium 
+
+Open up the ./deploy.sh script and you can see all of these are
+trivially implemented with editconfig, and it's easy to add more.
 
 ### Applications With Bad Hygiene 
 
@@ -175,3 +229,20 @@ eb to leave port 22 open for you to abuse.
     eb ssh -o    # type ^d to log back out but note the public ip address, leave port 22 open
     scp -r -i ~/.ssh/my_key    'ec2-user@pub.lic.ip.addr:/var/www/html/*'  .
     eb ssh       # log back in and out quickly to close port 22
+
+### Tighten Up The SSH Controls
+
+By default, when you create an application and environment, `eb ssh`
+opens port 22 to the world.  Which is probably not what you were
+hoping for.
+
+    ./deploy.sh test limitip
+
+Will determine your public IP address (the office address) and then
+limit ssh sessions to that address only.  It can still be overridden
+with
+
+    eb ssh --force
+
+But limiting the ssh to just our public ip address makes the instance
+much more secure.

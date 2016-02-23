@@ -46,6 +46,7 @@ ELASTIC BEANSTALK VERBS:
         $ME env asgdescribe      describe the autoscaling group
         $ME env scale min max    set asg min and max 
         $ME env cooldown n       cooldown in seconds between asg actions
+        $ME env itype type       set instance type, like t1.micro or m3.medium
 
 TECH LEAD VERBS:
         $ME newapp               create application based on this dir name
@@ -246,8 +247,10 @@ else
 
     if [ -z $2 ] ; then
 	APPNAME=`basename $PWD`
+	shift
     else
 	APPNAME=$2
+	shift ; shift
     fi
     # first arg is usually the Environment, 
     # but sometiemes it's a verb
@@ -255,9 +258,14 @@ else
 	new|newapp)
 #        $ME new                  create application based on this dir name
 #        $ME new appname          create application appname
-            # new will always create, for use by tech leads
-	    eb init $APPNAME --region $REGION
-	    exit 13
+	    if ! aws elasticbeanstalk describe-environments | grep $APPNAME >/dev/null; then
+		eb init -p PHP $APPNAME --region $REGION $*
+	    else
+		echo "ERROR: appname $APPNAME already exists" >&2
+		echo "     maybe you want to pick a different name (not in the list below)" >&2
+		aws elasticbeanstalk describe-environments | jq .Environments[].ApplicationName | sort -u >&2
+	    fi
+	    exit
 	    ;;
         init)
 #        $ME init                 initialize elastic beanstalk (after git clone)
@@ -270,7 +278,7 @@ else
 		echo "   maybe you meant to use one of these:" >&2
 		aws elasticbeanstalk describe-environments | jq .Environments[].ApplicationName | sort -u >&2
 	    fi
-	    exit 17
+	    exit
 	    ;;
 	create|createenv)
 #        $ME create env           create environment 'env-appname'
@@ -286,23 +294,23 @@ else
 	    echo " BE PATIENT: THIS MAY TAKE A WHILE AND WILL DEPLOY AT LEAST ONE INSTANCE ALONG THE WAY "
 	    shift 
 	    eb create $ENVNAME $*
-	    exit 23
+	    exit 
 	    ;;
 	list)
 #        $ME list                 list available environments
 	    eb list
-	    exit 29
+	    exit 
 	    ;;
         # use "fail" as a special case environment
 	local)
 	    echo "ERROR: '$ME local $2' is not supported" >&2
 	    givehelp
-	    exit 31
+	    exit 
 	    ;;
 	myip)
 #        $ME myip                 find out what my (laptop) ip is
 	    whatsmyip
-	    exit 37
+	    exit 
 	    ;;
     esac
 fi
@@ -460,6 +468,15 @@ case $ACTION in
 	else    
 	    eb scale $1
 	    asgdescribe | grep Size
+	fi
+	;;
+    itype)
+#        $ME env itype type       set instance type, like t1.micro or m3.medium
+	if [ -z $1 ] ; then 
+	    echo ERROR must specify instance type value >&2
+	else    
+	    editconfig  aws:autoscaling:launchconfiguration: InstanceType $1
+	    asgdescribe | grep InstanceType
 	fi
 	;;
     asg)
