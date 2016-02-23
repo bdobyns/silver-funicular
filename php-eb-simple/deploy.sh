@@ -9,7 +9,7 @@ else
 fi
 ME=`basename $0`
 EC2USER=ec2-user
-
+AWSCONFIG=~/.aws/config
 
 givehelp()
 {
@@ -73,6 +73,9 @@ cfgget() {
     # $1 = filename
     # $2 = section
     # $3 = item
+    if ! test -n python -c "import ConfigParser, os;" 2>/dev/null ; then
+	pip install ConfigParser
+    fi
     python -c "import ConfigParser, os ; config=ConfigParser.ConfigParser() ; config.readfp(open('"$1"')); print config.get('"$2"','"$3"')"
 }
 
@@ -91,6 +94,24 @@ yaml2json() {
 
 ebregion() {
     cat $EBCONFIG | yaml2json | jq .global.default_region | tr -d '"' 
+}
+
+awsregion() {
+    if [ -f $AWSCONFIG ] ; then 
+	# should be in the default section
+	REGION=`cfgget $AWSCONFIG default region 2>/dev/null`
+	if [ -z $REGION ] ; then
+	    # maybe in the global section
+	    REGION=`cfgget $AWSCONFIG global region 2>/dev/null`
+	fi
+	if [ -z $REGION ] ; then 
+	    # some other section, then?
+	    REGION=`cat $AWSCONFIG | grep ^region | head -1 | cut -f 2 -d =`
+	fi
+	if [ ! -z $REGION ] ; then 
+	    echo $REGION 
+	fi
+    fi
 }
 
 ebkeyname() {
@@ -368,10 +389,12 @@ else
 	fi
     fi
 
-    # get the region out of your aws config
-    if [ -f ~/.aws/config ] ; then 
-	# REGION=`cat ~/.aws/config | grep ^region | head -1 | cut -f 2 -d =`
-	REGION=`cfgget ~/.aws/config default region`
+    # get the region out of your aws config or eb config
+    if [ -f $EBCONFIG ] ; then
+    	REGION=`ebregion`
+    fi
+    if [ -f $AWSCONFIG ] && [ -z $REGION ] ; then 
+	REGION=`awsregion`
     fi
     if [ -z $REGION ] ; then
 	# pick a sensible default

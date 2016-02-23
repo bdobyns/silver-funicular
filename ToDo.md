@@ -28,6 +28,8 @@ done 2/23/2016:
 - setitype with no args gives current values
 
 - refactor and move some code out of the big case statement at the bottom into library-like methods
+- fix bug found by KevinA when 'region' is not in the 'default' section of ~/.aws/config
+- fix bug found by KevinA when ConfigParser python module not available
 
 done 2/22/2016:
 - rewrite Readme.md in ph-eb-simple to show usage of the `deploy.sh` script
