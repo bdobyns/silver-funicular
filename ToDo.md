@@ -26,7 +26,6 @@ done 2/23/2016:
 - fiddle with asg parameters in setitype so there's no service outages
 - remove getitype in favor of no-arg default for get
 - setitype with no args gives current values
-
 - refactor and move some code out of the big case statement at the bottom into library-like methods
 - fix bug found by KevinA when 'region' is not in the 'default' section of ~/.aws/config
 - fix bug found by KevinA when ConfigParser python module not available
