@@ -176,6 +176,7 @@ rm $RESREC
 }
 
 route53cname() {
+#        $ME env r53 f.b.com      wire up a route53 name 'f.b.com' to the lb'
 #        $ME env r53cname foo     wire up a route53 name 'foo'
 	if [ ! -z $1 ] ; then 
 	    route53wire `ebcname` $1
@@ -466,7 +467,7 @@ EOF
 }
 
 ebswap() {
-#        $ME env1 swap env2        swap the lb cnames for env and ev2
+#        $ME env1 swap env2       swap the lb cnames for env and env2
     # $1 is the current environment
     # $2 is the other environment
     if [ -z $2 ] ; then

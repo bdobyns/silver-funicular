@@ -18,26 +18,32 @@ STANDARD VERBS:
         $ME env use              use environment env (not necessary)
         $ME local run            run a local copy of the app
         
-SPECIAL VERBS:
+ELASTIC BEANSTALK VERBS:
         $ME init                 initialize elastic beanstalk (after git clone)
         $ME init appname         initialize elastic beanstalk (after git clone)
         $ME list                 list available environments
-        $ME myip                 find out what my (laptop) ip is
-
-ELASTIC BEANSTALK VERBS:
         $ME env describe         describe the environment
 
         $ME env id               get instance id (of first instance)
         $ME env ipaddr           get instance ipaddress
         $ME env instance         describe the instance
 
+        $ME myip                 find out what my (laptop) ip is
+
 TECH LEAD VERBS:
+        $ME new                  create application based on this dir name
+        $ME new appname          create application 'appname'
+        $ME new appname args..   create application appname
+        $ME createenv env        create environment 'env-appname'
+        $ME createenv env [more args]
+
         $ME env sgn              get security group name
         $ME env sgid             get security group id
         $ME env security         describe security group 
 
-        $ME env cname            display the cname of the lb
-        $ME env r53cname foo     wire up a route53 name 'foo'
+        $ME env cname            display the cname of the elastic load balancer
+        $ME env r53 f.b.com      wire up a route53 name 'f.b.com' to the lb'
+        $ME env1 swap env2       swap the lb cnames for env and env2
 
         $ME env asg              get autoscaling group name
         $ME env asgdescribe      describe the autoscaling group
@@ -47,13 +53,6 @@ TECH LEAD VERBS:
 
         $ME env limitip          limit ssh ip to my public ip
         $ME env limitip cidr     limit ssh ip e.g. 0.0.0.0/0
-        $ME env1 swap env2       swap the lb cnames for env and ev2
-
-        $ME new                  create application based on this dir name
-        $ME new appname          create application 'appname'
-        $ME new appname args..   create application appname
-        $ME createenv env        create environment 'env-appname'
-        $ME createenv env [more args]
 
 EOF
 	exit 3
@@ -105,11 +104,15 @@ source `dirname $0`/lib_eb_deploy.sh
     esac
 fi
 
+
+
 # ----------------------------------------------------------------------
 # detect bad environment name by trying to switch to it
 
 ENV=`ebenvexpand $1`
+if [ -z $ENV ] ; then exit 11 ; fi
 
+# detect no "Verb" at all
 if [ -z $2 ] ; then
     givehelp
     exit 43
@@ -182,8 +185,8 @@ case $ACTION in
 #        $ME env describe         describe the environment
 	ebdescribe
 	;;
-    r53cname|route53cname)
-#        $ME env r53cname foo     wire up a route53 name 'foo'
+    r53cname|r53)
+#        $ME env r53 f.b.com      wire up a route53 name 'f.b.com' to the lb'
 	route53cname $1
 	;;
     scale)
@@ -215,7 +218,7 @@ case $ACTION in
 	eblimitip $1
 	;;
     swap)
-#        $ME env1 swap env2       swap the lb cnames for env and ev2
+#        $ME env1 swap env2        swap the lb cnames for env and env2
 	ebswap $ENV $1
 	;;
     *)
