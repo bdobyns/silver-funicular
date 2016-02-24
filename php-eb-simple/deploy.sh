@@ -114,6 +114,21 @@ awsregion() {
     fi
 }
 
+setregion() {
+    # get the region out of your aws config or eb config
+    if [ -f $EBCONFIG ] ; then
+    	REGION=`ebregion`
+    fi
+    if [ -f $AWSCONFIG ] && [ -z $REGION ] ; then 
+	REGION=`awsregion`
+    fi
+    if [ -z $REGION ] ; then
+	# pick a sensible default
+	REGION=us-west-2
+    fi
+    echo $REGION
+}
+
 ebkeyname() {
     cat $EBCONFIG | yaml2json |  jq .global.default_ec2_keyname | tr -d '"' 
 }
@@ -129,7 +144,7 @@ ebinstance() {
     aws elasticbeanstalk describe-environment-resources  --environment-name $ENV | jq .EnvironmentResources.Instances[${ORDINAL}].Id | tr -d \" 
 }
 
-instanceipaddr() {
+ebinstanceipaddr() {
 #        $ME env ipaddr           get instance ipaddress
     INSTANCE=$1
     if [ ! -z $INSTANCE ] ; then
@@ -198,6 +213,15 @@ EOF
 # now actually write the record
 aws route53 change-resource-record-sets --hosted-zone-id $ZID --change-batch file://$RESREC
 rm $RESREC
+}
+
+route53cname() {
+#        $ME env r53cname foo     wire up a route53 name 'foo'
+	if [ ! -z $1 ] ; then 
+	    route53wire `ebcname` $1
+	else
+	    echo "ERROR: no target name to wire up" >&2
+	fi
 }
 
 asgname() {
@@ -352,6 +376,91 @@ ebsetscale() {
 	fi
 }
 
+ebnew() {
+#        $ME new                  create application based on this dir name
+#        $ME new appname          create application appname
+	    if [ -z $2 ] ; then
+		APPNAME=`basename $PWD`
+		shift
+	    else
+		APPNAME=$2
+		shift ; shift
+	    fi
+	    if [ $# -eq 0 ] ; then # no other args
+		if ! eblistapps | grep '"'$APPNAME'"' >/dev/null; then
+		    eb init $APPNAME -p PHP --region $REGION 
+		else
+		    echo "ERROR: appname $APPNAME already exists" >&2
+		    echo "     maybe you want to pick a different name (not in the list below)" >&2
+		    eblistapps 
+		fi
+	    else
+#        $ME new appname args..     create application appname
+		    # if they gave us a bunch of args, just pass them all thru as if they know what they're doing
+                 eb init $APPNAME $*
+	     fi
+}
+
+ebinit() {
+#        $ME init                 initialize elastic beanstalk (after git clone)
+#        $ME init appname         initialize elastic beanstalk (after git clone)
+	    if [ -z $2 ] ; then
+		APPNAME=`basename $PWD`
+	    else
+		APPNAME=$2
+	    fi
+	    # this is for use by regular developers
+	     if  eblistapps | grep '"'$APPNAME'"' >/dev/null; then
+		 eb init $APPNAME --region $REGION		    
+	     else
+		 echo "ERROR: appname $APPNAME does not exist" >&2
+		 echo "   maybe you meant to use one of these:" >&2
+		 eblistapps 
+	     fi
+}
+
+ebcreate() {
+#        $ME create env           create environment 'env-appname'
+	    shift
+	    if [ -z $1 ] ; then 
+		echo "ERROR: you must specify an environment name prefix like 'test' or 'prod'" >&2
+		exit
+	    fi
+	    ENVNAME=${1}-` appname `
+	    if [ $ENVNAME = ${1}- ] ; then 
+		ENVNAME=${1}-`basename $PWD`
+	    fi
+	    echo " BE PATIENT: THIS MAY TAKE A WHILE AND WILL DEPLOY AT LEAST ONE INSTANCE ALONG THE WAY "
+	    shift 
+	    eb create $ENVNAME $*
+}
+
+ebputget() {
+#	$ME env put here there   copy a file to /home/ec2-user/there
+#	$ME env get there here   copy a file from there to here
+	if [ -z $1 ] || [ -z $2 ] ; then
+	    echo "ERROR - no files to $ACTION" >&2
+	    givehelp
+	    exit 53
+        else
+	    INSTANCE=` ebinstance `
+	    IPADDR=` ebinstanceipaddr $INSTANCE `
+	    # do this to open port 22
+	    cat /dev/null | eb ssh -o
+	    if [ $ACTION = put ] ; then 
+		scp $* ${EC2USER}@${IPADDR}:/home/$EC2USER
+	    elif [ $ACTION = get ] ; then
+		scp ${EC2USER}@${IPADDR}:/home/$EC2USER/"$1" "$2"
+	    else
+		# unreachable
+		echo "ERROR: don't know how to $ME $ENV $ACTION" >&2
+		exit 59
+	    fi
+	    # do this to close port 22
+	    cat /dev/null | eb ssh 
+	fi
+}
+
 youhavebeenwarned() {
     echo "WARNING: THIS MAY KILL ALL THE INSTANCES IN YOUR ENVIRONMENT"
     echo "  you can avoid a service outage by:" 
@@ -389,17 +498,7 @@ else
 	fi
     fi
 
-    # get the region out of your aws config or eb config
-    if [ -f $EBCONFIG ] ; then
-    	REGION=`ebregion`
-    fi
-    if [ -f $AWSCONFIG ] && [ -z $REGION ] ; then 
-	REGION=`awsregion`
-    fi
-    if [ -z $REGION ] ; then
-	# pick a sensible default
-	REGION=us-west-2
-    fi
+    REGION=`setregion`
 
 # ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
@@ -412,60 +511,19 @@ else
 	new)
 #        $ME new                  create application based on this dir name
 #        $ME new appname          create application appname
-	    if [ -z $2 ] ; then
-		APPNAME=`basename $PWD`
-		shift
-	    else
-		APPNAME=$2
-		shift ; shift
-	    fi
-	    if [ $# -eq 0 ] ; then # no other args
-		if ! eblistapps | grep '"'$APPNAME'"' >/dev/null; then
-		    eb init $APPNAME -p PHP --region $REGION 
-		else
-		    echo "ERROR: appname $APPNAME already exists" >&2
-		    echo "     maybe you want to pick a different name (not in the list below)" >&2
-		    eblistapps 
-		fi
-	    else
 #        $ME new appname args..     create application appname
-		    # if they gave us a bunch of args, just pass them all thru as if they know what they're doing
-                 eb init $APPNAME $*
-	     fi
+	     ebnew $*
 	     exit
 	     ;;
 	 init)
 #        $ME init                 initialize elastic beanstalk (after git clone)
 #        $ME init appname         initialize elastic beanstalk (after git clone)
-	    if [ -z $2 ] ; then
-		APPNAME=`basename $PWD`
-	    else
-		APPNAME=$2
-	    fi
-	    # this is for use by regular developers
-	     if  eblistapps | grep '"'$APPNAME'"' >/dev/null; then
-		 eb init $APPNAME --region $REGION		    
-	     else
-		 echo "ERROR: appname $APPNAME does not exist" >&2
-		 echo "   maybe you meant to use one of these:" >&2
-		 eblistapps 
-	     fi
+	     ebinit $*
 	     exit
 	     ;;
 	create|createenv)
 #        $ME create env           create environment 'env-appname'
-	    shift
-	    if [ -z $1 ] ; then 
-		echo "ERROR: you must specify an environment name prefix like 'test' or 'prod'" >&2
-		exit
-	    fi
-	    ENVNAME=${1}-` appname `
-	    if [ $ENVNAME = ${1}- ] ; then 
-		ENVNAME=${1}-`basename $PWD`
-	    fi
-	    echo " BE PATIENT: THIS MAY TAKE A WHILE AND WILL DEPLOY AT LEAST ONE INSTANCE ALONG THE WAY "
-	    shift 
-	    eb create $ENVNAME $*
+	    ebcreate $*
 	    exit 
 	    ;;
 	list)
@@ -547,27 +605,7 @@ case $ACTION in
     put|get)
 #	$ME env put here there   copy a file to /home/ec2-user/there
 #	$ME env get there here   copy a file from there to here
-	if [ -z $1 ] || [ -z $2 ] ; then
-	    echo "ERROR - no files to $ACTION" >&2
-	    givehelp
-	    exit 53
-        else
-	    INSTANCE=` ebinstance `
-	    IPADDR=` instanceipaddr $INSTANCE `
-	    # do this to open port 22
-	    cat /dev/null | eb ssh -o
-	    if [ $ACTION = put ] ; then 
-		scp $* ${EC2USER}@${IPADDR}:/home/$EC2USER
-	    elif [ $ACTION = get ] ; then
-		scp ${EC2USER}@${IPADDR}:/home/$EC2USER/"$1" "$2"
-	    else
-		# unreachable
-		echo "ERROR: don't know how to $ME $ENV $ACTION" >&2
-		exit 59
-	    fi
-	    # do this to close port 22
-	    cat /dev/null | eb ssh 
-	fi
+	ebputget $*
 	;;
     open)
 #        $ME env open             open a browser on the box 
@@ -579,7 +617,7 @@ case $ACTION in
 	;;
     ipaddr)
 #        $ME env ipaddr           get instance ipaddress
-	instanceipaddr `ebinstance`
+	ebinstanceipaddr `ebinstance`
 	;;
     instance)
 #        $ME env instance         describe the instance
@@ -603,11 +641,7 @@ case $ACTION in
 	;;
     r53cname|route53cname)
 #        $ME env r53cname foo     wire up a route53 name 'foo'
-	if [ ! -z $1 ] ; then 
-	    route53wire `ebcname` $1
-	else
-	    echo "ERROR: no target name to wire up" >&2
-	fi
+	route53cname $1
 	;;
     scale)
 #        $ME env scale min max    set asg min and max 
