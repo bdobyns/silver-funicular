@@ -73,8 +73,8 @@ cfgget() {
     # $1 = filename
     # $2 = section
     # $3 = item
-    if ! test -n python -c "import ConfigParser, os;" 2>/dev/null ; then
-	pip install ConfigParser
+    if ! python -c "import ConfigParser, os;" 2>/dev/null ; then
+	pip install ConfigParser 2>/dev/null >/dev/null
     fi
     python -c "import ConfigParser, os ; config=ConfigParser.ConfigParser() ; config.readfp(open('"$1"')); print config.get('"$2"','"$3"')"
 }
@@ -84,7 +84,7 @@ yaml2json() {
     # if we have y2j and yq from https://github.com/wildducktheories/y2j then use it because it's more robust
     if [ `which y2j` ] ; then 
 	y2j
-    elif test -n python -c "import sys, yaml, json;" 2>/dev/null ; then
+    elif python -c "import sys, yaml, json;" 2>/dev/null ; then
 	python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' 
     else
 	echo "ERROR: your python is broken, and you don't have y2j installed" >&2
@@ -163,6 +163,12 @@ whatsmyip() {
 }
 
 ebsgn() {
+#        $ME env sgn              get security group id
+    ID=`ebinstance`
+    aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecurityGroups[].GroupName | tr -d \" 
+}
+
+ebsgid() {
 #        $ME env sgn              get security group id
     ID=`ebinstance`
     aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecurityGroups[].GroupName | tr -d \" 
