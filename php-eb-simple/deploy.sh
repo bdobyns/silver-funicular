@@ -38,7 +38,8 @@ ELASTIC BEANSTALK VERBS:
         $ME env ipaddr           get instance ipaddress
         $ME env instance         describe the instance
 
-        $ME env sgn              get security group id
+        $ME env sgn              get security group name
+        $ME env sgid             get security group id
         $ME env security         describe security group 
 
         $ME env cname            display the cname of the lb
@@ -169,9 +170,9 @@ ebsgn() {
 }
 
 ebsgid() {
-#        $ME env sgn              get security group id
+#        $ME env sgid             get security group id
     ID=`ebinstance`
-    aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecurityGroups[].GroupName | tr -d \" 
+    aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecurityGroups[].GroupId | tr -d \" 
 }
 
 ebcname() {
@@ -307,7 +308,7 @@ ebsetitype() {
 	else
 	    # if MinInstancesInService is set to 0 you may get a service outage
 	    MAXSIZE=`asgdescribe | jq .AutoScalingGroups[].MaxSize`
-	    MINSIZE=`asgdescribe | jq .AutoScalingGroups[].MaxSize`
+	    MINSIZE=`asgdescribe | jq .AutoScalingGroups[].MinSize`
 	    MAXBATCH="aws:autoscaling:updatepolicy:rollingupdate: MaxBatchSize '1'"
 	    MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '$MINSIZE'"
 	    ROLLUPTRUE="aws:autoscaling:updatepolicy:rollingupdate: RollingUpdateEnabled 'true'"
@@ -317,7 +318,7 @@ ebsetitype() {
 		BUMPMAX="aws:autoscaling:asg: MaxSize '$NEWMAX'"
 	    fi	    
 	    # if youhavebeenwarned ; then 
-		if ! ebeditconfig $MAXBATCH $MININSTANCES $BUMPMAX  $ROLLUPTRUE aws:autoscaling:launchconfiguration: InstanceType $1
+		if ! ebeditconfig $MAXBATCH $MININSTANCES $BUMPMAX $ROLLUPTRUE aws:autoscaling:launchconfiguration: InstanceType $1
 		then 
 		    echo "If you failed due to the dreaded VPC problem, read"
 		    echo '  https://mike-thomson.com/blog/?p=2103#more-2103'
@@ -632,6 +633,10 @@ case $ACTION in
     sgn)
 #        $ME env sgn              get security group id
 	ebsgn
+	;;
+    sgid)
+#        $ME env sgid             get security group id
+	ebsgid
 	;;
     security)
 #        $ME env security         describe security group 

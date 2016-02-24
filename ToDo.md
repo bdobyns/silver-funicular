@@ -31,6 +31,8 @@ done 2/23/2016:
 - fix bug found by KevinA when 'region' is not in the 'default' section of ~/.aws/config
 - fix bug found by KevinA when ConfigParser python module not available
 - fix bug found by KevinA in the test for 'is your python broken'
+- fix bug in 'sgn' and add 'sgid' command
+- fix bug in setitype which persistently increased the maxsize every run
 
 done 2/22/2016:
 - rewrite Readme.md in ph-eb-simple to show usage of the `deploy.sh` script
