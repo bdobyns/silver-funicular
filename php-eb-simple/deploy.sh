@@ -59,7 +59,16 @@ EOF
 }
 
 # ----------------------------------------------------------------------
-source `dirname $0`/lib_eb_deploy.sh
+LIBEBDEPLOY=lib_eb_deploy.sh
+DNZ=`dirname $0`
+if [ -f $DNZ/$LIBEBDEPLOY ] ; then 
+    source $DNZ/$LIBEBDEPLOY
+elif [ -f $DNZ/lib/$LIBEBDEPLOY ] ; then 
+    source $DNZ/lib/$LIBEBDEPLOY    
+else
+    echo "ERROR: missing $DNZ/$LIBEBDEPLOY"
+    exit 1
+fi
 # ----------------------------------------------------------------------
 
 # Process the 'no env' verbs

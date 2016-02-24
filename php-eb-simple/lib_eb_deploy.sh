@@ -1,13 +1,14 @@
 #!/bin/bash -e
 # blame: barry@productops.com  Feb 2016
 # ... this is the library behind the deploy.sh for elastic beanstalk
+ME=`basename $0`
+DNZ=`dirname $0`
 
-if [ `dirname $0` = . ] ; then
+if [ $DNZ = . ] ; then
     EBCONFIG=".elasticbeanstalk/config.yml"
 else
-    EBCONFIG=`dirname $0`/".elasticbeanstalk/config.yml"
+    EBCONFIG=$DNZ/".elasticbeanstalk/config.yml"
 fi
-ME=`basename $0`
 EC2USER=ec2-user
 AWSCONFIG=~/.aws/config
 
