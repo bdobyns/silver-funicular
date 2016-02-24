@@ -38,6 +38,7 @@ ELASTIC BEANSTALK VERBS:
         $ME env ipaddr           get instance ipaddress
         $ME env instance         describe the instance
 
+TECH LEAD VERBS:
         $ME env sgn              get security group name
         $ME env sgid             get security group id
         $ME env security         describe security group 
@@ -51,14 +52,16 @@ ELASTIC BEANSTALK VERBS:
         $ME env cooldown n       cooldown in seconds between asg actions
         $ME env setitype type    set instance type, like t1.micro or m3.medium
 
-TECH LEAD VERBS:
+        $ME env limitip          limit ssh ip to my public ip
+        $ME env limitip cidr     limit ssh ip e.g. 0.0.0.0/0
+        $ME env1 swap env2       swap the lb cnames for env and ev2
+
         $ME new                  create application based on this dir name
         $ME new appname          create application 'appname'
         $ME new appname args..   create application appname
         $ME createenv env        create environment 'env-appname'
         $ME createenv env [more args]
-        $ME env limitip          limit ssh ip to my public ip
-        $ME env limitip cidr     limit ssh ip e.g. 0.0.0.0/0
+
 EOF
 	exit 3
 }
@@ -134,6 +137,11 @@ ebkeyname() {
     cat $EBCONFIG | yaml2json |  jq .global.default_ec2_keyname | tr -d '"' 
 }
 
+ebdescribe() {
+#        $ME env describe         describe the environment
+	aws elasticbeanstalk describe-environments --environment-names $ENV 
+}
+
 ebinstance() {
 #        $ME env id               get instance id
     # INSTANCE=`eb list -v | grep $ENV | cut -d \' -f 2`
@@ -171,13 +179,13 @@ ebsgn() {
 
 ebsgid() {
 #        $ME env sgid             get security group id
-    ID=`ebinstance`
-    aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecurityGroups[].GroupId | tr -d \" 
+    ID=`ebinstance`  
+    aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecuritGryoups[].GroupId | tr -d \" 
 }
 
 ebcname() {
 #        $ME env cname            display the cname of the lb
-    aws elasticbeanstalk describe-environments --environment-names $ENV | jq .Environments[].CNAME | tr -d \"
+    ebdescribe | jq .Environments[].CNAME | tr -d \"
 }
 
 route53wire() {
@@ -299,6 +307,7 @@ eblimitip() {
 	fi
 	echo  INFO: About To Set SSHSourceRestriction: tcp,22,22,$CIDR
 	ebeditconfig aws:autoscaling:launchconfiguration: SSHSourceRestriction tcp,22,22,$CIDR
+	aws ec2 describe-security-groups --group-names `ebsgn` | grep CidrIp
 }
 
 ebsetitype() {
@@ -486,6 +495,49 @@ youhavebeenwarned() {
 }
 
 
+ebenvexpand() {
+    # first arg is usually the Environment
+    # try several likely combinations
+    ENV1=$1
+    ENV2=${1}-` appname `
+    ENV3=${1}-`basename $PWD`
+    if  eb use $ENV1 1>/dev/null 2>/dev/null; then
+	ENV=$ENV1
+    elif eb use $ENV2 1>/dev/null 2>/dev/null ; then
+	ENV=$ENV2
+    elif eb use $ENV3 1>/dev/null 2>/dev/null ; then
+	ENV=$ENV3
+    else 
+	cat >&2 <<EOF    
+ERROR: cannot find a working environment
+ERROR: environment '$ENV1' does not exist
+ERROR: environment '$ENV2' does not exist
+ERROR: environment '$ENV3' does not exist
+  maybe you want one of these:
+EOF
+	eb list >&2
+    fi
+    echo $ENV
+}
+
+ebswap() {
+#        $ME env1 swap env2        swap the lb cnames for env and ev2
+    # $1 is the current environment
+    # $2 is the other environment
+    if [ -z $2 ] ; then
+	echo ERROR: must specify another environment to swap with >&2
+    else 
+	OTHERENV=`ebenvexpand $2`
+	THISENV=`ebenvexpand $1`
+	if [ -z $OTHERENV ] ; then 
+	    echo ERROR: other environment does not exist, cannot swap >&2
+	else
+	    ebswap $THISENV --destination_name $OTHERENV
+	fi
+    fi	
+}
+
+
 # ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
@@ -556,28 +608,7 @@ fi
 # ----------------------------------------------------------------------
 # detect bad environment name by trying to switch to it
 
-# first arg is usually the Environment
-# try several likely combinations
-ENV1=$1
-ENV2=${1}-` appname `
-ENV3=${1}-`basename $PWD`
-if  eb use $ENV1 1>/dev/null 2>/dev/null; then
-    ENV=$ENV1
-elif eb use $ENV2 1>/dev/null 2>/dev/null ; then
-    ENV=$ENV2
-elif eb use $ENV3 1>/dev/null 2>/dev/null ; then
-    ENV=$ENV3
-else 
-cat >&2 <<EOF    
-ERROR: cannot find a working environment
-ERROR: environment '$ENV1' does not exist
-ERROR: environment '$ENV2' does not exist
-ERROR: environment '$ENV3' does not exist
-  maybe you want one of these:
-EOF
-eb list
-exit 41
-fi
+ENV=`ebenvexpand $1`
 
 if [ -z $2 ] ; then
     givehelp
@@ -598,6 +629,7 @@ fi
 case $ACTION in
     use)
 #        $ME env use              use environment env (not necessary)
+	# already done by the time we reach this point by ebenvexpand
 	;;
 
     update|deploy)
@@ -648,7 +680,7 @@ case $ACTION in
 	;;
     describe)
 #        $ME env describe         describe the environment
-	aws elasticbeanstalk describe-environments --environment-names $ENV 
+	ebdescribe
 	;;
     r53cname|route53cname)
 #        $ME env r53cname foo     wire up a route53 name 'foo'
@@ -681,6 +713,10 @@ case $ACTION in
     limitip)
 #        $ME env limitip          limit ssh ip to my public ip	
 	eblimitip $1
+	;;
+    swap)
+#        $ME env1 swap env2       swap the lb cnames for env and ev2
+	ebswap $ENV $1
 	;;
     *)
 	givehelp

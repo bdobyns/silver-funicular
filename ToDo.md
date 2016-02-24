@@ -33,6 +33,7 @@ done 2/23/2016:
 - fix bug found by KevinA in the test for 'is your python broken'
 - fix bug in 'sgn' and add 'sgid' command
 - fix bug in setitype which persistently increased the maxsize every run
+- add 'swap' verb, which also required refactoring the test for 'does this env exist'
 
 done 2/22/2016:
 - rewrite Readme.md in ph-eb-simple to show usage of the `deploy.sh` script
