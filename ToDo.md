@@ -8,8 +8,10 @@
 - show an example that includes an RDS (wordpress)
 - show an example with bad hygiene (wordpress)
 - show an example with two tiers (web, service) and multiple SOA components in each tier, plus RDS
-- refactor deploy.sh into a library, so it can be "wrapped" by a project-specific deploy.sh
 - refactor route53wire so we can show the current wirings
+
+done 2/24/2016:
+- refactor deploy.sh into a library, so it can be "wrapped" by a project-specific deploy.sh
 
 done 2/23/2016:
 - fixup new verb in the edge case where the TechLead gives lots of args
