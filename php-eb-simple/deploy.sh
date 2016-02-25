@@ -21,7 +21,9 @@ STANDARD VERBS:
 ELASTIC BEANSTALK VERBS:
         $ME init                 initialize elastic beanstalk (after git clone)
         $ME init appname         initialize elastic beanstalk (after git clone)
+        $ME listapps             list available apps
         $ME list                 list available environments
+        $ME appname              show the name of the configured app
         $ME env describe         describe the environment
 
         $ME env id               get instance id (of first instance)
@@ -30,12 +32,15 @@ ELASTIC BEANSTALK VERBS:
 
         $ME myip                 find out what my (laptop) ip is
 
+        $ME env nodeploy file    do not deploy file in instances
+
 TECH LEAD VERBS:
         $ME new                  create application based on this dir name
         $ME new appname          create application 'appname'
         $ME new appname args..   create application appname
-        $ME createenv env        create environment 'env-appname'
-        $ME createenv env [more args]
+        $ME create env        create environment 'env-appname'
+        $ME create env [more args]
+            see https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-create.html
 
         $ME env sgn              get security group name
         $ME env sgid             get security group id
@@ -54,6 +59,9 @@ TECH LEAD VERBS:
         $ME env limitip          limit ssh ip to my public ip
         $ME env limitip cidr     limit ssh ip e.g. 0.0.0.0/0
 
+        $ME env s3logs true      send logs to s3
+        $ME env s3logs false     do not send logs to s3 (default)
+
 EOF
 	exit 3
 }
@@ -71,8 +79,14 @@ else
 fi
 # ----------------------------------------------------------------------
 
+# detect no args whatsoever
+if [ -z $1 ] ; then 
+    givehelp
+    exit 31
+fi
+
 # Process the 'no env' verbs
-    case $1 in
+case $1 in
     # first arg is usually the Environment, 
     # but sometiemes it's a verb
 	new)
@@ -98,6 +112,16 @@ fi
 	    eb list
 	    exit 
 	    ;;
+	listapps)
+#        $ME listapps             list available apps
+	    eblistapps
+	    exit 
+	    ;;
+	appname)
+#        $ME appname              show the name of the configured app
+	    appname
+	    exit 
+	    ;;
 	local)
 #        $ME local run            run a local copy of the app
 	    # could probably vagrant or docker to do this, but not today
@@ -110,9 +134,7 @@ fi
 	    whatsmyip
 	    exit 
 	    ;;
-    esac
-fi
-
+esac
 
 
 # ----------------------------------------------------------------------
@@ -229,6 +251,15 @@ case $ACTION in
     swap)
 #        $ME env1 swap env2        swap the lb cnames for env and env2
 	ebswap $ENV $1
+	;;
+    s3logs)
+#        $ME env s3logs true      send logs to s3
+#        $ME env s3logs false     do not send logs to s3 (default)
+	eblogstos3 $1
+	;;
+    nodeploy)
+#        $ME env nodeploy file    do not deploy file in instances
+	ebnodeploy $*
 	;;
     *)
 	givehelp

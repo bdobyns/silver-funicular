@@ -11,7 +11,12 @@
 - refactor route53wire so we can show the current wirings
 
 done 2/24/2016:
-- refactor deploy.sh into a library, so it can be "wrapped" by a project-specific deploy.sh
+- refactor deploy.sh into a library, so it can be "wrapped" by a project-specific deploy.sh.  
+  strip all 'active' code out of deploy.sh other than the big switch statements.
+- add appname and listapps verbs
+- add s3logs verb which turns on/off aws:elasticbeanstalk:hostmanager:  LogPublicationControl
+- add nodeploy verb which allows you to mark files as "not to be deployed"
+- try and figure out VPC and EB so that I can use a t2.nano or t2.micro, and many other things
 
 done 2/23/2016:
 - fixup new verb in the edge case where the TechLead gives lots of args

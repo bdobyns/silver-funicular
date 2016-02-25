@@ -217,12 +217,13 @@ ebeditconfig() {
 # delete the key
 # go back to the top of the section
 # insert the new key right after the section header
+NOW=`date +%Y-%m-%d`
 cat >>$EFILE <<EOF
 /  $SECTION/
 /$KEY:/d
 /  $SECTION/
 a
-    $KEY: $VAL
+    $KEY: $VAL # written by $0 at $NOW by $USER
 .
 
 EOF
@@ -230,15 +231,17 @@ shift ; shift ; shift
 done
 cat >>$EFILE <<EOF
 w
+w /tmp/ebeditconfig_$$.sav
 q
 
 EOF
     export EDITOR="cat $EFILE | ed >/dev/null "
-    eb config && rm $EFILE
+    eb config # && rm $EFILE
 }
 
 eblistapps() {
-    aws elasticbeanstalk describe-applications | jq .Applications[].ApplicationName
+#        $ME listapps             list available apps
+    aws elasticbeanstalk describe-applications | jq .Applications[].ApplicationName | tr -d \"
 }
 
 eblimitip() {
@@ -268,13 +271,14 @@ ebsetitype() {
 	    MAXBATCH="aws:autoscaling:updatepolicy:rollingupdate: MaxBatchSize '1'"
 	    MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '$MINSIZE'"
 	    ROLLUPTRUE="aws:autoscaling:updatepolicy:rollingupdate: RollingUpdateEnabled 'true'"
+	    ROLLUPTYPE="aws:autoscaling:updatepolicy:rollingupdate: RollingUpdateType 'Health'"
 	    if [ $MAXSIZE -eq 1 ] || [ $MAXSIZE -eq $MINSIZE ] ; then
 		NEWMAX=$[ $MAXSIZE + 1 ]
 		echo "INFO: Auto Scaling Group MaxSize Increased To $NEWMAX"
 		BUMPMAX="aws:autoscaling:asg: MaxSize '$NEWMAX'"
 	    fi	    
 	    # if youhavebeenwarned ; then 
-		if ! ebeditconfig $MAXBATCH $MININSTANCES $BUMPMAX $ROLLUPTRUE aws:autoscaling:launchconfiguration: InstanceType $1
+		if ! ebeditconfig $MAXBATCH $MININSTANCES $BUMPMAX $ROLLUPTRUE $ROLLUPTYPE aws:autoscaling:launchconfiguration: InstanceType $1
 		then 
 		    echo "If you failed due to the dreaded VPC problem, read"
 		    echo '  https://mike-thomson.com/blog/?p=2103#more-2103'
@@ -383,7 +387,7 @@ ebinit() {
 }
 
 ebcreate() {
-#        $ME create env           create environment 'env-appname'
+#        $ME create env [args]       create environment 'env-appname'
 	    shift
 	    if [ -z $1 ] ; then 
 		echo "ERROR: you must specify an environment name prefix like 'test' or 'prod'" >&2
@@ -395,7 +399,14 @@ ebcreate() {
 	    fi
 	    echo " BE PATIENT: THIS MAY TAKE A WHILE AND WILL DEPLOY AT LEAST ONE INSTANCE ALONG THE WAY "
 	    shift 
-	    eb create $ENVNAME $*
+	    # unless you specify other --vpc args,  we add in --vpc so you can use t2.micro etc, see 
+	    #    https://mike-thomson.com/blog/?p=2103#more-2103
+	    #    https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-create.html
+#	    if echo $* | grep '[[:blank:]]-vpc' >/dev/null ; then
+		eb create $ENVNAME $*
+#	    else
+		eb create $ENVNAME $* --vpc
+#	    fi
 }
 
 ebputget() {
@@ -484,5 +495,42 @@ ebswap() {
     fi	
 }
 
+eblogstos3 () {
+#        $ME env s3logs true      send logs to s3
+#        $ME env s3logs false     do not send logs to s3 (default)
+    case $1 in 
+	true|True|TRUE|false|False|FALSE)
+	    VALUE=`echo $1 | tr A-Z a-z`
+	    LOGTOS3=" aws:elasticbeanstalk:hostmanager:  LogPublicationControl '$VALUE' "
+	    ebeditconfig $LOGTOS3
+	    ;;
+	*)
+	    echo "ERROR: you must specify either 'true' or 'false' for the log config"
+	    ;;
+    esac	    
+}
+
+ebnodeploy() {
+#        $ME env nodeploy file    do not deploy file in instances
+#
+# see http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/customize-containers-ec2.html#linux-container-commands
+#     http://www.infoq.com/news/2012/11/elastic-beanstalk-config-files
+    NDCONFIG=.ebextensions/${ACTION}.config
+    if [ ! -z $1 ] ; then 
+	NM=`echo $1 | tr -dc A-Za-z0-9`
+	DT=`date +%Y-%m-%d`
+	if [ ! -f $NDCONFIG ] ; then 
+	    mkdir -p .ebextensions
+	    echo "# created by $0 at $DT by $USER" >$NDCONFIG
+	    echo "container_commands:" >>$NDCONFIG
+	    git add $NDCONFIG
+	fi
+    cat >>$NDCONFIG <<EOF
+  remove_$NM: # written by $0 at $DT by $USER
+    command: "rm -rf $*"
+EOF
+    fi
+cat $NDCONFIG
+}
 
 # ----------------------------------------------------------------------
