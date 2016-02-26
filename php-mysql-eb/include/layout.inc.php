@@ -77,6 +77,7 @@ function F_drawSummary($A,$whe="") {
 	$author		= F_author($A);
 	$T			= F_getTopic($A["Topic"]);
 	$topic		= sprintf("<a href=\"$G_URL/stories.php?topic=%s\">%s</a>",$A["Topic"],$T["Topic"]);
+	$icon = "";
 	if (!empty($T["ImgURL"])) {
 		$icon	= sprintf("<a href=\"$G_URL/stories.php?topic=%s\">",$A["Topic"]);
 		$icon	.= "<img\talign\t= \"right\"\n";

@@ -425,6 +425,7 @@ function F_author($A) {
 
 function F_getContent($A) {
 	global $db;
+	$content = "";
 	isset($A["Birthstamp"]) ? $date = date("YmdHis",$A["Birthstamp"]) : $date = "1970-01-01 00:00:00";
 	isset($A["Timestamp"])  ? $updated = date("YmdHis",$A["Timestamp"]) : $updated = "1970-01-01 00:00:00";;
 	$time		= date("YmdHis",time());
@@ -584,7 +585,7 @@ function F_extractLinks($story) {
 function F_getIndexes($rid) {
 	global $db,$G_URL,$CONF;
 	$s	= "";
-	$sql	.= "SELECT * FROM T_IndexLinks";
+	$sql	= "SELECT * FROM T_IndexLinks";
 	$sql	.= " WHERE ParentRid = '$rid'";
 	$result	= mysql_query($sql,$db);
 	$nrows	= mysql_num_rows($result);
