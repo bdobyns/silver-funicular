@@ -21,17 +21,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 =*=======================================================================*/
 
 ## MySQL connectivity variables
-$G_DB   = "db146981002";       # database name
-$G_HOST = "db233.perfora.net"; # hostname
-$G_PORT = "3306";              # mysql port
-$G_USER = "dbo146981002";      # mysql username
-$G_PASS = "3gq.MKP3";          # mysql password
+$G_DB   = $_SERVER['RDS_DB_NAME'];       # database name
+$G_HOST = $_SERVER['RDS_HOSTNAME']; # hostname
+$G_PORT = $_SERVER['RDS_PORT'];              # mysql port
+$G_USER = $_SERVER['RDS_USERNAME'];      # mysql username
+$G_PASS = $_SERVER['RDS_PASSWORD'];          # mysql password
 
-$DATA_DB   = "db146981121";
-$DATA_HOST = "db244.perfora.net";
-$DATA_PORT = "3306";
-$DATA_USER = "dbo146981121";
-$DATA_PASS = "aCpH5tyM";
+#$DATA_DB   = "db146981121";
+#$DATA_HOST = "db244.perfora.net";
+#$DATA_PORT = "3306";
+#$DATA_USER = "dbo146981121";
+#$DATA_PASS = "aCpH5tyM";
 
 ## (do not add a trailing / to the following paths)
 
