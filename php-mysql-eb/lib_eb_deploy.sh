@@ -243,7 +243,7 @@ cat >>$EFILE <<EOF
 /$KEY:/d
 /  $SECTION/
 a
-    $KEY: $VAL # written by $0 at $NOW by $USER
+    $KEY: $VAL # written by $0 on $NOW by $USER
 .
 
 EOF
@@ -567,14 +567,14 @@ function ebnodeploy
 	DT=`date +%Y-%m-%d`
 	if [ ! -f $NDCONFIG ] ; then 
 	    mkdir -p .ebextensions
-	    echo "# created by $0 at $DT by $USER" >$NDCONFIG
+	    echo "# created by $0 on $DT by $USER" >$NDCONFIG
 	    echo "container_commands:" >>$NDCONFIG
-	    git add $NDCONFIG
 	fi
     cat >>$NDCONFIG <<EOF
-  remove_$NM: # written by $0 at $DT by $USER
+  remove_$NM: # written by $0 on $DT by $USER
     command: "rm -rf $*"
 EOF
+    git add $NDCONFIG
     fi
 cat $NDCONFIG
 }
