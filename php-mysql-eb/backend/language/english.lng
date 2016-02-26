@@ -51,8 +51,8 @@ define("_LAST5","Last 5 articles posted by");
 define("_ARCHIVE","Archive");
 define("_REPOSTED","Reposted on");
 
-if (!defined('_NOSTORY') {define("_NOSTORY","No Articles have been submitted. Ever.");{
-if (!defined('_NOCOMMENTS') {define("_NOCOMMENTS","No user comments.");}
+defined('_NOSTORY') or define("_NOSTORY","No Articles have been submitted. Ever.");
+defined('_NOCOMMENTS') or define("_NOCOMMENTS","No user comments.");
 define("_POSTCOMMENT","Post a Comment");
 
 define("_NAME","Your&nbsp;Name");
