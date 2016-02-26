@@ -5,10 +5,10 @@
 
    WHERE=~/newlpef/public_html
     WHAT=newlpef_db.sql
- DBUNAME=dbo146981002
-DATABASE=db146981002
-  DBHOST=db233.perfora.net
-  DBPASS="3gq.MKP3"
+ DBUNAME="$RDS_USERNAME"
+DATABASE="$RDS_DB_NAME"
+  DBHOST="$RDS_HOSTNAME"
+  DBPASS="$RDS_PASSWORD"
 
 # ---- should not need to change anything below here ----
 
