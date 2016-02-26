@@ -581,8 +581,44 @@ cat $NDCONFIG
 
 function vpcsubnets
 {
+#        $ME vpcs                 show available vpcs and subnets
+#        $ME vpcs vpc-id          show subnets for given vpc
+    shift
+    # use args if you have them
     if [ ! -z $1 ] ; then 
-	aws ec2 describe-subnets --filters "Name=vpc-id,Values=$1" | jq .Subnets[].CidrBlock | tr -d \"\n 
+	VPCS="$*"
+    else
+	VPCS=`aws ec2 describe-vpcs | jq .Vpcs[].VpcId | tr -d \" `
+    fi
+
+    echo `setregion`
+    for VPC in $VPCS 
+    do
+	echo "    "$VPC
+	echo -n "        "
+	aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC" | jq .Subnets[].CidrBlock | tr -d \" | tr '\n' ' '
+	echo " "
+    done
+}
+
+function ebconfigphperrors
+{
+#        $ME env phperrors on     turn on display_errors in php.ini
+#        $ME env phperrors off    turn on display_errors in php.ini
+    if cfgget $EBCONFIG global default_platform | grep PHP >/dev/null ; then
+      case $1 in 
+	on|On|ON|t|T|true|True|TRUE|0)
+	   ERRORS="aws:elasticbeanstalk:container:php:phpini: display_errors 'On'"
+	   eb editconfig $ERRORS
+	   ;;
+	off|Off|f|F|False|false|FALSE|0)
+	   ERRORS="aws:elasticbeanstalk:container:php:phpini: display_errors 'On'"
+	   eb editconfig $ERRORS
+	   ;;	   
+	*)
+	    echo "ERROR: must specify either on or off" 2>&1
+	    ;;
+      esac
     fi
 }
 
