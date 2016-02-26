@@ -148,8 +148,8 @@ function F_doBlocks($align) {
 		}
 		$topics_result	= @mysql_query($sql,$db);
 		$topics_nrows	= @mysql_num_rows($topics_result);
+		$numtops = $topics_nrows; 
 		if ($CONF["TopicSort"]=="brief") { 
-			$numtops = $topics_nrows; 
 			if ($topics_nrows > 4) { 
 				$topics_nrows = 5; 
 			} 

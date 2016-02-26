@@ -425,11 +425,12 @@ function F_author($A) {
 
 function F_getContent($A) {
 	global $db;
-	$date		= date("YmdHis",$A["Birthstamp"]);
-	$updated	= date("YmdHis",$A["Timestamp"]);
+	isset($A["Birthstamp"] ? $date = date("YmdHis",$A["Birthstamp"]) : $date = " ";
+	isset($A["Timestamp"]  ? $updated = date("YmdHis",$A["Timestamp"]) " $updated = " ";
 	$time		= date("YmdHis",time());
-	$cache		= $A["Cache"] * 60;
+	isset($A["Cache"] ? $cache = $A["Cache"] * 60 : $cache = 600;
 	$nextupdate = $updated + $cache;
+	if (isset($A["Type"])) {
 	if ($A["Type"]==0) {
 		# html
 		$content	= $A["Content"];
@@ -465,7 +466,8 @@ function F_getContent($A) {
 		} else {
 			$content	= urldecode($A["Content"]);
 		}
-	}
+	    }
+	}	
 	return $content;
 }
 
