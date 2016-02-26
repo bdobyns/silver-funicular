@@ -399,18 +399,29 @@ function ebinit
 {
 #        $ME init                 initialize elastic beanstalk (after git clone)
 #        $ME init appname         initialize elastic beanstalk (after git clone)
+            REGION=`setregion`
 	    if [ -z $2 ] ; then
 		APPNAME=`basename $PWD`
 	    else
 		APPNAME=$2
 	    fi
 	    # this is for use by regular developers
-	     if  eblistapps | grep '"'$APPNAME'"' >/dev/null; then
-		 eb init $APPNAME --region $REGION		    
-	     else
+	    if [ ! -z $3 ] ; then
+		 echo " "
+		 echo "ERROR: no other args than appname are permitted" >&2
+		 echo "   these are the valid appnames:" >&2
+		 eblistapps 
+	    elif ! eblistapps | grep '^'$APPNAME'$' >/dev/null; then
+		 echo " "
 		 echo "ERROR: appname $APPNAME does not exist" >&2
 		 echo "   maybe you meant to use one of these:" >&2
 		 eblistapps 
+	     else
+		 if [ ! -z $REGION ] ; then
+		     eb init $APPNAME --region $REGION		    
+		 else
+		     eb init $APPNAME
+		 fi
 	     fi
 }
 
