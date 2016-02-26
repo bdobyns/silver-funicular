@@ -84,6 +84,7 @@ for ($i=0;$i<$nrows;$i++) {
 $LANG	= !empty($CONF["Language"]) ? $CONF["Language"] : "english";
 include($G_PATH . "/backend/language/" . $LANG . ".lng");
 
+
 /*== include functions ==================================================*/
 
 include("$G_PATH/include/func.inc.php");

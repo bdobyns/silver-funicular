@@ -211,9 +211,9 @@ function F_drawHeader() {
 	$siteowner	= stripslashes($CONF["SiteOwner"]);
 	$siteslogan	= stripslashes($CONF["SiteSlogan"]);
 	$today		= getdate();
-	$currentyear	= $today["year"];
-        $countries      = stripslashes($CONF["Countries"]);
-        $podcastsubs    = stripslashes($CONF["PodCastSubs"]);
+	$currentyear	= $today["year"]; 
+#        $countries      = stripslashes($CONF["Countries"]);
+#        $podcastsubs    = stripslashes($CONF["PodCastSubs"]);
         $copyrightstart = stripslashes($CONF["CopyrightStart"]);
         
         if (strlen($DATA_DB)) {       
@@ -333,8 +333,8 @@ function F_drawFooter() {
 	$sitename	= stripslashes($CONF["SiteName"]);
 	$siteowner	= stripslashes($CONF["SiteOwner"]);
 	$siteslogan	= stripslashes($CONF["SiteSlogan"]);
-        $countries      = stripslashes($CONF["Countries"]);
-        $podcastsubs    = stripslashes($CONF["PodCast"]);
+#        $countries      = stripslashes($CONF["Countries"]);
+#        $podcastsubs    = stripslashes($CONF["PodCast"]);
         $copyrightstart = stripslashes($CONF["CopyrightStart"]);
 	$today		= getdate();
 	$currentyear	= $today["year"];
