@@ -19,7 +19,8 @@ AWSCONFIG=~/.aws/config
 # some helper methods/functions
 
 # get a config value from a config file
-cfgget() {
+function cfgget 
+{
     # $1 = filename
     # $2 = section
     # $3 = item
@@ -30,7 +31,8 @@ cfgget() {
 }
 
 # does yaml to json on stdin
-yaml2json() {
+function yaml2json 
+{
     # if we have y2j and yq from https://github.com/wildducktheories/y2j then use it because it's more robust
     if [ `which y2j` ] ; then 
 	y2j
@@ -42,11 +44,13 @@ yaml2json() {
     fi
 }
 
-ebregion() {
+function ebregion 
+{
     cat $EBCONFIG | yaml2json | jq .global.default_region | tr -d '"' 
 }
 
-awsregion() {
+function awsregion 
+{
     if [ -f $AWSCONFIG ] ; then 
 	# should be in the default section
 	REGION=`cfgget $AWSCONFIG default region 2>/dev/null`
@@ -64,7 +68,8 @@ awsregion() {
     fi
 }
 
-setregion() {
+function setregion 
+{
     # get the region out of your aws config or eb config
     if [ -f $EBCONFIG ] ; then
     	REGION=`ebregion`
@@ -79,16 +84,19 @@ setregion() {
     echo $REGION
 }
 
-ebkeyname() {
+function ebkeyname 
+{
     cat $EBCONFIG | yaml2json |  jq .global.default_ec2_keyname | tr -d '"' 
 }
 
-ebdescribe() {
+function ebdescribe 
+{
 #        $ME env describe         describe the environment
 	aws elasticbeanstalk describe-environments --environment-names $ENV 
 }
 
-ebinstance() {
+function ebinstance 
+{
 #        $ME env id               get instance id
     # INSTANCE=`eb list -v | grep $ENV | cut -d \' -f 2`
     if [ ! -z $1 ] ; then 
@@ -99,7 +107,8 @@ ebinstance() {
     aws elasticbeanstalk describe-environment-resources  --environment-name $ENV | jq .EnvironmentResources.Instances[${ORDINAL}].Id | tr -d \" 
 }
 
-ebinstanceipaddr() {
+function ebinstanceipaddr 
+{
 #        $ME env ipaddr           get instance ipaddress
     INSTANCE=$1
     if [ ! -z $INSTANCE ] ; then
@@ -107,34 +116,40 @@ ebinstanceipaddr() {
     fi
 }
 
-ebdefaultenv() {
+function ebdefaultenv 
+{
     # stupid jq can't take names with a dash in them
     cat $EBCONFIG | sed -e s/branch-defaults/foo/ | y2j .foo.default.environment
 }
 
-whatsmyip() {
+function whatsmyip 
+{
 #        $ME myip                 find out what my (laptop) ip is
     curl -s http://www.whatsmyip.website/api/plaintext | head -1
 }
 
-ebsgn() {
+function ebsgn 
+{
 #        $ME env sgn              get security group id
     ID=`ebinstance`
     aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecurityGroups[].GroupName | tr -d \" 
 }
 
-ebsgid() {
+function ebsgid 
+{
 #        $ME env sgid             get security group id
     ID=`ebinstance`  
     aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecuritGryoups[].GroupId | tr -d \" 
 }
 
-ebcname() {
+function ebcname 
+{
 #        $ME env cname            display the cname of the lb
     ebdescribe | jq .Environments[].CNAME | tr -d \"
 }
 
-route53wire() {
+function route53wire 
+{
 # something like 
 #    route53wire `ebcname` foo.example.com
 TONAME=$1
@@ -176,7 +191,8 @@ aws route53 change-resource-record-sets --hosted-zone-id $ZID --change-batch fil
 rm $RESREC
 }
 
-route53cname() {
+function route53cname 
+{
 #        $ME env r53 f.b.com      wire up a route53 name 'f.b.com' to the lb'
 #        $ME env r53cname foo     wire up a route53 name 'foo'
 	if [ ! -z $1 ] ; then 
@@ -186,25 +202,29 @@ route53cname() {
 	fi
 }
 
-asgname() {
+function asgname 
+{
 #        $ME env asg              get autoscaling group name
     ID=`ebinstance`
     aws ec2 describe-instances --instance-ids $ID  | jq .Reservations[].Instances[].Tags[].Value | tr -d \" | grep -v ^AWSEBAutoScalingGroup | grep AWSEBAutoScalingGroup | tail -1
 }
 
-asgdescribe() {
+function asgdescribe 
+{
 #        $ME env asgdescribe      describe the autoscaling group
     aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names `asgname`
 }
 
-appname() {
+function appname 
+{
     cat $EBCONFIG | yaml2json | jq .global.application_name | tr -d \"  
 }
 
 # create an ed script for editing a configuration as produced by `eb config`
 # and then execute it with
 #     export EDITOR="cat $FILE | ed" ; eb config
-ebeditconfig() {
+function ebeditconfig 
+{
     EFILE=/tmp/ebconfig.hack.$$
     if [  -f $EFILE ] ; then rm -rf $EFILE ; fi
 
@@ -239,12 +259,14 @@ EOF
     eb config # && rm $EFILE
 }
 
-eblistapps() {
+function eblistapps 
+{
 #        $ME listapps             list available apps
     aws elasticbeanstalk describe-applications | jq .Applications[].ApplicationName | tr -d \"
 }
 
-eblimitip() {
+function eblimitip 
+{
 #        $ME env limitip          limit ssh ip to my public ip	
 	if [ -z $1 ] ; then
 	    CIDR=`whatsmyip`/32
@@ -260,7 +282,8 @@ eblimitip() {
 	aws ec2 describe-security-groups --group-names `ebsgn` | grep CidrIp
 }
 
-ebsetitype() {
+function ebsetitype 
+{
 #        $ME env setitype type    set instance type, like t1.micro or m3.medium
 	if [ -z $1 ] ; then 
 	    echo " --- current value ---"
@@ -289,7 +312,8 @@ ebsetitype() {
 	aws ec2 describe-instances --instance-ids `ebinstance` | grep InstanceType
 }
 
-ebsetcount() {
+function ebsetcount 
+{
 #        $ME env count n          set asg max and min to n
 	if [ -z $1 ] ; then 
 	    echo " --- current values ---"
@@ -301,7 +325,8 @@ ebsetcount() {
 	asgdescribe | egrep 'Size|Desired'
 }
 
-ebsetcooldown() {
+function ebsetcooldown 
+{
 #        $ME env cooldown n       cooldown in seconds between asg actions
 	if [ -z $1 ] ; then 
 	    echo " --- current values ---"
@@ -312,7 +337,8 @@ ebsetcooldown() {
 	asgdescribe | grep Cooldown
 }
 
-ebsetscale() {
+function ebsetscale 
+{
 #        $ME env scale min max    set asg min and max 
 	if [ -z $1 ] || [ -z $2 ] ; then
 	    echo " --- current values ---"
@@ -343,7 +369,8 @@ ebsetscale() {
 	fi
 }
 
-ebnew() {
+function ebnew 
+{
 #        $ME new                  create application based on this dir name
 #        $ME new appname          create application appname
 	    if [ -z $2 ] ; then
@@ -368,7 +395,8 @@ ebnew() {
 	     fi
 }
 
-ebinit() {
+function ebinit 
+{
 #        $ME init                 initialize elastic beanstalk (after git clone)
 #        $ME init appname         initialize elastic beanstalk (after git clone)
 	    if [ -z $2 ] ; then
@@ -386,7 +414,8 @@ ebinit() {
 	     fi
 }
 
-ebcreate() {
+function ebcreate 
+{
 #        $ME create env [args]       create environment 'env-appname'
 	    shift
 	    if [ -z $1 ] ; then 
@@ -409,7 +438,8 @@ ebcreate() {
 #	    fi
 }
 
-ebputget() {
+function ebputget 
+{
 #	$ME env put here there   copy a file to /home/ec2-user/there
 #	$ME env get there here   copy a file from there to here
 	if [ -z $1 ] || [ -z $2 ] ; then
@@ -422,7 +452,7 @@ ebputget() {
 	    # do this to open port 22
 	    cat /dev/null | eb ssh -o
 	    if [ $ACTION = put ] ; then 
-		scp $* ${EC2USER}@${IPADDR}:/home/$EC2USER
+		scp "$1" ${EC2USER}@${IPADDR}:/home/$EC2USER/"$2"
 	    elif [ $ACTION = get ] ; then
 		scp ${EC2USER}@${IPADDR}:/home/$EC2USER/"$1" "$2"
 	    else
@@ -435,7 +465,8 @@ ebputget() {
 	fi
 }
 
-youhavebeenwarned() {
+function youhavebeenwarned 
+{
     echo "WARNING: THIS MAY KILL ALL THE INSTANCES IN YOUR ENVIRONMENT"
     echo "  you can avoid a service outage by:" 
     echo "    - create a new environment"
@@ -453,7 +484,8 @@ youhavebeenwarned() {
 }
 
 
-ebenvexpand() {
+function ebenvexpand 
+{
     # first arg is usually the Environment
     # try several likely combinations
     ENV1=$1
@@ -478,7 +510,8 @@ EOF
     echo $ENV
 }
 
-ebswap() {
+function ebswap 
+{
 #        $ME env1 swap env2       swap the lb cnames for env and env2
     # $1 is the current environment
     # $2 is the other environment
@@ -495,7 +528,8 @@ ebswap() {
     fi	
 }
 
-eblogstos3 () {
+function eblogstos3  
+{
 #        $ME env s3logs true      send logs to s3
 #        $ME env s3logs false     do not send logs to s3 (default)
     case $1 in 
@@ -510,7 +544,8 @@ eblogstos3 () {
     esac	    
 }
 
-ebnodeploy() {
+function ebnodeploy 
+{
 #        $ME env nodeploy file    do not deploy file in instances
 #
 # see http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/customize-containers-ec2.html#linux-container-commands
@@ -531,6 +566,13 @@ ebnodeploy() {
 EOF
     fi
 cat $NDCONFIG
+}
+
+function vpcsubnets
+{
+    if [ ! -z $1 ] ; then 
+	aws ec2 describe-subnets --filters "Name=vpc-id,Values=$1" | jq .Subnets[].CidrBlock | tr -d \"\n 
+    fi
 }
 
 # ----------------------------------------------------------------------
