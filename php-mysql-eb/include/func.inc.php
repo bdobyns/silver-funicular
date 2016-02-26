@@ -425,10 +425,10 @@ function F_author($A) {
 
 function F_getContent($A) {
 	global $db;
-	isset($A["Birthstamp"] ? $date = date("YmdHis",$A["Birthstamp"]) : $date = " ";
-	isset($A["Timestamp"]  ? $updated = date("YmdHis",$A["Timestamp"]) " $updated = " ";
+	isset($A["Birthstamp"]) ? $date = date("YmdHis",$A["Birthstamp"]) : $date = "1970-01-01 00:00:00";
+	isset($A["Timestamp"])  ? $updated = date("YmdHis",$A["Timestamp"]) : $updated = "1970-01-01 00:00:00";;
 	$time		= date("YmdHis",time());
-	isset($A["Cache"] ? $cache = $A["Cache"] * 60 : $cache = 600;
+	isset($A["Cache"]) ? $cache = $A["Cache"] * 60 : $cache = 600;
 	$nextupdate = $updated + $cache;
 	if (isset($A["Type"])) {
 	if ($A["Type"]==0) {

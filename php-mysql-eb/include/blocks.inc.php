@@ -177,7 +177,7 @@ function F_doBlocks($align) {
 	}
 
 	# story related links
-	if ($mainpage==1 && !empty($story) && $align==$aln) {
+	if (isset($mainpage) && $mainpage==1 && !empty($story) && $align==$aln) {
 		$VAR["Heading"]	= _MORELINKS;
 		$VAR["Content"]	= F_extractLinks($story);
 		if ($CONF["PrintStory"]>0) {

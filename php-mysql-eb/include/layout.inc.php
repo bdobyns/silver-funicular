@@ -130,9 +130,9 @@ function F_drawSummary($A,$whe="") {
 
 function F_drawBlock($A) {
 	global	$G_URL,$G_PATH,$LAYOUT;
-	if (isset($A["Display"] && $A["Display"]=="l") {
+	if (isset($A["Display"]) && $A["Display"]=="l") {
 		$baz	= $LAYOUT["TMPL_LeftBlock"];
-	} elseif (isset($A["Display"] && $A["Display"]=="r") {
+	} elseif (isset($A["Display"]) && $A["Display"]=="r") {
 		$baz	= $LAYOUT["TMPL_RightBlock"];
 	} else {
 		if ($LAYOUT["BlocksAlign"]=="right") {
@@ -143,7 +143,7 @@ function F_drawBlock($A) {
 	}
 	$heading	= stripslashes($A["Heading"]);
 	$content	= stripslashes(F_getContent($A));
-	isset($A["Birthstamp") ? $date = F_dateFormat($A["Birthstamp"]) : $date =' ';
+	isset($A["Birthstamp"]) ? $date = F_dateFormat($A["Birthstamp"]) : $date ='1970-01-01 00:00:00 ';
 	$templatefile	= "$G_PATH/backend/template/" . $baz . "/block.tmpl";
 	$imagedir	= "$G_URL/backend/template/" . $baz . "/images";
 
