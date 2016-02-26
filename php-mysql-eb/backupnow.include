@@ -1,0 +1,42 @@
+#!/bin/bash
+# $Id: backupnow.include,v 1.2 2006/01/13 18:59:55 cvs Exp $
+
+# Common includes for the backup now script.
+
+# ---- should not need to change anything below here ----
+
+WDIR=`dirname $WHERE`
+  ID=`basename $WDIR`
+if [ -z "$1" ] ; then
+        MESSAGE="$0 $ID on "`uname -n`" at "`date | tr -s ' ' `
+else
+	MESSAGE="$0 $ID $*"
+fi
+
+cd $WHERE
+if [ ! -f $WHAT ] ; then
+    echo "ERROR: Cannot Find $WHAT"
+    exit
+fi
+
+find . -name "*~" -exec rm "{}" ";"
+
+MSQLVER=`mysqldump --version | cut -f 4 -d ' ' | cut -f 1 -d .`
+if [ $MSQLVER -ge 10 ] ; then
+  mysqldump --skip-opt -u $DBUNAME --password=$DBPASS -h $DBHOST --add-drop-table $DATABASE >$WHAT
+else
+  mysqldump -u $DBUNAME --password=$DBPASS -h $DBHOST --add-drop-table $DATABASE >$WHAT
+fi
+
+if [ -f CVS/Entries ] ; then
+  if ! grep $WHAT CVS/Entries 2>&1 >/dev/null ; then
+    cvs add $WHAT
+  fi
+
+  cvs commit -m "$MESSAGE"  $WHAT
+
+  cd $WHERE
+  cvs commit -m "$MESSAGE" 
+fi
+
+# eot

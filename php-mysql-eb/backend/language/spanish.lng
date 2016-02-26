@@ -1,0 +1,188 @@
+<?
+
+# phpWebLog language translation file (spanish)
+
+$rdf_lang	= "sp-pa";
+setlocale('LC_ALL','spanish');
+
+# formatted date string -- Uses PHP's strftime() function
+
+$G_DATE = "%A %e de %B de %Y @ %I:%M%p %Z";
+
+# random submit buttons
+$nonsense[]     = "Se gentil";
+$nonsense[]     = "¡Waa!";
+$nonsense[]     = "Que xopa";
+$nonsense[]     = "¿Awoo?";
+$nonsense[]     = "Fragancia";
+
+# strings
+define("_INDEX", "página principal");
+define("_CONTRIB", "enviar artículo");
+define("_LINKS", "enlaces");
+define("_SEARCH", "buscar");
+define("_STATS", "estadísticas");
+define("_CONTACT", "contáctanos");
+
+define("_FIND", "buscar");
+
+define("_COMMENTS","comentarios");
+define("_COMMENT","comentario");
+define("_READMORE","leer más");
+define("_VIEWS","visto:");
+define("_REPLY","responder");
+define("_PARENT","padre");
+define("_MODIFIED","Última modificación:");
+
+define("_TOP5","Las Top 5");
+define("_HOT5","Hot 5 Stories");
+define("_OLDER","Artículos Anteriores");
+define("_LAST5","Last 5 stories posted by");
+
+define("_ARCHIVE","archive");
+define("_REPOSTED","Reposted on");
+
+define("_NOCOMMENTS","No hay comentarios.");
+define("_POSTCOMMENT","Enviar un Comentario");
+
+define("_NAME","Nombre");
+define("_EMAIL","Email");
+define("_URL","URL");
+
+define("_NEXT","Next");
+define("_PREV","Prev");
+
+define("_SAVEINFO","Recordar mi información (usa cookies)");
+define("_ANONYMOUS","Prefiero ser anónimo");
+define("_MAILCOMMENTS","Enviar comentarios a la dirección de email de arriba");
+
+define("_FULLHTML","* se permite HTML.");
+define("_NOHTML","* no se visualizará el HTML.");
+define("_CODEHTML","* el HTML se mostrara pero no se visualizará.");
+define("_YESHTML","* etiquetas HTML permitidas:");
+define("_AUTOHTML","* no se permite HTML.  Los enlaces serán procesados automáticamente.");
+define("_NOPUBLIC","* tu email no será expuesto publicamente.");
+
+define("_CMAIL1","Alguien ha hecho un comentario de tu historia");
+define("_CMAIL2","Abajo están los detalles..");
+define("_CMAIL3","Historia Original");
+
+define("_TITLE","Título");
+define("_TOPIC","Tema");
+define("_TOPICS","Temas");
+define("_DATE","Fecha");
+define("_AUTHOR","Autor");
+define("_STORY","Historia");
+define("_SUMMARY","Sumario");
+define("_OPTIONAL","Opcional");
+define("_SEPLINKS","Seperate links with commas");
+define("_RELATED","Enlace Relacionados");
+define("_MORE","more");
+
+define("_COMADDED","Comentario añadido");
+define("_WRITES","escribe");
+define("_DETAILS","Para los detalles, ver");
+
+define("_NMAIL1","Se ha añadido un nuevo artículo a");
+define("_NMAIL2","y espera tu verificación");
+define("_NMAIL3","Para verificar este mensaje, ver");
+
+define("_PROBLEM","Por favor notifica al administrador si el problema persiste.");
+define("_MAILERROR","Lamentamos informarte que ocurrió un error al enviar tu mensaje.  Se ha hecho un registro del error.");
+
+define("_MAILSENT","Mensaje enviado exitosamente.");
+define("_SAVED","Cambios guardados.");
+define("_SAVEDNOPW","Cambios guardados excepto la clave del administrador.  Las claves no eran iguales.");
+
+define("_POLLRESULTS","Resultados de la Encuesta");
+define("_VOTES","total de votos");
+define("_MOREPOLLS","más encuestas");
+define("_POLLS","encuestas");
+define("_VOTE","Votar");
+define("_RESULTS","resultados");
+define("_LISTPOLLS","Lista de Encuestas");
+define("_QUESTION","Pregunta");
+define("_NOPOLLS","No hay encuestas activas por el momento.");
+
+define("_NOSTORY","Artículo no encontrado");
+define("_INTOPIC","dentro de este tema");
+define("_EMPTYTOPIC","No hay artículos que mostrar dentro de este tema.");
+define("_EMPTY","No hay artículos nuevos que mostrar.");
+
+define("_NOPOSTING","No se permite el envio de artículos.");
+define("_CONTRIBUTE","Contribuye con tu Artículo");
+define("_YOURINFO","Tu Información:");
+define("_YOURSTORY","Tu Artículo:");
+define("_UNVERIFIED","Mensaje sin verificar de");
+
+define("_SUBMIT","Enviar");
+define("_PREVIEW","Vista Preliminar");
+define("_PRESTORY","Ver Vista Preliminar / Editar tu Artículo");
+define("_PRETEXT","Arriba verás como aparecerá tu artículo en la página principal.  Puedes hacer cualquier cambio final y proceder a enviarlo.");
+
+define("_NOLINKS","No hay recursos que mostrar.");
+define("_POSTLINK","Enviar un enlace");
+define("_SITENAME","Nombre del Sitio");
+define("_DESCRIPTION","Descripción");
+define("_CATEGORY","Categoría");
+define("_SUGTHANK","Thank you for your suggestion. The admin will verify it soon.");
+define("_ADDSUG","Link Suggestion");
+define("_SHOWING","Showing");
+define("_SUGCAT","Suggest a Category");
+define("_SUGLINK","Suggest a Link");
+
+define("_NOUSER","No existe el usuario");
+define("_PROFILING","Perfil de usuario");
+define("_NA","No disponible");
+define("_MAILTO","Enviar email a");
+define("_SUBJECT","Asunto");
+define("_MESSAGE","Mensaje");
+
+define("_SEARCHFOR","Buscar");
+define("_QUERY","Consulta");
+define("_ALLTOPICS","Todos los Temas");
+define("_STORIES","artículos");
+define("_AUTHORS","autores");
+define("_LIMIT","Límite");
+define("_SEARCHRESULTS","Resultados de la Búsqueda");
+define("_MATCHES","Resultados");
+define("_POSTEDBY","Enviado por");
+define("_POSTEDON","enviado el");
+define("_ON","el");
+define("_BY","por");
+define("_NOMATCHES","No hay resultados.");
+
+define("_MMAIL1","Este artículo vino de");
+define("_MMAIL2","Para más, ver");
+
+define("_HITS","Hits");
+define("_SITESTATS","Estadísticas del sitio");
+define("_AVGHITS","Average Hits");
+define("_TOTALSTORIES","Total de Artículos");
+define("_TOTALCOMMENTS","Total de Comentarios");
+define("_TOTALPOLLS","Total de Encuestas");
+define("_TOTALLINKS","Total de Enlaces");
+define("_TOPSTORIES","Top 10 Artículos");
+define("_TOPPOLLS","Top 10 Encuestas");
+define("_TOPLINKS","Top 10 Enlaces");
+define("_NOPOLLS","No hay encuestas disponible o nadie ha votado.");
+define("_NOSTORIES","No hay artículos disponibles o nadie las ha visto.");
+define("_NOLINKS","No hay enlaces disponibles o nadie ha hecho clic en ellos.");
+define("_TOPPAGES","Top 10 Pages");  
+define("_NOPAGES","No pages available or no one has clicked them.");
+
+define("_MORELINKS","More Links");
+define("_PRINTFRIEND","Printer friendly version");
+define("_MAILTOFRIEND","Share this story");
+define("_FRIENDINFO","Friend's Information:");
+define("_FRIENDNAME","Friend's Name");
+define("_FRIENDEMAIL","Friend's Email");
+define("_MAILFRIEND","Here is a story in which you may be interested in.");
+
+define("_ATTACHMENT","Attachment");
+define("_MAXSIZE","Maximum Filesize");
+
+define("_FILETOOBIG","Your attachment is too large.  Nothing attached.");
+define("_STORYOK","Your story submission was successful.");
+
+?>

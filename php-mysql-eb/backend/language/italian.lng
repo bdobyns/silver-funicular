@@ -1,0 +1,187 @@
+<?
+
+# phpWebLog language translation file (italian)
+# translation by Fabrizio Cuseo
+
+$rdf_lang	= "it-IT";
+setlocale('LC_ALL','it_IT');
+
+# formatted date string -- Uses PHP's strftime() function
+
+$G_DATE = "%A %B %d %Y @ %I:%M%p %Z";
+
+# random submit buttons
+$nonsense[]     = "Yeah !";
+$nonsense[]     = "Conferma !";
+
+# strings
+define("_INDEX", "indice delle notizie");
+define("_CONTRIB", "inserisci una notizia");
+define("_LINKS", "links");
+define("_SEARCH", "cerca");
+define("_STATS", "statistiche");
+define("_CONTACT", "contatti");
+
+define("_FIND", "trova");
+
+define("_COMMENTS","commenti");
+define("_COMMENT","commento");
+define("_READMORE","leggi ancora");
+define("_VIEWS","visualizzazioni:");
+define("_REPLY","rispondi");
+define("_PARENT","precedente");
+define("_MODIFIED","Ultima modifica:");
+
+define("_TOP5","Le storie TOP 5");
+define("_HOT5","Hot 5 Stories");
+define("_OLDER","Vecchie storie");
+define("_LAST5","Le ultime 5 storie inviate da");
+
+define("_ARCHIVE","archivio");
+define("_REPOSTED","Reinviata");
+
+define("_NOCOMMENTS","Nessun commento.");
+define("_POSTCOMMENT","Invia un Commento");
+
+define("_NAME","Nome");
+define("_EMAIL","Email");
+define("_URL","URL");
+
+define("_NEXT","Prox");
+define("_PREV","Prec");
+
+define("_SAVEINFO","Ricorda i miei dati (usa i cookies)");
+define("_ANONYMOUS","Vorrei rimanere anonimo");
+define("_MAILCOMMENTS","Invia i commenti a questo indirizzo");
+
+define("_FULLHTML","* tag HTML consentiti.");
+define("_NOHTML","* i tag HTML non verranno interpretati.");
+define("_CODEHTML","* i tag HTML verranno visualizzati ma non interpretati.");
+define("_YESHTML","* tag HTML permessi:");
+define("_AUTOHTML","* HTML non permesso.  I link verranno resi linkabili automaticamente.");
+define("_NOPUBLIC","* Il tuo indirizzo di posta non verra' reso pubblico.");
+
+define("_CMAIL1","Un commento e' stato inviato alla notizia che hai scritto su");
+define("_CMAIL2","Sotto i dettagli dell'argomento..");
+define("_CMAIL3","Notizia originale");
+
+define("_TITLE","Titolo");
+define("_TOPIC","Argomento");
+define("_TOPICS","Argomenti");
+define("_FEATURES","Caratteristiche");
+define("_DATE","Data");
+define("_AUTHOR","Autore");
+define("_STORY","Notizie");
+define("_SUMMARY","Sommario");
+define("_OPTIONAL","Opzionale");
+define("_SEPLINKS","Seperate links with commas");
+define("_RELATED","Scarica o visualizza il file allegato");
+define("_MORE","more");
+
+define("_COMADDED","Commento aggiunto");
+define("_WRITES","scrive");
+define("_DETAILS","Per dettagli, guarda");
+
+define("_NMAIL1","Una nuova notizia e' stata aggiunta a");
+define("_NMAIL2","ed e' in attesa della verifica");
+define("_NMAIL3","per verificare la notizia, vai su");
+
+define("_PROBLEM","Per favore avvisa l'amministratore se il problema persiste.");
+define("_MAILERROR","Spiacente ma c'e' stato un problema nell'invio del messaggio. L'errore e' stato registrato e verra' esaminato.");
+
+define("_MAILSENT","Messaggio inviato con successo.");
+define("_SAVED","Modifiche salvate.");
+define("_SAVEDNOPW","Modifiche salvate eccetto la password. Le password non coincidono.");
+
+define("_POLLRESULTS","Risultato sondaggio");
+define("_VOTES","totale voti");
+define("_MOREPOLLS","altri sondaggi");
+define("_POLLS","sondaggi");
+define("_VOTE","Vota");
+define("_RESULTS","risultato");
+define("_LISTPOLLS","Lista dei sondaggi");
+define("_QUESTION","Domanda");
+define("_NOPOLLS","Non ci sono sondaggi attivi in questo momento.");
+
+define("_NOSTORY","Storia non trovata");
+define("_INTOPIC","dell'argomento");
+define("_EMPTYTOPIC","Nessuna nuova notizia di questo argomento da visualizzare.");
+define("_EMPTY","Non ci sono nuove notizie da visualizzare.");
+
+define("_NOPOSTING","Non e' possibile inviare notizie.");
+define("_CONTRIBUTE","Invia la tua notizia");
+define("_YOURINFO","Le tue Informazioni:");
+define("_YOURSTORY","La tua notizia:");
+define("_UNVERIFIED","Messaggio non veririficato da:");
+
+define("_SUBMIT","Invia");
+define("_PREVIEW","Anteprima");
+define("_PRESTORY","Anteprima / Modifica la tua storia");
+define("_PRETEXT","Questo e' come la tua storia apparira'. Puoi fare le ultime modifiche e poi inviarla.");
+
+define("_NOLINKS","Nessuna risorsa da visualizzare.");
+define("_POSTLINK","Invia un Link");
+define("_SITENAME","Nome del sito");
+define("_DESCRIPTION","Descrizione");
+define("_CATEGORY","Categoria");
+define("_SUGTHANK","Grazie per il tuo suggerimento. L'amministratore verifichera' a breve.");
+define("_ADDSUG","Suggerisci un link");
+define("_SHOWING","Mostrando");
+define("_SUGCAT","Suggerisci una Categoria");
+define("_SUGLINK","Suggerisci un Link");
+
+define("_NOUSER","Nessun utente");
+define("_PROFILING","Profilazione utente");
+define("_NA","Non disponibile");
+define("_MAILTO","Invia mail a");
+define("_SUBJECT","Oggetto");
+define("_MESSAGE","Messaggio");
+
+define("_SEARCHFOR","Cerca");
+define("_QUERY","Ricerca");
+define("_ALLTOPICS","Tutti gli argomenti");
+define("_STORIES","notizie");
+define("_AUTHORS","autori");
+define("_LIMIT","Limite");
+define("_SEARCHRESULTS","Risultati ricerca");
+define("_MATCHES","Risultati");
+define("_POSTEDBY","Scritto da");
+define("_POSTEDON","Scritto il");
+define("_ON","da");
+define("_BY","il");
+define("_NOMATCHES","Nessun risoltato per la tua ricerca.");
+
+define("_MMAIL1","Questa notizia proviene da");
+define("_MMAIL2","Per altre, guarda");
+
+define("_HITS","Hits");
+define("_SITESTATS","Statistiche sito");
+define("_AVGHITS","Average Hits");
+define("_TOTALSTORIES","Totale notizie");
+define("_TOTALCOMMENTS","Totale commenti");
+define("_TOTALPOLLS","Totale sondaggi");
+define("_TOTALLINKS","Totale Links");
+define("_TOPSTORIES","Top 10 Notizie");
+define("_TOPPOLLS","Top 10 Sondaggi");
+define("_TOPLINKS","Top 10 Links");
+define("_NOPOLLS","Nessun sondaggio disponibile, o ancora nessun votante.");
+define("_NOSTORIES","Nessuna storia disponibile o nessuno visitatore.");
+define("_NOLINKS","Nessun link disponibile o nessun clock.");
+define("_TOPPAGES","Top 10 Pagine");
+define("_NOPAGES","Nessuna pagina disponibile, o nessun visitatore.");
+
+define("_MORELINKS","More Links");
+define("_PRINTFRIEND","Printer friendly version");
+define("_MAILTOFRIEND","Share this story");
+define("_FRIENDINFO","Friend's Information:");
+define("_FRIENDNAME","Friend's Name");
+define("_FRIENDEMAIL","Friend's Email");
+define("_MAILFRIEND","Here is a story in which you may be interested in.");
+
+define("_ATTACHMENT","Attachment");
+define("_MAXSIZE","Maximum Filesize");
+
+define("_FILETOOBIG","Your attachment is too large.  Nothing attached.");
+define("_STORYOK","Your story submission was successful.");
+
+?>

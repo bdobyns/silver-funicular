@@ -1,0 +1,193 @@
+<?
+
+# phpWebLog language translation file (French)
+# French translation by Pascal Morisson
+# Updated: 12-19-2000
+
+$rdf_lang	= "fr-FR";
+setlocale('LC_ALL','fr_FR');
+
+# formatted date string -- Uses PHP's strftime() function
+
+$G_DATE = "%A %d %B %Y @ %I:%M%p %Z";
+
+# random submit buttons
+$nonsense[]     = "Valider";
+$nonsense[]     = "Soumettre";
+$nonsense[]     = "Mais cliquez donc !";
+$nonsense[]     = "Envoyer";
+$nonsense[]     = "Faites passer...";
+
+# strings
+define("_INDEX", "Sommaire");
+define("_CONTRIB", "Proposer une info");
+define("_LINKS", "Liens");
+define("_SEARCH", "Rechercher");
+define("_STATS", "Stats");
+define("_CONTACT", "Contact");
+
+define("_FIND", "Recherche");
+
+define("_COMMENTS","commentaires");
+define("_COMMENT","commentaire");
+define("_READMORE","plus de détails");
+define("_VIEWS","vues:");
+define("_REPLY","répondre");
+define("_PARENT","parent");
+define("_MODIFIED","Dernière modification:");
+
+define("_TOP5","Top 5 articles");
+define("_HOT5","Articles à la une");
+define("_OLDER","Anciens articles");
+define("_LAST5","5 derniers articles postés par");
+
+define("_ARCHIVE","archive");
+define("_REPOSTED","Reposté le");
+
+define("_NOCOMMENTS","Pas de commentaires.");
+define("_POSTCOMMENT","Soumettre un commentaire");
+
+define("_NAME","Nom");
+define("_EMAIL","E-mail");
+define("_URL","URL");
+
+define("_NEXT","Suivant");
+define("_PREV","Précédent");
+
+define("_SAVEINFO","Enregistrer mes informations (utilise les cookies)");
+define("_ANONYMOUS","Je préfères rester anonyme");
+define("_MAILCOMMENTS","Envoyer les commentaires vers l'adresse électronique suivante");
+
+define("_FULLHTML","* Les tags HTML sont acceptés.");
+define("_NOHTML","* Les tags HTML ne sont pas acceptés.");
+define("_CODEHTML","* Les tags HTML seront visibles mais non interprétés.");
+define("_YESHTML","* Tags HTML autorisés:");
+define("_AUTOHTML","* HTML non autorisé les liens se feront automatiquement.");
+define("_NOPUBLIC","* Votre adresse e-mail ne sera pas rendu public.");
+
+define("_CMAIL1","Un commentaire a été ajouté à votre article");
+define("_CMAIL2","Ci-dessous, les détails de la session.");
+define("_CMAIL3","Article original");
+
+define("_TITLE","Titre");
+define("_TOPIC","Section");
+define("_TOPICS","Sections");
+define("_FEATURES","Possibilités");
+define("_DATE","Date");
+define("_AUTHOR","Auteur");
+define("_STORY","Article");
+define("_SUMMARY","Résumé");
+define("_OPTIONAL","Facultatif");
+define("_SEPLINKS","Séparer les liens par des virgules");
+define("_RELATED","Liens");
+define("_MORE","plus");
+
+define("_COMADDED","Commentaire ajouté");
+define("_WRITES","a écrit");
+define("_DETAILS","Pour des détails, voir");
+
+define("_NMAIL1","Un nouvel article a été ajouté à");
+define("_NMAIL2","et attend votre vérification");
+define("_NMAIL3","Pour vérifier ce message, voir");
+
+define("_PROBLEM","Veuillez avertir l'administrateur de ce site si ce problème persiste.");
+define("_MAILERROR","Désolé, une erreur est survenue lors de l'envoi de votre message. Le problème a été archivé.");
+
+define("_MAILSENT","Message envoyé avec succès.");
+define("_SAVED","Changement sauvegardé.");
+define("_SAVEDNOPW","Changement sauvegardé, excepté le mot de passe (confirmation non valide).");
+
+define("_POLLRESULTS","Sondage");
+define("_VOTES","total votes");
+define("_MOREPOLLS","plus de sondages");
+define("_POLLS","Sondages");
+define("_VOTE","Vote");
+define("_RESULTS","résultats");
+define("_LISTPOLLS","Listes des sondages");
+define("_QUESTION","Question");
+define("_NOPOLLS","Il n'y a pas de sondage actif pour le moment.");
+
+
+define("_NOSTORY","Article non trouvé");
+define("_INTOPIC","dans cette section");
+define("_EMPTYTOPIC","Pas d'article dans cette section.");
+define("_EMPTY","Pas d'info.");
+
+define("_NOPOSTING","Proposition d'article interdite.");
+define("_CONTRIBUTE","Proposez votre article");
+define("_YOURINFO","Votre Info:");
+define("_YOURSTORY","Votre Article:");
+define("_UNVERIFIED","Nouveau message de");
+
+define("_SUBMIT","Soumettre");
+define("_PREVIEW","Aperçu");
+define("_PRESTORY","Voir/Editer votre article");
+define("_PRETEXT","Ci-dessous, vous pouvez voir votre article tel qu'il apparaîtra sur la page de garde.  Vous pouvez apporter des modifications puis les soumettre définitivement.");
+
+define("_NOLINKS","Pas de ressource disponible.");
+define("_POSTLINK","Soumettre un lien");
+define("_SITENAME","Nom du Site");
+define("_DESCRIPTION","Description");
+define("_CATEGORY","Catégorie");
+define("_OTHERCAT","Autre, spécifier");
+define("_SUGTHANK","Merci pour votre suggestion. L'administrateur la vérifiera prochainement.");
+define("_ADDSUG","Suggestion d'un lien");
+define("_SHOWING","Affichage");
+define("_SUGCAT","Suggérer une catégorie");
+define("_SUGLINK","Suggérer un lien");
+
+define("_NOUSER","Utilisateur inconnu");
+define("_PROFILING","Profil utilisateur");
+define("_NA","Non disponible");
+define("_MAILTO","Envoyer un message à");
+define("_SUBJECT","Sujet");
+define("_MESSAGE","Message");
+
+define("_SEARCHFOR","Rechercher");
+define("_QUERY","Requête");
+define("_ALLTOPICS","Toutes sections");
+define("_STORIES","articles");
+define("_AUTHORS","auteurs");
+define("_LIMIT","Limiter");
+define("_SEARCHRESULTS","Résultats de la recherche");
+define("_MATCHES","Résultats");
+define("_POSTEDBY","Posté par");
+define("_POSTEDON","Posté le");
+define("_ON","le");
+define("_BY","par");
+define("_NOMATCHES","Aucune correspondance avec votre recherche n'a été trouvée.");
+
+define("_MMAIL1","Cette info vient de");
+define("_MMAIL2","Pour plus de détails, voir");
+
+define("_HITS","Entrées");
+define("_SITESTATS","Statistiques du site");
+define("_AVGHITS","Moyenne des visites");
+define("_TOTALSTORIES","Total des articles");
+define("_TOTALCOMMENTS","Total des commentaires");
+define("_TOTALPOLLS","Total des sondages");
+define("_TOTALLINKS","Total des liens");
+define("_TOPSTORIES","Top 10 articles");
+define("_TOPPOLLS","Top 10 sondages");
+define("_TOPLINKS","Top 10 liens");
+define("_NOPOLLS","Aucun sondage disponible.");
+define("_NOSTORIES","Aucun article disponible.");
+define("_NOLINKS","Aucun lien disponible.");
+define("_TOPPAGES","Top 10 pages");
+define("_NOPAGES","Page indisponible.");
+
+define("_MORELINKS","Autres liens");
+define("_PRINTFRIEND","Version imprimable");
+define("_MAILTOFRIEND","Faire part à un ami");
+define("_FRIENDINFO","Information:");
+define("_FRIENDNAME","Nom");
+define("_FRIENDEMAIL","E-mail");
+define("_MAILFRIEND","Voici une info qui peut t'intéresser, enfin peut-être.");
+
+define("_ATTACHMENT","Attachement");
+define("_MAXSIZE","Taille maximale du fichier");
+
+define("_FILETOOBIG","La taille du fichier attaché est trop importante. Aucun attachement effectué !.");
+define("_STORYOK","Article soumis avec succès.");
+
+?>

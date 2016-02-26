@@ -1,0 +1,99 @@
+parser syntax levels:
+1. Full HTML
+  No substitution done by parser: straight echo into target
+2. Reduced HTML
+  Substitution done as described here
+3. Micro HTML
+  No tag substitution: will still translate empty-line -> <P>
+  and in-line substitution of http://xxx.xxx and xxx@xxx.xxx to
+  links/mailtos. Any in-line HTML killed.
+4. No HTML
+  Parser kills any attempt at HTML, makes no substitutions.
+
+
+Spec for syntax used:
+----------------------------------------------
+
+tag is <x*> and must occur on ONE line: <this
+> isn't a valid tag.
+no white space: < x > disallowed implying the tag
+must occur on ONE line: <this
+> isn't a valid tag.
+
+Uninterpreted tags are rendered to &lt;x&gt;
+Improperly formatted tags are rendered with <=&lt; >=&gt;
+
+Syntax engine:
+the syntax engine will parse through the lines of the
+input, detecting tags. The pre-processor will substitute
+a blank line "\n" with a "<P>\n".
+When it finds a tag, the pre-processor will do matches with
+the syntax definition:
+
+
+tagRE   ---> htmlCode
+
+the first [tagRE] that matches will result in the whole <tag>
+being substituted with [htmlCode]
+
+That is:
+
+tagRE = /b/i
+htmlCode = <B>
+
+and
+
+tagRE = /\/b/i
+htmlCode = </B>
+
+means that "here is some <b>text</b>" is translated to
+"here is some <B>text</B>"
+
+and
+
+tagRE = /img=http:\/\/(.+\..+)/
+htmlCode = <IMG SRC="$1">
+
+will correctly substitute for the <img=http://some.image.com/image.gif>
+tag.
+
+-----------------------------------------------
+
+Text decoration:
+
+blank line ---> <P>
+
+<b> ... </b>
+<i> ... </i>
+<u> ... </u>
+
+
+
+Enhanced syntax for text docation:
+
+Bullets : <*>
+Colors : <red></red> <blue></blue> <green></green>
+Sizes : <small></small> <large></large>
+Preformat: <pre></pre>
+
+
+Quote style:
+
+<q> ... </q>
+or
+<quote> .... </quote>
+
+
+
+Link style:
+
+<link=http://xxxx.xxx>
+or
+<url=http://xxx.xxx>
+or
+<email=xxx@xxx.xxx>
+or
+<image=http://xxx.xxx>
+or
+<img=http://xxx.xxx>
+

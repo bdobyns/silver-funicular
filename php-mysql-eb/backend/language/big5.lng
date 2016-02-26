@@ -1,0 +1,189 @@
+<?php
+# phpWebLog language translation file (Chinese Big5 Character set)
+# translated by Johnny T. Li
+$rdf_lang       = "tw";
+setlocale('LC_ALL','tw_tw');
+
+# formatted date string -- Uses PHP's strftime() function
+
+$G_DATE = "%A %B %d %Y @ %I:%M%p %Z";
+
+# random submit buttons
+$nonsense[]     = "¿ï¾Ü";
+$nonsense[]     = "ÂI¤Ú!";
+$nonsense[]     = "«ö¤U";
+$nonsense[]     = "¥i¥H©Ô";
+$nonsense[]     = "°¨¤W°õ¦æ";
+
+# strings
+define("_INDEX", "·s»D²M³æ");
+define("_CONTRIB", "µo§G·s»D");
+define("_LINKS", "³sµ²");
+define("_SEARCH", "¬d¸ß");
+define("_STATS", "²Îp");
+define("_CONTACT", "±H«H");
+
+define("_FIND", "´M§ä");
+
+define("_COMMENTS","¯d¨¥");
+define("_COMMENT","¯d¨¥");
+define("_READMORE","§ó¦h°T®§");
+define("_VIEWS","Æ[¬Ý¦¸¼Æ:");
+define("_REPLY","¦^µªÂÐªÌ");
+define("_PARENT","¦^§@ªÌ");
+define("_MODIFIED","³Ìªñ×§ï¤é´Á:");
+
+define("_TOP5","Top 5 ·s»D");
+define("_HOT5","Hot 5 ·s»D");
+define("_OLDER","ÂÂ·s»D");
+define("_LAST5","³Ìªñ5Ó·s»D");
+
+define("_ARCHIVE","¥H«eªº·s»D");
+define("_REPOSTED","«¥Z¦b");
+
+define("_NOCOMMENTS","µLµªÂÐ.");
+define("_POSTCOMMENT","¥ZµnµªÂÐ");
+
+define("_NAME","¦WºÙ");
+define("_EMAIL","Email");
+define("_URL","URL");
+
+define("_NEXT","¤U¤@¶");
+define("_PREV","¤W¤@¶");
+
+define("_SAVEINFO","°O¦í§Úªº¸ê®Æ(¨Ï¥Î cookies)");
+define("_ANONYMOUS","¤£¤½§G§Úªº¸ê®Æ");
+define("_MAILCOMMENTS","¥Î¤W±ªºEMAIL¶Ç§Úªº¯d¨¥");
+
+define("_FULLHTML","* ¥i¥ÎHTML tags.");
+define("_NOHTML","* ¤£¥i¥ÎHTML tags.");
+define("_CODEHTML","* Åã¥ÜHTML tags¦ý¤£¨Ï¥Î.");
+define("_YESHTML","* ³¡¤À HTML tags:");
+define("_AUTOHTML","* ¤£¥ÎHTML ¡A¦ý·|°õ¦æ³sµ²");
+define("_NOPUBLIC","* ¤½§G§AªºEMAIL.");
+
+define("_CMAIL1","¦³¤H¦b§Aªº·s»D¤W¯d¨¥");
+define("_CMAIL2","¥H¤U¬O·s»Dªº¸ê°T..");
+define("_CMAIL3","ì©l®ø®§");
+
+define("_TITLE","¥DÃD");
+define("_TOPIC","¶µ¥Ø");
+define("_TOPICS","¶µ¥Ø");
+define("_FEATURES","©ÛµP");
+define("_DATE","¤é´Á");
+define("_AUTHOR","§@ªÌ");
+define("_STORY","·s»D");
+define("_SUMMARY","ºKn");
+define("_OPTIONAL","«D¥²n");
+define("_SEPLINKS","§â³sµ²¥Îcommas¤À¶}");
+define("_RELATED","¬ÛÃö³sµ²");
+define("_MORE","§ó¦h..");
+
+define("_COMADDED","Insert commas");
+define("_WRITES","Writes");
+
+define("_DETAILS","²Ó¸`½Ð¬Ý");
+
+define("_NMAIL1","¦³·sªº®ø®§");
+define("_NMAIL2","¦Aµ¥Ô±z¹L¥Ø");
+define("_NMAIL3","n½T©wªº®ø®§¡A½Ð¬Ý");
+
+define("_PROBLEM","½Ð§â³oÓ°ÝÃD§iª¾ºÞ²zªÌ");
+define("_MAILERROR","¹ï¤£°_±zªº°T®§");
+
+define("_MAILSENT","°T®§¶Ç¥X");
+define("_SAVED","×§ï");
+define("_SAVEDNOPW","×§ï¦¨¥\,°£¤F±K½X");
+
+define("_POLLRESULTS","²¼¿ïµ²ªG");
+define("_VOTES","§ë²¼¦¸¼Æ");
+define("_MOREPOLLS","¨ä¥Lªº§ë²¼¶µ¥Ø");
+define("_POLLS","²¼¿ï");
+define("_VOTE","§ë²¼");
+define("_RESULTS","µ²ªG");
+define("_LISTPOLLS","²¼¿ï²M³æ");
+define("_QUESTION","°ÝÃD");
+define("_NOPOLLS","¥Ø«e¨S¦³¥ô¦ó²¼¿ï¶µ¥Ø.");
+
+define("_NOSTORY","¬dµL¸ê®Æ");
+define("_INTOPIC","¦b³oÓ¶µ¥Ø¸Ì");
+define("_EMPTYTOPIC","³oÓ¶µ¥Ø²z¨S¦³·sªº®ø®§");
+define("_EMPTY","¨S¦³·sªº®ø®§");
+
+define("_NOPOSTING","³o¸Ì¤£¯àµo§G·s»D");
+define("_CONTRIBUTE","µo§G±zªº®ø®§");
+define("_YOURINFO","§Aªº¸ê®Æ:");
+define("_YOURSTORY","§Aªº·s»D:");
+define("_UNVERIFIED","µL¦WªÌ¤ê¡G");
+
+define("_SUBMIT","°e¥X");
+define("_PREVIEW","¹wÄý");
+define("_PRESTORY","¹wÄý/½s¿è§Aªº·s»D");
+define("_PRETEXT","¥H¤W¬O§Aªº·s»D¡A§A¥i¥H×§ï©Î°e¥X");
+
+define("_NOLINKS","¨S¦³¥iÅã¥Üªº¸ê·½");
+define("_POSTLINK","¥[¤J³sµ²");
+define("_SITENAME","ºô¯¸¦WºÙ");
+define("_DESCRIPTION","´yz");
+define("_CATEGORY","¥DÃD");
+define("_SUGTHANK","·PÁÂ±zªº®ø®§¡AºÞ²zªÌ·|ºÉ§Ö³B²z");
+define("_ADDSUG","³sµ²«ØÄ³");
+define("_SHOWING","Åã¥Ü");
+define("_SUGCAT","«ØÄ³¥DÃD");
+define("_SUGLINK","±À¥X¤@Ó³sµ²");
+
+define("_NOUSER","¬dµL¦¹±b¸¹");
+define("_PROFILING","¨Ï¥ÎªÌ¸ê®Æ");
+define("_NA","¤£¥i¥Î");
+define("_MAILTO","«H½c¡G");
+define("_SUBJECT","¥DÃD¡G");
+define("_MESSAGE","°T®§¡G");
+
+define("_SEARCHFOR","´M§ä");
+define("_QUERY","¬d");
+define("_ALLTOPICS","©Ò¦³¥DÃD");
+define("_STORIES","·s»D");
+define("_AUTHORS","§@ªÌ");
+define("_LIMIT","¨î");
+define("_SEARCHRESULTS","¬d¸ßµ²ªG");
+define("_MATCHES","§ä¨ì");
+define("_POSTEDBY","¤½§GªÌ");
+define("_POSTEDON","¤½§G¦b");
+define("_ON","¦b");
+define("_BY","±b¸¹");
+define("_NOMATCHES","¬dµL¦¹¸ê®Æ");
+
+define("_MMAIL1","³o±ø·s»Dªº¨Ó·½¬O");
+define("_MMAIL2","½Ð¬Ý§ó¦h«H®§");
+
+define("_HITS","ÂsÄý¦¸¼Æ");
+define("_SITESTATS","ºô¯¸²Îp");
+define("_AVGHITS","¥§¡ÂsÄý¦¸¼Æ");
+define("_TOTALSTORIES","·s»DÁ`¼Æ");
+define("_TOTALCOMMENTS","µªÂÐÁ`¼Æ");
+define("_TOTALPOLLS","²¼¿ïÁ`¼Æ");
+define("_TOTALLINKS","³sµ²Á`¼Æ");
+define("_TOPSTORIES","Top10·s»D");
+define("_TOPPOLLS","Top10 ²¼¿ï");
+define("_TOPLINKS","Top10³sµ²");
+define("_NOPOLLS","¨S¦³²¼¿ï¶µ¥Ø");
+define("_NOSTORIES","¨S¦³·s»D©Î¦^ÂÐªÌ");
+define("_NOLINKS","¨S¦³³sµ²¸ê°T");
+define("_TOPPAGES","Top 10 ºô¶");
+define("_NOPAGES","¨S¦³ºô¶¸ê°T");
+
+define("_MORELINKS","§ó¦h³sµ²");
+define("_PRINTFRIEND","¥i¦C¦L¼Ò¦¡");
+define("_MAILTOFRIEND","¦@¨É³o«h·s»D");
+define("_FRIENDINFO","ªB¤Íªº¸ê®Æ");
+define("_FRIENDNAME","ªB¤Í¦WºÙ");
+define("_FRIENDEMAIL","ªB¤Íªº Email");
+define("_MAILFRIEND","±Hµ¹ªB¤Í");
+define("_ATTACHMENT","°Æ¥ó");
+define("_MAXSIZE","³Ì¤jÀÉ®×¤j¤p");
+
+define("_FILETOOBIG","¤Ó¤j");
+define("_STORYOK","¥i¥Z·s»D");
+
+?>
+

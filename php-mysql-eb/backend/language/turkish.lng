@@ -1,0 +1,192 @@
+<?
+
+# phpWebLog language translation file (Turkish)
+# Turkish translation by Serkan Hadi Ceylani
+# serkan@turk-php.com
+# May 02 2001
+
+$rdf_lang	= "tr-TR";
+setlocale('LC_ALL','tr_TR');
+
+# formatted date string -- Uses PHP's strftime() function
+
+$G_DATE = "%A %B %d %Y @ %I:%M%p %Z";
+
+# random submit buttons
+$nonsense[]     = "Gonder";
+$nonsense[]     = "Izindeyiz Atam!";
+$nonsense[]     = "Gonder";
+$nonsense[]     = "Turk Gencligi !";
+$nonsense[]     = "Gonder";
+
+# strings
+define("_INDEX", "Ana Sayfa");
+define("_CONTRIB", "Kaynak Ekle");
+define("_LINKS", "Linkler");
+define("_SEARCH", "Ara");
+define("_STATS", "Istatistik");
+define("_CONTACT", "Iletisim");
+
+define("_FIND", "Ara :");
+
+define("_COMMENTS","yorumlar");
+define("_COMMENT","yorum");
+define("_READMORE","yazinin devami");
+define("_VIEWS","goruntulenme:");
+define("_REPLY","cevapla");
+define("_PARENT","parent");
+define("_MODIFIED","Son Degistirilme:");
+
+define("_TOP5","TOP 5 Makale");
+define("_HOT5","Hot 5 Makale");
+define("_OLDER","Eski Makaleler");
+define("_LAST5","Bu kullanicinin gonderdigi son 5 yazi:");
+
+define("_ARCHIVE","Arsiv");
+define("_REPOSTED","Duzeltme tarihi:");
+
+define("_NOCOMMENTS","Hic bir kullanici yorumu yok.");
+define("_POSTCOMMENT","Bu konu hakkinda ne dusunuyorsunuz?");
+
+define("_NAME","Isim");
+define("_EMAIL","Email");
+define("_URL","URL");
+
+define("_NEXT","Sonraki");
+define("_PREV","Onceki");
+
+define("_SAVEINFO","Bilgilerimi hatirla (cookie kullan)");
+define("_ANONYMOUS","Isimsiz olarak kalmak istiyorum");
+define("_MAILCOMMENTS","Yorumlari e-mail adresime otomatik olarak gonder");
+
+define("_FULLHTML","* HTML etiketleri kullanilamaz.");
+define("_NOHTML","* HTML etiketleri uygulanamaz.");
+define("_CODEHTML","* HTML etiketleri gosterilecek ama uygulanmayacaktir.");
+define("_YESHTML","* Kabul edilen  HTML etiketleri:");
+define("_AUTOHTML","* HTML etiketleri kabul edilemez.Linkler otomatik olarak baglanti sekline cevrilecektir.");
+define("_NOPUBLIC","* EMail adresiniz baskalari tarafindan gorunmeyecektir.");
+
+define("_CMAIL1","Makalenize bir yorum eklendi");
+define("_CMAIL2","Detaylar..");
+define("_CMAIL3","Orjinal Makale");
+
+define("_TITLE","Baslik");
+define("_TOPIC","Konu");
+define("_TOPICS","Acik Konular");
+define("_FEATURES","Menu");
+define("_DATE","Tarih");
+define("_AUTHOR","Yazar");
+define("_STORY","Makale");
+define("_SUMMARY","Ozet");
+define("_OPTIONAL","Opsiyonel");
+define("_SEPLINKS","Linkleri virgul ile ayirin.");
+define("_RELATED","Kaynak Link");
+define("_MORE","daha fazla");
+
+define("_COMADDED","Yorum eklendi");
+define("_WRITES","yazan");
+define("_DETAILS","Daha fazla bilgi icin ,bakiniz");
+
+define("_NMAIL1","Yeni makale eklendi");
+define("_NMAIL2","onaylamaniz icin sizi bekliyor");
+define("_NMAIL3","Onaylamak icin ,bakiniz");
+
+define("_PROBLEM","Sistem yoneticisini sorun devam ederse uyarin.");
+define("_MAILERROR","Uzgunum.Yazinizin gonderilmesi sirasinda bir hata olustu.Olusan hata ayrintili sekilde kayit edildi.");
+
+define("_MAILSENT","Mesajin gonderilmesi basarili sekilde tamamlandi.");
+define("_SAVED","Degisiklikler kayit edildi.");
+define("_SAVEDNOPW","degisiklikler kayit edildi.Admin sifresi uyusmadigi icin ayni kaldi.");
+
+define("_POLLRESULTS","Anket Sonuclari");
+define("_VOTES","toplam oylar");
+define("_MOREPOLLS","daha fazla anket");
+define("_POLLS","Anketler");
+define("_VOTE","Oy Ver");
+define("_RESULTS","sonuclar");
+define("_LISTPOLLS","Anket Listesi");
+define("_QUESTION","Soru");
+define("_NOPOLLS","Su anda aktif bir anket uygulanmiyor.");
+
+define("_NOSTORY","Makale bulunamadi");
+define("_INTOPIC","bu konu ile ilgili");
+define("_EMPTYTOPIC","Bu konu ile ilgili gosterilebilecek yeni makale bulunmuyor.");
+define("_EMPTY","Gostrilebilecek makale bulunmuyor.");
+
+define("_NOPOSTING","Kaynaklar su anda yanlizca editorler tarafindan eklenebilmektedir (Sistemin kotuye kullanimi nedeni ile).");
+define("_CONTRIBUTE","Makalenizi Yazin");
+define("_YOURINFO","Kisisel Bilgiler:");
+define("_YOURSTORY","Makaleniz:");
+define("_UNVERIFIED","Onaylanamayan mesaj");
+
+define("_SUBMIT","Gonder");
+define("_PREVIEW","Onizleme");
+define("_PRESTORY","Onizleme / Makalenizi Duzenleyin");
+define("_PRETEXT","Makalenizin ana sayfada nasil goruntulenecegini izliyorsunuz.Eger tum islemleriniz bitti ise makalenizi gonderebilirsiniz. ");
+
+define("_NOLINKS","Gosterilebilcek kaynak bulunmuyor.");
+define("_POSTLINK","Kaynak Ekle");
+define("_SITENAME","Site Ismi");
+define("_DESCRIPTION","Aciklama");
+define("_CATEGORY","Kategori");
+define("_SUGTHANK","Oneriniz icin tessekkur ederim.Admin tarafindan konu ile ilgili mail adresinize gonderilecektir.");
+define("_ADDSUG","Link Onerisi");
+define("_SHOWING","Gosteriliyor");
+define("_SUGCAT","Kategori Oner");
+define("_SUGLINK","Link Oner");
+
+define("_NOUSER","Boyle bir kullanici yok.");
+define("_PROFILING","Kullanici Profili: ");
+define("_NA","N/A");
+define("_MAILTO","Mail Gonder:");
+define("_SUBJECT","Konu");
+define("_MESSAGE","Mesaj");
+
+define("_SEARCHFOR","Arana kelime");
+define("_QUERY","Sorgu");
+define("_ALLTOPICS","Butun Konular");
+define("_STORIES","Makaleler");
+define("_AUTHORS","Yazarlar");
+define("_LIMIT","Limit");
+define("_SEARCHRESULTS","Arama Sonuclari");
+define("_MATCHES","Bulunan");
+define("_POSTEDBY","Yazar");
+define("_POSTEDON","Tarih");
+define("_ON","tarih");
+define("_BY","Yazar");
+define("_NOMATCHES","Uzgunum hic bir sonuc bulunamadi.");
+
+define("_MMAIL1","Bu makalenin kaynagi : ");
+define("_MMAIL2","daha fazla bilgi icin,bakiniz");
+
+define("_HITS","Izlenme");
+define("_SITESTATS","Site Istatistikleri");
+define("_AVGHITS","Ortalama Izlenme");
+define("_TOTALSTORIES","Toplam Makale");
+define("_TOTALCOMMENTS","Toplam Yorum");
+define("_TOTALPOLLS","Toplam Anket");
+define("_TOTALLINKS","Toplam Link");
+define("_TOPSTORIES","Top 10 Makale");
+define("_TOPPOLLS","Top 10 Anket");
+define("_TOPLINKS","Top 10 Link");
+define("_NOPOLLS","Hic bir anket kaynagi yok veya kimse bir oy kullanmadi.");
+define("_NOSTORIES","Hic bir makale yok veya kimse tarafindan okunmadi.");
+define("_NOLINKS","Hic bir link yok veya kimse tarafindan tiklanmadi.");
+define("_TOPPAGES","Top 10 Sayfa");
+define("_NOPAGES","Hic bir sayfa yok veya kimse tarafindan tiklanmadi.");
+
+define("_MORELINKS","Servisler");
+define("_PRINTFRIEND","Makaleyi Yazdir ");
+define("_MAILTOFRIEND","Makaleyi Gonder");
+define("_FRIENDINFO","Arkadasinizin Bilgileri:");
+define("_FRIENDNAME","Arkadasinizin Ismi");
+define("_FRIENDEMAIL","Arkadasinizin Mail Adresi");
+define("_MAILFRIEND","Bu makale belki ilgini cekebilir.");
+
+define("_ATTACHMENT","Dosya Eki");
+define("_MAXSIZE","Max Dosya Boyutu");
+
+define("_FILETOOBIG","Dosya boyutu cok fazla.Hic bir  dosya eki eklenmedi.");
+define("_STORYOK","Makele gonderme isleminiz basarili sekilde tamamlandi.");
+
+?>
