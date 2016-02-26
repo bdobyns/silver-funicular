@@ -67,6 +67,6 @@ VPC=vpc-a1fc39c4
 SUBNETS=`vpcsubnets $VPC`
 
 # ./deploy.sh new $NAME --region us-west-2 --platform php --keyname barry_rsa
-./deploy.sh create $ENV -i t1.micro --timeout 60 \
-    -db.engine mysql -db.i db.m1.small -db.size 5 -db.pass $PASS -db.user $USER \
-    --vpc.id $VPC --vpc.dbsubnets $SUBNETS --vpc.elbsubnets $SUBNETS --vpc.publicip
+./deploy.sh create $ENV -i m1.small --timeout 60 \
+    -db.engine mysql -db.i db.m1.small -db.size 5 -db.pass $PASS -db.user $USER 
+#    --vpc.id $VPC --vpc.dbsubnets $SUBNETS --vpc.elbsubnets $SUBNETS --vpc.publicip

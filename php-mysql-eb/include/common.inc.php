@@ -36,10 +36,13 @@ $G_PASS = $_SERVER['RDS_PASSWORD'];          # mysql password
 ## (do not add a trailing / to the following paths)
 
 ## full path to the phpWebLog base directory
-$G_PATH = "/kunden/homepages/2/d146177287/htdocs/newlpef/public_html";
+$G_PATH = $_SERVER['DOCUMENT_ROOT'];
 
 ## full URL to your phpWebLog document root
-$G_URL  = "http://www.lpef.org";
+# $G_URL  = 'http://'. $_SERVER['SERVER_NAME'];
+$G_URL = ! empty($_SERVER['HTTP_host']) ?
+       "http://".$_SERVER['HTTP_host']
+       : "http://".$_SERVER['SERVER_NAME'];
 
 /*== No need to edit past this line ====================================*/
 

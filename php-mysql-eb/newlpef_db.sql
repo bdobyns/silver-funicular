@@ -28,11 +28,11 @@ CREATE TABLE `T_Blocks` (
   `OrderID` tinyint(4) default NULL,
   `URL` varchar(96) default NULL,
   `Hits` int(11) default NULL,
-  `Timestamp` timestamp(14) NOT NULL,
+  `Timestamp` timestamp NOT NULL,
   `Birthstamp` datetime default NULL,
   `Cache` int(11) default NULL,
   PRIMARY KEY  (`Rid`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -61,10 +61,10 @@ CREATE TABLE `T_Comments` (
   `Content` text,
   `Host` varchar(96) default NULL,
   `Birthstamp` datetime default NULL,
-  `Timestamp` timestamp(14) NOT NULL,
+  `Timestamp` timestamp NOT NULL,
   `ParentRid` varchar(16) default NULL,
   PRIMARY KEY  (`Rid`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -88,7 +88,7 @@ CREATE TABLE `T_Config` (
   `Name` varchar(16) default NULL,
   `Value` varchar(128) default NULL,
   PRIMARY KEY  (`Rid`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -145,7 +145,7 @@ CREATE TABLE `T_IndexLinks` (
   `URL` varchar(128) default NULL,
   `Hits` int(11) default NULL,
   PRIMARY KEY  (`Rid`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -165,7 +165,7 @@ CREATE TABLE `T_IndexNames` (
   `Name` varchar(48) NOT NULL default '',
   PRIMARY KEY  (`Rid`),
   UNIQUE KEY `Name` (`Name`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -186,7 +186,7 @@ CREATE TABLE `T_LinkCats` (
   `ParentRid` varchar(16) default NULL,
   `Verified` char(1) default NULL,
   PRIMARY KEY  (`Rid`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -219,7 +219,7 @@ CREATE TABLE `T_Links` (
   `Hits` int(11) default NULL,
   PRIMARY KEY  (`Rid`),
   UNIQUE KEY `Url` (`Url`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -287,9 +287,9 @@ CREATE TABLE `T_Pages` (
   `Content` text,
   `Display` char(1) default NULL,
   `Type` tinyint(4) default NULL,
-  `Timestamp` timestamp(14) NOT NULL,
+  `Timestamp` timestamp NOT NULL,
   PRIMARY KEY  (`Rid`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -310,7 +310,7 @@ CREATE TABLE `T_PollAnswers` (
   `Answer` varchar(255) default NULL,
   `Votes` int(11) default NULL,
   PRIMARY KEY  (`Rid`,`Aid`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -333,7 +333,7 @@ CREATE TABLE `T_PollQuestions` (
   `BirthStamp` datetime default NULL,
   `Display` char(1) NOT NULL default '0',
   PRIMARY KEY  (`Rid`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -364,10 +364,10 @@ CREATE TABLE `T_Stories` (
   `EmailComments` tinyint(4) default NULL,
   `Hits` int(11) default NULL,
   `Repostamp` datetime default NULL,
-  `Timestamp` timestamp(14) NOT NULL,
+  `Timestamp` timestamp NOT NULL,
   `Birthstamp` datetime default NULL,
   PRIMARY KEY  (`Rid`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -460,7 +460,7 @@ CREATE TABLE `T_ToolCats` (
   `ParentRid` varchar(16) default NULL,
   `Verified` char(1) default NULL,
   PRIMARY KEY  (`Rid`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -491,7 +491,7 @@ CREATE TABLE `T_Tools` (
   `Hits` int(11) default NULL,
   PRIMARY KEY  (`Rid`),
   UNIQUE KEY `Url` (`Url`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -532,10 +532,10 @@ CREATE TABLE `T_Topics` (
   `AltTag` varchar(64) default NULL,
   `NoPosting` char(1) default NULL,
   `NoComments` char(1) default NULL,
-  `Timestamp` timestamp(14) NOT NULL,
+  `Timestamp` timestamp NOT NULL,
   PRIMARY KEY  (`Rid`),
   UNIQUE KEY `Topic` (`Topic`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -570,10 +570,10 @@ CREATE TABLE `disallowed_Comments` (
   `Content` text,
   `Host` varchar(96) default NULL,
   `Birthstamp` datetime default NULL,
-  `Timestamp` timestamp(14) NOT NULL,
+  `Timestamp` timestamp NOT NULL,
   `ParentRid` varchar(16) default NULL,
   PRIMARY KEY  (`Rid`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4142,7 +4142,7 @@ CREATE TABLE `lpef_stories` (
   `exp_date` datetime default '9999-12-31 23:59:59',
   `textmode` enum('0','1') NOT NULL default '1',
   PRIMARY KEY  (`sid`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4209,7 +4209,7 @@ CREATE TABLE `lpef_topics` (
   `counter` int(11) NOT NULL default '0',
   `topicorder` tinyint(4) NOT NULL default '1',
   PRIMARY KEY  (`topicid`)
-) TYPE=MyISAM;
+) CHARACTER SET utf8, COLLATE utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
