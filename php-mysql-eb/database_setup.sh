@@ -1,5 +1,5 @@
 #!/bin/bash
-DUMP=html/newlpef_db.sql
+DUMP=src/newlpef_db.sql
 
 # ONLY RESTORES IF THE DATABASE IS NOT PRESENT
 if ! echo SELECT Rid FROM T_Blocks | mysql -h $RDS_HOSTNAME -u $RDS_USERNAME --password=$RDS_PASSWORD $RDS_DB_NAME >/dev/null ; then
