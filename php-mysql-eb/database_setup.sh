@@ -1,5 +1,14 @@
 #!/bin/bash
-DUMP=src/newlpef_db.sql
+STAGE=`/opt/elasticbeanstalk/bin/get-config container -k app_staging_dir`
+DUMP=newlpef_db.sql
+for F in $DUMP  src/$DUMP src/$DUMP $STAGE/$DUMP $STAGE/src/$DUMP
+do
+    if [ -f $F ] ; then 
+	DUMP=$F
+	break
+    fi
+done
+
 
 # ONLY RESTORES IF THE DATABASE IS NOT PRESENT
 if ! echo SELECT Rid FROM T_Blocks | mysql -h $RDS_HOSTNAME -u $RDS_USERNAME --password=$RDS_PASSWORD $RDS_DB_NAME >/dev/null ; then
