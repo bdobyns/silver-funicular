@@ -1,5 +1,4 @@
 #!/bin/bash
-
 DUMP=newlpef_db.sql
 
 # ONLY RESTORES IF THE DATABASE IS NOT PRESENT
