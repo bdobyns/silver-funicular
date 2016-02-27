@@ -45,9 +45,14 @@ fi
 if $USEEXISTINGAPP ; then 
     NAME=`./deploy.sh appname`
 fi
+if [ -z $NAME ] ; then 
+    echo ERROR: we expected that you had already created an app with 
+    echo ./deploy.sh new appname --region us-west-2 --platform php --keyname somekey_rsa
+    exit
+fi
 
-# trim the environment name if it is too long, aws only allows 28 chars
-EL=`echo ${ENV}-$NAME`
+# trim the environment name if it is too long, aws only allows 23 chars
+EL=`echo ${ENV}-$NAME | wc -c`
 if [ $EL -ge 23 ] ; then
     NL=`echo $NAME | wc -c`
     ENV=`echo $ENV | cut -c 1-$[ 22 - $NL ]`
@@ -55,6 +60,7 @@ fi
 
 set -x 
 
+# this is NOT the same as the function of the same name in lib_eb_deploy.sh
 function vpcsubnets
 {
     if [ ! -z $1 ] ; then 
