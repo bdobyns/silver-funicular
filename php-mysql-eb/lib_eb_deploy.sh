@@ -567,11 +567,11 @@ function ebnodeploy
 	DT=`date +%Y-%m-%d`
 	if [ ! -f $NDCONFIG ] ; then 
 	    mkdir -p .ebextensions
-	    echo "# created by $0 on $DT by $USER" >$NDCONFIG
+	    echo "# $NDCONFIG created using $0 on $DT by $USER" >$NDCONFIG
 	    echo "container_commands:" >>$NDCONFIG
 	fi
     cat >>$NDCONFIG <<EOF
-  remove_$NM: # written by $0 on $DT by $USER
+  remove_$NM: # $NM written using $0 on $DT by $USER
     command: "rm -rf $*"
 EOF
     git add $NDCONFIG
