@@ -57,7 +57,7 @@ you just gave it in the dashboard.
 
 using `eb init` (or `./deploy.sh newapp`) later without a keypair argument will offer to create a keypair.
 
-### Create An Empty Project (Tech Leads)
+### Checkout and Initialize This Project (Tech Leads)
 
 create a directory for your project (in this case we assume you've
 simply checked out the example) and then initialize your new project
