@@ -223,6 +223,7 @@ function appname
 # create an ed script for editing a configuration as produced by `eb config`
 # and then execute it with
 #     export EDITOR="cat $FILE | ed" ; eb config
+# this completely replaces the $KEY line with $KEY: $VAL
 function ebeditconfig 
 {
     EFILE=/tmp/ebconfig.hack.$$
@@ -243,8 +244,45 @@ cat >>$EFILE <<EOF
 /$KEY:/d
 /  $SECTION/
 a
-    $KEY: $VAL # written by $0 at $NOW by $USER
+    $KEY: $VAL # written by $0 on $NOW by $USER
 .
+
+EOF
+shift ; shift ; shift 
+done
+cat >>$EFILE <<EOF
+w
+w /tmp/ebeditconfig_$$.sav
+q
+
+EOF
+    export EDITOR="cat $EFILE | ed >/dev/null "
+    eb config # && rm $EFILE
+}
+
+# create an ed script for editing a configuration as produced by `eb config`
+# and then execute it with
+#     export EDITOR="cat $FILE | ed" ; eb config
+# this appends ,$VAL to the end of the $KEY line
+function ebappendconfig 
+{
+    EFILE=/tmp/ebconfig.hack.$$
+    if [  -f $EFILE ] ; then rm -rf $EFILE ; fi
+
+    while [ ! -z $3 ] 
+    do
+	SECTION=$1
+	KEY=$2
+	VAL=$3
+# find the section
+# delete the key
+# go back to the top of the section
+# insert the new key right after the section header
+NOW=`date +%Y-%m-%d`
+cat >>$EFILE <<EOF
+/  $SECTION/
+/$KEY:/
+s/$/,$VAL/
 
 EOF
 shift ; shift ; shift 
@@ -439,14 +477,11 @@ function ebcreate
 	    fi
 	    echo " BE PATIENT: THIS MAY TAKE A WHILE AND WILL DEPLOY AT LEAST ONE INSTANCE ALONG THE WAY "
 	    shift 
-	    # unless you specify other --vpc args,  we add in --vpc so you can use t2.micro etc, see 
-	    #    https://mike-thomson.com/blog/?p=2103#more-2103
-	    #    https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-create.html
-#	    if echo $* | grep '[[:blank:]]-vpc' >/dev/null ; then
+	    if echo $* | grep ' --tags' >/dev/null  ; then 
 		eb create $ENVNAME $*
-#	    else
-		eb create $ENVNAME $* --vpc
-#	    fi
+	    else
+		eb create $ENVNAME $* --tags "Name=${ENVNAME},Blame=$USER"
+	    fi
 }
 
 function ebputget 
@@ -567,23 +602,71 @@ function ebnodeploy
 	DT=`date +%Y-%m-%d`
 	if [ ! -f $NDCONFIG ] ; then 
 	    mkdir -p .ebextensions
-	    echo "# created by $0 at $DT by $USER" >$NDCONFIG
+	    echo "# $NDCONFIG created using $0 on $DT by $USER" >$NDCONFIG
 	    echo "container_commands:" >>$NDCONFIG
-	    git add $NDCONFIG
 	fi
     cat >>$NDCONFIG <<EOF
-  remove_$NM: # written by $0 at $DT by $USER
+  remove_$NM: # $NM written using $0 on $DT by $USER
     command: "rm -rf $*"
 EOF
+    git add $NDCONFIG
     fi
 cat $NDCONFIG
 }
 
 function vpcsubnets
 {
+#        $ME vpcs                 show available vpcs and subnets
+#        $ME vpcs vpc-id          show subnets for given vpc
+    shift
+    # use args if you have them
     if [ ! -z $1 ] ; then 
-	aws ec2 describe-subnets --filters "Name=vpc-id,Values=$1" | jq .Subnets[].CidrBlock | tr -d \"\n 
+	VPCS="$*"
+    else
+	VPCS=`aws ec2 describe-vpcs | jq .Vpcs[].VpcId | tr -d \" `
+    fi
+
+    echo `setregion`
+    for VPC in $VPCS 
+    do
+	echo "    "$VPC
+	echo -n "        "
+	aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC" | jq .Subnets[].CidrBlock | tr -d \" | tr '\n' ' '
+	echo " "
+    done
+}
+
+function ebconfigphperrors
+{
+#        $ME env phperrors on     turn on display_errors in php.ini
+#        $ME env phperrors off    turn on display_errors in php.ini
+    if cfgget $EBCONFIG global default_platform | grep PHP >/dev/null ; then
+      case $1 in 
+	on|On|ON|t|T|true|True|TRUE|0)
+	   ERRORS="aws:elasticbeanstalk:container:php:phpini: display_errors 'On'"
+	   eb editconfig $ERRORS
+	   ;;
+	off|Off|f|F|False|false|FALSE|0)
+	   ERRORS="aws:elasticbeanstalk:container:php:phpini: display_errors 'On'"
+	   eb editconfig $ERRORS
+	   ;;	   
+	*)
+	    echo "ERROR: must specify either on or off" 2>&1
+	    ;;
+      esac
     fi
 }
+
+#function addsg 
+#{
+#        $ME env addsg            add an existing security group to this env
+#    if [ -z "$1" ] ; then 
+#	echo "ERROR you must specify the name of a security group" >&1	
+#    elif true ; then #  aws ec2 describe-security-groups | jq .SecurityGroups[].GroupName | grep \"$1\" >/dev/null ; then
+#	ebappendconfig aws:autoscaling:launchconfiguration: SecurityGroups  $1
+#    else
+#	echo "ERROR $1 is not the name of a security group" >&1
+#    fi
+#}
 
 # ----------------------------------------------------------------------

@@ -1,6 +1,6 @@
 #!/bin/bash -e
 # blame: barry@productops.com  Feb 2016
-# you can run this -x to learn what it does under the hood
+
 
 ME=`basename $0`
 
@@ -18,6 +18,10 @@ STANDARD VERBS:
         $ME env use              use environment env (not necessary)
         $ME local run            run a local copy of the app
         
+PHP VERBS:
+        $ME env phperrors on     turn on display_errors in php.ini
+        $ME env phperrors off    turn on display_errors in php.ini
+
 ELASTIC BEANSTALK VERBS:
         $ME init                 initialize elastic beanstalk (after git clone)
         $ME init appname         initialize elastic beanstalk (after git clone)
@@ -33,7 +37,7 @@ ELASTIC BEANSTALK VERBS:
         $ME myip                 find out what my (laptop) ip is
 
         $ME env nodeploy file    do not deploy file in instances
-
+        
 TECH LEAD VERBS:
         $ME new                  create application based on this dir name
         $ME new appname          create application 'appname'
@@ -61,6 +65,9 @@ TECH LEAD VERBS:
 
         $ME env s3logs true      send logs to s3
         $ME env s3logs false     do not send logs to s3 (default)
+
+        $ME vpcs                 show available vpcs and subnets
+        $ME vpcs vpc-id          show subnets for given vpc
 
 EOF
 	exit 3
@@ -134,6 +141,12 @@ case $1 in
 	    whatsmyip
 	    exit 
 	    ;;
+        vpcs)
+#        $ME vpcs                 show available vpcs and subnets
+#        $ME vpcs vpc-id          show subnets for given vpc
+	    vpcsubnets $*
+	    exit
+	    ;;
 esac
 
 
@@ -204,6 +217,10 @@ case $ACTION in
 #        $ME env sgid             get security group id
 	ebsgid
 	;;
+#    addsg)
+#        $ME env addsg            add an existing security group to this env
+#	addsg $*
+#	;;
     security)
 #        $ME env security         describe security group 
 	aws ec2 describe-security-groups --group-names `ebsgn`
@@ -263,5 +280,10 @@ case $ACTION in
 	;;
     *)
 	givehelp
+	;;
+    phperrors)
+#        $ME env phperrors on     turn on display_errors in php.ini
+#        $ME env phperrors off    turn on display_errors in php.ini
+	ebconfigphperrors $*
 	;;
 esac
