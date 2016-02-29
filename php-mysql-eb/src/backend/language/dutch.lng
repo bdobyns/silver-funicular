@@ -1,0 +1,191 @@
+<?
+
+# phpWebLog language translation file (english)
+# Submitted by Remco Brink <remco@xgov.net> after too much coffee
+#   any spelling errors will probably be removed in the next version ;-)
+
+$rdf_lang	= "nl-NL";
+setlocale('LC_ALL','nl_NL');
+
+# formatted date string -- Uses PHP's strftime() function
+
+$G_DATE = "%A %B %d %Y @ %I:%M%p %Z";
+
+# random submit buttons
+$nonsense[]     = "Raak me voorzichtig aan";
+$nonsense[]     = "Streel me";
+$nonsense[]     = "Tik tik";
+$nonsense[]     = "Wat?";
+$nonsense[]     = "Roeren en doorbakken";
+
+# strings
+define("_INDEX", "niews index");
+define("_CONTRIB", "nieuws toevoegen");
+define("_LINKS", "links");
+define("_SEARCH", "zoeken");
+define("_STATS", "statistieken");
+define("_CONTACT", "contact");
+
+define("_FIND", "find");
+
+define("_COMMENTS","commentaren");
+define("_COMMENT","commentaar");
+define("_READMORE","lees meer");
+define("_VIEWS","oogpunt:");
+define("_REPLY","beantwoorden");
+define("_PARENT","parent");
+define("_MODIFIED","Laatst gewijzigd:");
+
+define("_TOP5","Top 5 Verhalen");
+define("_HOT5","Hot 5 Stories");
+define("_OLDER","Oudere Verhalen");
+define("_LAST5","Last 5 stories posted by");
+
+define("_ARCHIVE","archive");
+define("_REPOSTED","Reposted on");
+
+define("_NOCOMMENTS","Geen gebruikers commentaar.");
+define("_POSTCOMMENT","Voeg Commentaar Toe");
+
+define("_NAME","Naam");
+define("_EMAIL","Email");
+define("_URL","URL");
+
+define("_NEXT","Next");
+define("_PREV","Prev");
+
+define("_SAVEINFO","Onthoud mijn informatie (gebruikt cookies)");
+define("_ANONYMOUS","Ik blijf liever anoniem");
+define("_MAILCOMMENTS","Zend de commentaren naar het bovenstaande emailadres");
+
+define("_FULLHTML","* HTML tags are allowed.");
+define("_NOHTML","* HTML wordt niet verwerkt.");
+define("_CODEHTML","* HTML wordt getoond maar niet verwerkt.");
+define("_YESHTML","* Toegestane HTML:");
+define("_AUTOHTML","* HTML is niet toegestaan. Links worden automatisch verwerkt.");
+define("_NOPUBLIC","* Uw email adres wordt niet publiekelijk gemaakt.");
+
+define("_CMAIL1","Een commentaar is toegevoegd aan het artikel dat U toegevoegd heeft op");
+define("_CMAIL2","Hieronder volgen de commentaren van de thread..");
+define("_CMAIL3","Originele Verhaal");
+
+define("_TITLE","Titel");
+define("_TOPIC","Onderwerp");
+define("_TOPICS","Topics");
+define("_FEATURES","Features");
+define("_DATE","Datum");
+define("_AUTHOR","Auteur");
+define("_STORY","Verhaal");
+define("_SUMMARY","Samenvatting");
+define("_OPTIONAL","Optioneel");
+define("_SEPLINKS","Seperate links with commas");
+define("_RELATED","Relevante Links");
+define("_MORE","more");
+
+define("_COMADDED","Commentaar toegevoegd");
+define("_WRITES","schrijft");
+define("_DETAILS","Voor details, zie");
+
+define("_NMAIL1","Een nieuw verhaal is toegevoegd aan");
+define("_NMAIL2","en wacht op Uw verificatie");
+define("_NMAIL3","Om te verifieren, zie");
+
+define("_PROBLEM","Neem contact op met de beheerder als het probleem blijft voorkomen.");
+define("_MAILERROR","Sorry, er was een probleem bij de verzending van Uw bericht.  Het probleem is gelogd.");
+
+define("_MAILSENT","Bericht is succesvol verstuurd.");
+define("_SAVED","Veranderingen opgeslagen.");
+define("_SAVEDNOPW","Veranderingen opgeslagen, behalve het beheerders wachtwoord.  De wachtwoorden waren niet gelijk.");
+
+define("_POLLRESULTS","Poll Resultaten");
+define("_VOTES","totale stemmen");
+define("_MOREPOLLS","meer polls");
+define("_POLLS","polls");
+define("_VOTE","Stem");
+define("_RESULTS","resultaten");
+define("_LISTPOLLS","Lijst van Polls");
+define("_QUESTION","Vraag");
+define("_NOPOLLS","Er zuhb geeb actieve polls op dit moment.");
+
+define("_NOSTORY","Verhaal niet gevonden.");
+define("_INTOPIC","in dit onderwerp");
+define("_EMPTYTOPIC","Er zijn geen nieuwe verhalen binnen dit onderwerp die getoond kunnen worden.");
+define("_EMPTY","Er zijn geen nieuwe verhalen te tonen.");
+
+define("_NOPOSTING","Verhalen toevoegen is niet toegestaan.");
+define("_CONTRIBUTE","Voeg Uw verhaal toe");
+define("_YOURINFO","Uw informatie:");
+define("_YOURSTORY","Uw verhaal:");
+define("_UNVERIFIED","Onbevestigd verhaal van");
+
+define("_SUBMIT","Verstuur");
+define("_PREVIEW","Preview");
+define("_PRESTORY","Preview / Wijzig Uw verhaal");
+define("_PRETEXT","Hierboven ziet U hoe Uw verhaal op de voorpagina terecht zal komen. U kan nu nog laatste wijzigingen maken en vervolgens Uw verhaal toevoegen.");
+
+define("_NOLINKS","There are no resources to display.");
+define("_POSTLINK","Post a Link");
+define("_SITENAME","Site Name");
+define("_DESCRIPTION","Description");
+define("_CATEGORY","Category");
+define("_SUGTHANK","Thank you for your suggestion. The admin will verify it soon.");
+define("_ADDSUG","Link Suggestion");
+define("_SHOWING","Showing");
+define("_SUGCAT","Suggest a Category");
+define("_SUGLINK","Suggest a Link");
+
+define("_NOUSER","Gebruiker onbekend");
+define("_PROFILING","Gebruiker wordt geprofileerd");
+define("_NA","Niet beschikbaar");
+define("_MAILTO","Zend email naar");
+define("_SUBJECT","Onderwerp");
+define("_MESSAGE","Bericht");
+
+define("_SEARCHFOR","Zoek naar");
+define("_QUERY","Zoekopdracht");
+define("_ALLTOPICS","Alle Onderwerpen");
+define("_STORIES","verhalen");
+define("_AUTHORS","auteurs");
+define("_LIMIT","Limiet");
+define("_SEARCHRESULTS","Zoekresultaten");
+define("_MATCHES","Treffers");
+define("_POSTEDBY","Toegevoegd door");
+define("_POSTEDON","Toegevoegd op");
+define("_ON","op");
+define("_BY","door");
+define("_NOMATCHES","Er zijn geen treffers voor Uw zoekopdracht.");
+
+define("_MMAIL1","Dit verhaal kwam van");
+define("_MMAIL2","Voor meer, zie");
+
+define("_HITS","Treffers");
+define("_SITESTATS","Site Statistieken");
+define("_AVGHITS","Average Hits");
+define("_TOTALSTORIES","Totaal aantal Verhalen");
+define("_TOTALCOMMENTS","Totaal aantal Commentaren");
+define("_TOTALPOLLS","Totaal aantal Polls");
+define("_TOTALLINKS","Totaal aantal Links");
+define("_TOPSTORIES","Top 10 Verhalen");
+define("_TOPPOLLS","Top 10 Polls");
+define("_TOPLINKS","Top 10 Links");
+define("_NOPOLLS","Geen polls beschikbaar of niemand heeft nog gestemd.");
+define("_NOSTORIES","Geen verhalen beschikbaar of niemand heeft nog verhalen bekeken.");
+define("_NOLINKS","Geen links beschikbaar of niemand heeft nog op links geklikt.");
+define("_TOPPAGES","Top 10 Pages");
+define("_NOPAGES","No pages available or no one has clicked them.");
+
+define("_MORELINKS","More Links");
+define("_PRINTFRIEND","Printer friendly version");
+define("_MAILTOFRIEND","Share this story");
+define("_FRIENDINFO","Friend's Information:");
+define("_FRIENDNAME","Friend's Name");
+define("_FRIENDEMAIL","Friend's Email");
+define("_MAILFRIEND","Here is a story in which you may be interested in.");
+
+define("_ATTACHMENT","Attachment");
+define("_MAXSIZE","Maximum Filesize");
+
+define("_FILETOOBIG","Your attachment is too large.  Nothing attached.");
+define("_STORYOK","Your story submission was successful.");
+
+?>

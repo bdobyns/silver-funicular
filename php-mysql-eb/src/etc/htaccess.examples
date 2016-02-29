@@ -1,0 +1,30 @@
+# Use the following lines to create search engine friendly URL's.
+# Example:
+# http://www.yourserver.com/story/00/12/05/8004308
+# becomes
+# http://www.yourserver.com/stories.php?story=00/12/05/8004308
+
+RewriteEngine on
+RewriteRule ^story/(.*)$ stories.php?story=$1
+
+
+
+# If your web server does not recognize .php extension, you can use
+# the following line to parse .php files as .php3
+
+AddType application/x-httpd-php3 .php 
+
+
+# If you are experiencing problems with the insertion of the ' character,
+# use the following stanza
+
+<IfModule mod_php3.c>
+php3_magic_quotes_gpc On
+php3_magic_quotes_runtime Off
+php3_magic_quotes_sybase Off
+</IfModule>
+<IfModule mod_php4.c>
+php_value magic_quotes_gpc On
+php_value magic_quotes_runtime Off
+php_value magic_quotes_sybase Off
+</IfModule>

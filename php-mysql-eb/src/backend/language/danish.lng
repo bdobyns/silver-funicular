@@ -1,0 +1,189 @@
+<?
+
+# phpWebLog language translation file (danish)
+
+$rdf_lang	= "da-DK";
+setlocale('LC_ALL','da_DK.ISO_8859-1');
+
+# formatted date string -- Uses PHP's strftime() function
+
+$G_DATE = "%A den %d. %B %Y kl. %H:%M";
+
+# random submit buttons
+$nonsense[]     = "okay";
+$nonsense[]     = "yepper";
+$nonsense[]     = "tryk her";
+$nonsense[]     = "rør mig";
+$nonsense[]     = "submit";
+
+# strings
+define("_INDEX", "nyhedsindeks");
+define("_CONTRIB", "tilføj nyhed");
+define("_LINKS", "links");
+define("_SEARCH", "søg");
+define("_STATS", "statistik");
+define("_CONTACT", "kontakt");
+
+define("_FIND", "find");
+
+define("_COMMENTS","kommentarer");
+define("_COMMENT","kommentar");
+define("_READMORE","læs mere");
+define("_VIEWS","læst");
+define("_REPLY","svar");
+define("_PARENT","top");
+define("_MODIFIED","Seneste tilføjelse");
+
+define("_TOP5","Top 5 artikler");
+define("_HOT5","Hot 5 artikler");
+define("_OLDER","Ældre artikler");
+define("_LAST5","Sidste 5 artikler tilføjet af");
+
+define("_ARCHIVE","arkiv");
+define("_REPOSTED","Gentilføjet");
+
+define("_NOCOMMENTS","Ingen brugerkommentarer.");
+define("_POSTCOMMENT","Tilføj en kommentar");
+
+define("_NAME","Navn");
+define("_EMAIL","Email");
+define("_URL","URL");
+
+define("_NEXT","Næste");
+define("_PREV","Forrige");
+
+define("_SAVEINFO","Husk min information (bruger cookies)");
+define("_ANONYMOUS","Jeg vil hellere være anonym");
+define("_MAILCOMMENTS","Send kommentarer til ovenstående emailadresse");
+
+define("_FULLHTML","* HTML tags er tilladte.");
+define("_NOHTML","* HTML tags bliver ikke oversat.");
+define("_CODEHTML","* HTML tags vises, men bliver ikke oversat.");
+define("_YESHTML","* Tilladte HTML tags:");
+define("_AUTOHTML","* HTML ikke tilladt. Links bliver automatisk klikmulige.");
+define("_NOPUBLIC","* Din emailadresse bliver ikke offentliggjort.");
+
+define("_CMAIL1","En kommentar er blevet tilføjet en artikel, som du har svaret på");
+define("_CMAIL2","Nedenfor ses trådens detaljer..");
+define("_CMAIL3","Original artikel");
+
+define("_TITLE","Titel");
+define("_TOPIC","Emne");
+define("_TOPICS","Emner");
+define("_FEATURES","Menu");
+define("_DATE","Dato");
+define("_AUTHOR","Forfatter");
+define("_STORY","Artikel");
+define("_SUMMARY","Referat");
+define("_OPTIONAL","Valgmulighed");
+define("_SEPLINKS","Seperer links med kommaer");
+define("_RELATED","Relateret link");
+define("_MORE","mere");
+
+define("_COMADDED","Kommentar tilføjet");
+define("_WRITES","skriver");
+define("_DETAILS","For detaljer, se");
+
+define("_NMAIL1","En ny artikel er blevet tilføjet til");
+define("_NMAIL2","og venter på verificering");
+define("_NMAIL3","For at verificere beskeden, se");
+
+define("_PROBLEM","Kontakt venligst administratoren hvis problemet atter opstår.");
+define("_MAILERROR","Desværre, der opstod en fejl under forsendelsen af din besked. Problemet er modtaget.");
+
+define("_MAILSENT","Beskeden er sendt.");
+define("_SAVED","Ændringerne blev gemt.");
+define("_SAVEDNOPW","Ændringerne er gemt undtaget admin passwordet. Password passede ikke.");
+
+define("_POLLRESULTS","Afstemning");
+define("_VOTES","total stemmer");
+define("_MOREPOLLS","flere afstemninger");
+define("_POLLS","Afstemning");
+define("_VOTE","Stem");
+define("_RESULTS","resultater");
+define("_LISTPOLLS","Liste over afstemninger");
+define("_QUESTION","Spørgsmål");
+define("_NOPOLLS","Der er ingen aktive afstemninger i øjeblikket.");
+
+define("_NOSTORY","Artiklen blev ikke fundet");
+define("_INTOPIC","indenfor dette emne");
+define("_EMPTYTOPIC","Der er ingen nye artikler at vise indenfor dette emne.");
+define("_EMPTY","Der er ingen nye artikler at vise.");
+
+define("_NOPOSTING","Artikeltilføjelser er ikke tilladt.");
+define("_CONTRIBUTE","Tilføj din artikel");
+define("_YOURINFO","Din info:");
+define("_YOURSTORY","Din artikel:");
+define("_UNVERIFIED","Uverificeret besked fra");
+
+define("_SUBMIT","tilføj");
+define("_PREVIEW","gennemse");
+define("_PRESTORY","gennemse/rediger din artikel");
+define("_PRETEXT","Herover kan du se hvorledes din artikel vil fremstå på forsiden. Du kan foretage endelige ændringer og fortsætte med at poste din artikel.");
+
+define("_NOLINKS","Der er ingen links i denne kategori. Klik på de allerede eksisterende kategorier, eller foreslå en ny kategori/et link herunder.");
+define("_POSTLINK","Tilføj et link");
+define("_SITENAME","Sidenavn");
+define("_DESCRIPTION","Beskrivelse");
+define("_CATEGORY","Kategori");
+define("_SUGTHANK","Tak for dit forslag. Administratoren verificerer snarest.");
+define("_ADDSUG","Link forslag");
+define("_SHOWING","viser");
+define("_SUGCAT","foreslå en kategori");
+define("_SUGLINK","foreslå et link");
+
+define("_NOUSER","Ingen sådan bruger");
+define("_PROFILING","Bruger");
+define("_NA","Ikke tilgængelig");
+define("_MAILTO","Send mail til");
+define("_SUBJECT","Emne");
+define("_MESSAGE","Besked");
+
+define("_SEARCHFOR","Søg efter");
+define("_QUERY","Forespørgsel");
+define("_ALLTOPICS","Alle emner");
+define("_STORIES","artikler");
+define("_AUTHORS","forfattere");
+define("_LIMIT","Begrænsning");
+define("_SEARCHRESULTS","Søgeresultater");
+define("_MATCHES","Resultater");
+define("_POSTEDBY","Tilføjet af");
+define("_POSTEDON","tilføjet");
+define("_ON","den");
+define("_BY","af");
+define("_NOMATCHES","Der er intet resultat på din søgning.");
+
+define("_MMAIL1","Denne artikel kom fra");
+define("_MMAIL2","For mere, se");
+
+define("_HITS","Hits");
+define("_SITESTATS","Sidestatistik");
+define("_AVGHITS","Gennemsnitlige hits");
+define("_TOTALSTORIES","Total antal artikler");
+define("_TOTALCOMMENTS","Total antal kommentarer");
+define("_TOTALPOLLS","Total antal afstemninger");
+define("_TOTALLINKS","Total antal links");
+define("_TOPSTORIES","Top 10 artikler");
+define("_TOPPOLLS","Top 10 afstemninger");
+define("_TOPLINKS","Top 10 links");
+define("_NOPOLLS","Der er ingen afstemninger tilgængelig, eller også har ingen stemt.");
+define("_NOSTORIES","Der er ingen artikler tilgængelig, eller også har ingen læst dem.");
+define("_NOLINKS","Der er ingen links tilgængelig, eller også har ingen klikket dem.");
+define("_TOPPAGES","Top 10 sider");
+define("_NOPAGES","Der er ingen sider tilgængelig, eller også har ingen set dem.");
+
+define("_MORELINKS","Artikel links");
+define("_PRINTFRIEND","Printervenlig version");
+define("_MAILTOFRIEND","Del denne artikel");
+define("_FRIENDINFO","Din ven's information:");
+define("_FRIENDNAME","Din ven's navn");
+define("_FRIENDEMAIL","Din ven's email");
+define("_MAILFRIEND","Her er en artikel, som du muligvis er interesseret i.");
+
+define("_ATTACHMENT","Vedhæftning");
+define("_MAXSIZE","Maksimum filstørrelse");
+
+define("_FILETOOBIG","Din vedhæftning er for stor. Intet vedhæftet.");
+define("_STORYOK","Din tilføjelse er gennemført.");
+
+?>

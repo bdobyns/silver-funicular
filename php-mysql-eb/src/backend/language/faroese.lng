@@ -1,0 +1,189 @@
+<?
+
+# phpWebLog language translation file (Faroese version by Hilmar Jan Hansen info@einslistir.com)
+
+$rdf_lang	= "fo-FO";
+setlocale('LC_ALL','fo_FO');
+
+# formatted date string -- Uses PHP's strftime() function
+
+$G_DATE = "%d.%m.%Y";
+
+# random submit buttons
+$nonsense[]     = "Í lagi";
+$nonsense[]     = "Í lagi";
+$nonsense[]     = "Í lagi";
+$nonsense[]     = "Í lagi";
+$nonsense[]     = "Í lagi";
+
+# strings
+define("_INDEX", "YVIRLIT");
+define("_CONTRIB", "SKRIVA");
+define("_LINKS", "SLÓÐIR");
+define("_SEARCH", "LEITARI");
+define("_STATS", "SÍÐUHAGTØL");
+define("_CONTACT", "SAMBAND");
+
+define("_FIND", "LEITA");
+
+define("_COMMENTS","viðmerkingar");
+define("_COMMENT","viðmerking");
+define("_READMORE","les meira");
+define("_VIEWS","lisið:");
+define("_REPLY","svar");
+define("_PARENT","ovast");
+define("_MODIFIED","Dagførd:");
+
+define("_TOP5","Mest lisnu");
+define("_HOT5","Flest viðmerkingar");
+define("_OLDER","Fleiri søgur");
+define("_LAST5","Nýggjastu søgur hjá");
+
+define("_ARCHIVE","greinasavn");
+define("_REPOSTED","Sent umaftur tann");
+
+define("_NOCOMMENTS","Eingin viðmerking skrivað enn.");
+define("_POSTCOMMENT","Skriva viðmerking");
+
+define("_NAME","Navn");
+define("_EMAIL","Teldupostur");
+define("_URL","Heimasíða:");
+
+define("_NEXT","Fleiri søgur");
+define("_PREV","Aftur");
+
+define("_SAVEINFO","Minst til mín (brúkar cookies)");
+define("_ANONYMOUS","Eg vil heldur vera dulnevnd/ur");
+define("_MAILCOMMENTS","Send teldupost til adressuna omanfyri");
+
+define("_FULLHTML","* HTML er loyvt.");
+define("_NOHTML","* HTML er ikki loyvt");
+define("_CODEHTML","* HTML verður víst, men ikki tulkað.");
+define("_YESHTML","* Loyvir HTML-taggar:");
+define("_AUTOHTML","* HTML ikki loyvt. Slóðir verða gjørdar virknar.");
+define("_NOPUBLIC","* Tín teldupostadressa verður ikki almannakunngjørd.");
+
+define("_CMAIL1","Ein grein hjá tær hevur fingið eina viðmerking");
+define("_CMAIL2","Meira sæst niðanfyri...");
+define("_CMAIL3","Upprunalig søga");
+
+define("_TITLE","Yvirskrift");
+define("_TOPIC","Tíðindaevni");
+define("_TOPICS","INNIHALD");
+define("_FEATURES","KUNNING");
+define("_DATE","Dagur");
+define("_AUTHOR","Høvundur");
+define("_STORY","");
+define("_SUMMARY","Inngangur");
+define("_OPTIONAL","Valfrítt");
+define("_STORYURL","Slóð til upprunaliga søgu");
+define("_RELATED","Viðkomandi slóð");
+define("_MORE","meira");
+
+define("_COMADDED","Viðmerking givin");
+define("_WRITES","skrivar");
+define("_DETAILS","Fleiri upplýsingar:");
+
+define("_NMAIL1","Ein nýggj søga er løgd inn í");
+define("_NMAIL2","og bíðar eftir tínari góðkenning");
+define("_NMAIL3","Góðkenn søgu:");
+
+define("_PROBLEM","Sig umsitaranum frá, um tú fært trupulleikan aftur.");
+define("_MAILERROR","Eitt brek hendi, tá tú sendi teldupostin. Vit vita av brekinum.");
+
+define("_MAILSENT","Telduposturin er sendur.");
+define("_SAVED","Broytingarnar eru goymdar.");
+define("_SAVEDNOPW","Broytingarnar eru goymdar, men ikki loyniorð. Tey bæði innskrivaðu loyniorðini vóru ikki líka.");
+
+define("_POLLRESULTS","Uppteljing");
+define("_VOTES","atkvøður");
+define("_MOREPOLLS","Fleiri kanningar");
+define("_POLLS","KANNINGAR");
+define("_VOTE","Vel");
+define("_RESULTS","úrslit");
+define("_LISTPOLLS","Allar kanningar");
+define("_QUESTION","Spurningur");
+define("_NOPOLLS","Eingin kanning í gongd í løtuni.");
+
+define("_NOSTORY","Fann onga søgu");
+define("_INTOPIC","í hesum evninum");
+define("_EMPTYTOPIC","Ongar nýggjar søgur í hesum evni.");
+define("_EMPTY","Ongar nýggjar søgur.");
+
+define("_NOPOSTING","Ikki loyvt at leggja søgu inn.");
+define("_CONTRIBUTE","Legg søgu inn");
+define("_YOURINFO","Sendari:");
+define("_YOURSTORY","Tín søga:");
+define("_UNVERIFIED", "Ikki-góðkend boð frá");
+
+define("_SUBMIT","Send");
+define("_PREVIEW","Hygg at søguni fyrst");
+define("_PRESTORY","Hygg at/broyt søgu tína");
+define("_PRETEXT","Soleiðis fer søgan at síggja út á heimasíðuni. Tú kanst gera broytingar, áðrenn tú sendir lidnu søguna.");
+
+define("_NOLINKS","Ongar slóðir.");
+define("_POSTLINK","Send slóð");
+define("_SITENAME","Navn á heimasíðu");
+define("_DESCRIPTION","Stutt um heimasíðuna");
+define("_CATEGORY","Evni");
+define("_SUGTHANK","Takk fyri uppskotið. Umsitarin avgreiðir slóðina sum skjótast.");
+define("_ADDSUG","Uppskot um slóð");
+define("_SHOWING","Vísir");
+define("_SUGCAT","Uppskot um evni til slóðir");
+define("_SUGLINK","Uppskot um slóð");
+
+define("_NOUSER","Eingin slíkur brúkari skrásettur");
+define("_PROFILING","Brúkari");
+define("_NA","Eingin atgongd");
+define("_MAILTO","Send teldupost til");
+define("_SUBJECT","Evni");
+define("_MESSAGE","Boð");
+
+define("_SEARCHFOR","Leita eftir");
+define("_QUERY","Fyrispurningur");
+define("_ALLTOPICS","Øll evni");
+define("_STORIES","søgur");
+define("_AUTHORS","høvundar");
+define("_LIMIT","Avmarking");
+define("_SEARCHRESULTS","Leitiúrslit");
+define("_MATCHES","samsvarandi");
+define("_POSTEDBY","Lagt inn hevur");
+define("_POSTEDON","Lagt inn tann");
+define("_ON","tann");
+define("_BY","eftir");
+define("_NOMATCHES","Fann einki.");
+
+define("_MMAIL1","Henda søgan kemur frá");
+define("_MMAIL2","Fleiri upplýsingar:");
+
+define("_HITS","Vitjanir");
+define("_SITESTATS","Hagtøl");
+define("_AVGHITS","Vitjanir í miðal");
+define("_TOTALSTORIES","Søgur samanlagt");
+define("_TOTALCOMMENTS","Viðmerkingar samanlagt");
+define("_TOTALPOLLS","Kanningar samanlagt");
+define("_TOTALLINKS","Slóðir samanlagt");
+define("_TOPSTORIES","Mest lisnu søgur");
+define("_TOPPOLLS","Mest royndu kanningar");
+define("_TOPLINKS","Mest brúktu slóðir");
+define("_NOPOLLS","Annaðhvørt er eingin kanning ella hevur eingin valt.");
+define("_NOSTORIES","Annaðhvørt eru ongar søgur atgongiligar ella hevur eingin lisið tær.");
+define("_NOLINKS","Annaðhvørt eru ongar slóðir atgongiligar ella hevur eingin trýst á tær.");
+define("_TOPPAGES","Mest lisnu søgur");
+define("_NOPAGES","Annaðhvørt eru ongar síður atgongiligar ella hevur eingin valt tær.");
+
+define("_MORELINKS","Møguleikar…");
+define("_PRINTFRIEND","Skriva út!");
+define("_MAILTOFRIEND","Sig øðrum frá!");
+define("_FRIENDINFO","Móttakari:");
+define("_FRIENDNAME","Navn");
+define("_FRIENDEMAIL","Teldupostadressa");
+define("_MAILFRIEND","Her er ein søga, ið kanska hevur tín áhuga.");
+
+define("_ATTACHMENT","Fíla viðløgd");
+define("_MAXSIZE","Mest loyvda fílustødd");
+
+define("_FILETOOBIG","Viðlagda tilfarið var ov stórt í vavi. Tí er tað ikki goymt.");
+define("_STORYOK","Søgan er send.");
+
+?>

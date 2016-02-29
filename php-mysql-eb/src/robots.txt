@@ -1,0 +1,13 @@
+
+User-agent: *
+Disallow: /admin/
+Disallow: /logs/
+Disallow: /admin/CVS
+Disallow: /backend/
+Disallow: /etc/CVS
+Disallow: /humor/CVS
+Disallow: /images.d/CVS
+Disallow: /include/CVS
+Disallow: /logs/CVS
+Disallow: /CVS
+Disallow: /etc/

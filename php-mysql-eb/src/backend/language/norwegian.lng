@@ -1,0 +1,189 @@
+<?
+
+# phpWebLog language translation file (Norwegian version by Randi Andersen voxra@voxra.com)
+
+$rdf_lang	= "no-NO";
+setlocale('LC_ALL','no_NO.ISO_8859-1');
+
+# formatted date string -- Uses PHP's strftime() function
+
+$G_DATE = "%A %d %B %Y kl. %H:%M";
+
+# random submit buttons
+$nonsense[]     = "OK";
+$nonsense[]     = "Trykk meg!";
+$nonsense[]     = "Klikk her";
+$nonsense[]     = "Ja, her";
+$nonsense[]     = "Send";
+
+# strings
+define("_INDEX", "nyhetsoversikt");
+define("_CONTRIB", "skriv artikkel");
+define("_LINKS", "lenker");
+define("_SEARCH", "søk");
+define("_STATS", "statistikk");
+define("_CONTACT", "kontakt");
+
+define("_FIND", "finn");
+
+define("_COMMENTS","kommentarer");
+define("_COMMENT","kommentar");
+define("_READMORE","les mer");
+define("_VIEWS","lest:");
+define("_REPLY","svar");
+define("_PARENT","topp");
+define("_MODIFIED","Sist redigert:");
+
+define("_TOP5","Topp 5 artikler");
+define("_HOT5","Hot 5 artikler");
+define("_OLDER","Eldre artikler");
+define("_LAST5","Siste 5 sendt av");
+
+define("_ARCHIVE","arkiv");
+define("_REPOSTED","Sendt igjen den");
+
+define("_NOCOMMENTS","Ingen kommentarer.");
+define("_POSTCOMMENT","Skriv en kommentar");
+
+define("_NAME","Navn");
+define("_EMAIL","Epost");
+define("_URL","URL");
+
+define("_NEXT","Neste");
+define("_PREV","forrige");
+
+define("_SAVEINFO","Husk meg (bruker cookies)");
+define("_ANONYMOUS","Jeg vil heller være anonym");
+define("_MAILCOMMENTS","Send kommentarer til ovenstående epostadresse");
+
+define("_FULLHTML","* HTML er tillatt.");
+define("_NOHTML","* HTML er ikke tillatt");
+define("_CODEHTML","* HTML vises, men blir ikke oversatt.");
+define("_YESHTML","* Tillatte HTML tagger:");
+define("_AUTOHTML","* HTML ikke tillatt.  Lenker blir automatisk klikkbare.");
+define("_NOPUBLIC","* Epostadressa di blir ikke offentliggjort.");
+
+define("_CMAIL1","En kommentar er gitt til en artikkel du har skrevet");
+define("_CMAIL2","Detaljer under...");
+define("_CMAIL3","Original artikkel");
+
+define("_TITLE","Tittel");
+define("_TOPIC","Kategori");
+define("_TOPICS","Kategorier");
+define("_FEATURES","Features");
+define("_DATE","Dato");
+define("_AUTHOR","Forfatter");
+define("_STORY","Artikkel");
+define("_SUMMARY","Ingress");
+define("_OPTIONAL","Valgfri");
+define("_STORYURL","Lenke til original artikkel");
+define("_RELATED","Relatert lenke");
+define("_MORE","mer");
+
+define("_COMADDED","Kommentar tilføyd");
+define("_WRITES","skriver");
+define("_DETAILS","For detaljer, se");
+
+define("_NMAIL1","En ny artikkel er blitt lagt inn i");
+define("_NMAIL2","og venter på din godkjenning");
+define("_NMAIL3","For å verifisere artikkelen, se");
+
+define("_PROBLEM","Kontakt administratoren om problemet oppstår igjen.");
+define("_MAILERROR","Det skjedde en feil i overføringen av meldingen din. Vi er gjort oppmerksomme på feilen.");
+
+define("_MAILSENT","Beskjeden er sendt.");
+define("_SAVED","Endringene er lagret.");
+define("_SAVEDNOPW","Endringene er lagret bortsett fra administratorpassordet. Passordene var ikke like.");
+
+define("_POLLRESULTS","Stemmeresultater");
+define("_VOTES","totalt antall stemmer");
+define("_MOREPOLLS","flere meningsmålinger.");
+define("_POLLS","meningsmålinger");
+define("_VOTE","Stem");
+define("_RESULTS","resultater");
+define("_LISTPOLLS","Liste over meningsmålinger");
+define("_QUESTION","Spørsmål");
+define("_NOPOLLS","Det er ingen aktive meningsmålinger i øyeblikket.");
+
+define("_NOSTORY","Fant ikke artikkelen");
+define("_INTOPIC","innenfor dette emnet");
+define("_EMPTYTOPIC","Det er ingen nye artikler å vise i dette emnet.");
+define("_EMPTY","Det er ingen nye artikler å vise.");
+
+define("_NOPOSTING","Artikkel-innlegging er ikke tillatt.");
+define("_CONTRIBUTE","Legg inn en artikkel");
+define("_YOURINFO","Om deg:");
+define("_YOURSTORY","Artikkelen din:");
+define("_UNVERIFIED","Uverifisert beskjed fra");
+
+define("_SUBMIT","Send");
+define("_PREVIEW","Forhåndsvisning");
+define("_PRESTORY","Forhåndsvise/redigere artikkelen din");
+define("_PRETEXT","Her kan du sjekke hvordan artikkelen din vil se ut på fremsiden.  Du kan gjøre endringer før du sender den ferdige artikkelen..");
+
+define("_NOLINKS","Det er ingen lenker.");
+define("_POSTLINK","Legg til ei lenke");
+define("_SITENAME","Navn på vevsted");
+define("_DESCRIPTION","Beskrivelse");
+define("_CATEGORY","Kategori");
+define("_SUGTHANK","Takk for forslaget. Administratoren vil sjekke tipset så snart som mulig.");
+define("_ADDSUG","Lenkeforslag");
+define("_SHOWING","Viser");
+define("_SUGCAT","Foreslå en kategori");
+define("_SUGLINK","Foreslå ei lenke");
+
+define("_NOUSER","Det er ingen bruker med det navnet");
+define("_PROFILING","Bruker");
+define("_NA","Ikke tilgjengelig");
+define("_MAILTO","Send epost til");
+define("_SUBJECT","Emne");
+define("_MESSAGE","Beskjed");
+
+define("_SEARCHFOR","Søk etter");
+define("_QUERY","Forespørsel");
+define("_ALLTOPICS","Alle emner");
+define("_STORIES","artikler");
+define("_AUTHORS","forfattere");
+define("_LIMIT","Begrensning");
+define("_SEARCHRESULTS","Søkeresultater");
+define("_MATCHES","Treff");
+define("_POSTEDBY","Lagt inn av");
+define("_POSTEDON","Lagt inn den");
+define("_ON","den");
+define("_BY","av");
+define("_NOMATCHES","Ingen treff.");
+
+define("_MMAIL1","Denne artikkelen kom fra");
+define("_MMAIL2","For mer, se");
+
+define("_HITS","Treff");
+define("_SITESTATS","Statistikk");
+define("_AVGHITS","Gjennomsnittlig antall treff");
+define("_TOTALSTORIES","Antall artikler");
+define("_TOTALCOMMENTS","Antall kommentarer");
+define("_TOTALPOLLS","Antall meningsmålinger");
+define("_TOTALLINKS","Antall lenker");
+define("_TOPSTORIES","Topp 10 artikler");
+define("_TOPPOLLS","Topp 10 meningsmålinger");
+define("_TOPLINKS","Topp 10 lenker");
+define("_NOPOLLS","Det er ingen meningsmålinger tilgjengelig, eller ingen har stemt.");
+define("_NOSTORIES","Det er ingen artikler tilgjengelig, eller ingen har lest dem.");
+define("_NOLINKS","Det er ingen lenker tilgjengelig, eller ingen har klikket på dem.");
+define("_TOPPAGES","Topp 10 sider");
+define("_NOPAGES","Ingen sider tilgjengelig, eller ingen har klikket på dem.");
+
+define("_MORELINKS","Flere lenker");
+define("_PRINTFRIEND","Skrivervennlig versjon");
+define("_MAILTOFRIEND","Send artikkelen til en venn");
+define("_FRIENDINFO","Din venns detaljer:");
+define("_FRIENDNAME","Din venns navn");
+define("_FRIENDEMAIL","Din venns epost-adresse");
+define("_MAILFRIEND","Her er en artikkel som kanskje interesserer deg.");
+
+define("_ATTACHMENT","Vedlegg");
+define("_MAXSIZE","Største tillatte tilstørrelse");
+
+define("_FILETOOBIG","Vedlegget ditt var for stort. Ikke noe vedlegg lagret.");
+define("_STORYOK","Din artikkel ble sendt.");
+
+?>

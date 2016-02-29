@@ -1,0 +1,16 @@
+
+There are sql diff files provided for you to alter database schemes from
+versions.  If you are currently running an unstable release, results may
+be unpreditable.
+
+example:
+
+to update tables from version 0.4.2 to 0.5.0:
+mysql> mysql -u USERNAME -p DATABASE < 0.4.2-0.5.0.sql;
+
+
+You will want to go through the admin configuration pages once you've
+upgraded to ensure all settings are intact.  Depending upon the database
+schema changes between versions, you risk losing these settings when you 
+upgrade. This script is too help preserve the story/comment data specifically.
+
