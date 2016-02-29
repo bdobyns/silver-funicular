@@ -223,6 +223,7 @@ function appname
 # create an ed script for editing a configuration as produced by `eb config`
 # and then execute it with
 #     export EDITOR="cat $FILE | ed" ; eb config
+# this completely replaces the $KEY line with $KEY: $VAL
 function ebeditconfig 
 {
     EFILE=/tmp/ebconfig.hack.$$
@@ -245,6 +246,43 @@ cat >>$EFILE <<EOF
 a
     $KEY: $VAL # written by $0 on $NOW by $USER
 .
+
+EOF
+shift ; shift ; shift 
+done
+cat >>$EFILE <<EOF
+w
+w /tmp/ebeditconfig_$$.sav
+q
+
+EOF
+    export EDITOR="cat $EFILE | ed >/dev/null "
+    eb config # && rm $EFILE
+}
+
+# create an ed script for editing a configuration as produced by `eb config`
+# and then execute it with
+#     export EDITOR="cat $FILE | ed" ; eb config
+# this appends ,$VAL to the end of the $KEY line
+function ebappendconfig 
+{
+    EFILE=/tmp/ebconfig.hack.$$
+    if [  -f $EFILE ] ; then rm -rf $EFILE ; fi
+
+    while [ ! -z $3 ] 
+    do
+	SECTION=$1
+	KEY=$2
+	VAL=$3
+# find the section
+# delete the key
+# go back to the top of the section
+# insert the new key right after the section header
+NOW=`date +%Y-%m-%d`
+cat >>$EFILE <<EOF
+/  $SECTION/
+/$KEY:/
+s/$/,$VAL/
 
 EOF
 shift ; shift ; shift 
@@ -439,14 +477,11 @@ function ebcreate
 	    fi
 	    echo " BE PATIENT: THIS MAY TAKE A WHILE AND WILL DEPLOY AT LEAST ONE INSTANCE ALONG THE WAY "
 	    shift 
-	    # unless you specify other --vpc args,  we add in --vpc so you can use t2.micro etc, see 
-	    #    https://mike-thomson.com/blog/?p=2103#more-2103
-	    #    https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-create.html
-#	    if echo $* | grep '[[:blank:]]-vpc' >/dev/null ; then
+	    if echo $* | grep ' --tags' >/dev/null  ; then 
 		eb create $ENVNAME $*
-#	    else
-		eb create $ENVNAME $* --vpc
-#	    fi
+	    else
+		eb create $ENVNAME $* --tags "Name=${ENVNAME},Blame=$USER"
+	    fi
 }
 
 function ebputget 
@@ -621,5 +656,17 @@ function ebconfigphperrors
       esac
     fi
 }
+
+#function addsg 
+#{
+#        $ME env addsg            add an existing security group to this env
+#    if [ -z "$1" ] ; then 
+#	echo "ERROR you must specify the name of a security group" >&1	
+#    elif true ; then #  aws ec2 describe-security-groups | jq .SecurityGroups[].GroupName | grep \"$1\" >/dev/null ; then
+#	ebappendconfig aws:autoscaling:launchconfiguration: SecurityGroups  $1
+#    else
+#	echo "ERROR $1 is not the name of a security group" >&1
+#    fi
+#}
 
 # ----------------------------------------------------------------------

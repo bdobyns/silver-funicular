@@ -1,6 +1,10 @@
-# Technical Leaders Create The Project (ElasticBeanstalk "Application")
+# Technical Leaders Create The Project `php-myysql-eb` example
 
 read thru the background and pre-requisites documented in the Readme.md
+
+This Readme walks you thru creating an elastic beanstalk project, using an
+existing php and mysql application (provided in the `src` directory in
+this example)
 
 ## Elastic Beanstalk Background
 
@@ -51,34 +55,33 @@ upload the *public* part of the key here.  You will distribute the
 private part of the key to the rest of the team, along with the name
 you just gave it in the dashboard.
 
-using `eb init` (or `./deploy.sh newapp`) without a keypair argument will offer to create a keypair.
+using `eb init` (or `./deploy.sh newapp`) later without a keypair argument will offer to create a keypair.
 
 ### Create An Empty Project (Tech Leads)
 
-create a directory for your project and then initialize your new project with elastic beanstalk.   
-
-    mkdir my-excellent-project
-    cd    my-excellent-project
-    ./deploy.sh newapp 
-
-The `deploy newapp` is a thin wrapper around `eb init`, but first
-checks that the appname you use does not yet exist (so you don't
-destroy someone else's 'most-excellent-app).  It will also try to to
-guess a sensible name for your app (where sensible is `basename
-$PWD`), pick up the current region as defined in your `~/.aws/config`
-default region.  `eb init` will try to guess the type af app by
-looking for source code in the various supported languages.
-
-note that `eb init` relies on your `AWS_ACCESS_KEY` and
-`AWS_SECRET_KEY` being set to working values.
-
-This example project already includes a copy of Michael Fortin's
-markdown viewer for PHP library and a trivial php app that displays
-this readme.md file.  You can use it by:
+create a directory for your project (in this case we assume you've
+simply checked out the example) and then initialize your new project
+with elastic beanstalk.
 
     git clone git@github.com:productOps/best-practices.git
-    cd best-practices/php-aws-eb-example
-    ./deploy.sh new php-aws-eb-example -p PHP --region us-west-2 --keyname my_key
+    cd best-practices/php-mysql-eb
+    ./deploy.sh new php-mysql-eb --region us-west-2 --platform php5.5 --keyname yourkey_rsa_here
+
+The `deploy new` is a thin wrapper around `eb init`, but first
+checks that the appname you use does not yet exist (so you don't
+destroy someone else's 'most-excellent-app').  With no args it will
+also try to to guess a sensible name for your app (where sensible is
+`basename $PWD`), pick up the current region as defined in your
+`~/.aws/config` default region.  `eb init` will try to guess the type
+af app by looking for source code in the various supported languages.
+
+note that `eb init` relies on your `AWS_ACCESS_KEY` and
+`AWS_SECRET_KEY` being set to sensible working values, and your having
+already run `aws config`.
+
+This example project already includes a snapshot from 2007 of blog
+software (sadly for PHP4.x) and a mysql dump of the database (again Mysql 4.x) that
+matches the blog.  The database has already been fixed up so it can restore properly. 
 
 `eb init` is idempotent, meaning you can run it again and again, and
 it doesn't hurt.  If there is already an application defined in AWS with the name eb
@@ -86,61 +89,60 @@ chooses, and with those options, it will do nothing.  If there is
 already an application with that name, `eb init` updates the
 application.  
 
-### Convert An Existing Tree Of Code (Tech leads)
+In this project the "home dir" of the application is in the top of
+`best-practices/php-mysql-eb/src` and there's three scripts already
+written to run in the instance that move the files up a directory
+level in the target, restore the database into the RDS if the RDS has
+no tables at all, delete deploy.sh and other scripts that are
+unnecesary in the target.  You should review these scripts because you
+will likely need to create similar ones.
 
-if you already have a directory full of php code, it might be
-sufficient to `eb init` at the top of the hierarcy, where "top" means
-the directory where the `index.html` or `index.php` is.
+    cat .ebextensions/01movefiles.config
+    cat .ebextensions/02database_setup.config
+    cat .ebextensions/99nodeploy.config
 
-Note well that your ElasticBeanstalk application name will be the
-directory name of the directory in which you run the `eb init` so if
-your convention is to put all your code in `/var/www` or
-`/opt/blargle/www` your project will get named `www` which is probably
-not a very good name.  So you might want to rename the directory that
-contains the root first, using `git mv` if necessary.
+We have also edited the application configuration to pick up the
+hostname, username and password for the RDS from the environment,
+which EB will happily arrange for you.
+    
+    vi src/config.php
 
-    cd ~/customer/excellent-project-website
-    git mv var/www this-excellent-module
-    git commit -am "had to rename the toplevel dir because elasticbeanstalk"
-    git push
-    cd this-excellent-module
-
-    eb init -p PHP --region us-west-2 --keyname my_key
+In particular, the last one, nodeploy, has a convenient ./deploy.sh
+verb that allows you to add more files to be removed from the target.
 
 ### Create An Environment (Tech Leads)
 
 Typically, you have several environments, most commonly [ *dev* *prod*
 ] or [ *dev* *staging* *production* ] or [ *dev* *test* *prod* ].
-Typically the tech lead will create environments for you, or if you
-are the tech lead, you can create some environments.  Sadly, EB
-requires environment names be at least four characters long, so *dev*
-is not a legal name.  `eb create` takes a minute or two, so be
-patient.
 
-    ./deploy.sh createenv test
+In this project we need an RDS as well as intances, so we're going to give a lot of argumetns to `./deploy.sh createenv`
+
+    ./deploy.sh create test -i m1.small --timeout 60 \
+    -db.engine mysql -db.i db.m1.small -db.size 5 -db.pass battery-staple -db.user tinfoilhat
+    
+This will grind away for a long long time, that's why we gave it an
+insane timeout of 60 minutes, because the RDS seems to take forever to
+start up.  
+
+    ./deploy.sh open
+
+should get you to your instance in your default browser, which will be ... ugly.  sorry.
 
 Here, `./deploy.sh createenv`  wraps `eb create` so that  you and your
 devs can  use a  short name like  'test' and  under the hood,  it will
 append the appname and create test-$appname.
 
-With no other args, `eb create` sets up a load balancer, a web tier,
-autoscaling group, security group, cloud watch alarms, and assigns an
-s3 bucket for your environment, using the keyname and the region you
-specified eariler with `eb init`.  This defaults are usually all
-reasonable, but you can override most of them with arguments.
+With no other args, `./deploy.sh createenv` sets up a load balancer, a
+web tier, autoscaling group, security group, cloud watch alarms, and
+assigns an s3 bucket for your environment, using the keyname and the
+region you specified eariler with `eb init`.  This defaults are
+usually all reasonable, but you can override most of them with
+arguments.
 
 ALSO, this will launch an EC2 instance, and deploy everything in the
 current directory into /var/www/html in your newly launched instance,
 and will start up apache in that instance to run your PHP code.
 
-`eb create` can do a lot of other dangerous things too - this is
-documented in other examples, and in the aws documentation for [eb
-create](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-create.html).
-
-Probably the first options you want learn first are to specify the instance
-type, and to add some tags to the launched instances.  Normally eb
-launches with only one tag, `Name=$environment` and you probably want
-to do something else.
 
     eb create test --instance_type m3.medium--tags Name=`basename $PWD`,Blame=$USER,Env=develop
 
@@ -176,6 +178,9 @@ stuffed into the php.ini, found in the
 useful to turn on display_errors in the test environment, and turn up
 the memory_limit if you have picked a bigger instance size than
 t1.micro
+ 
+     ./deploy.sh test phperrors on
+     ./deploy.sh setitype m1.large
 
 As always, the [Amazon
 documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/environment-configuration-methods-after.html)
@@ -203,31 +208,10 @@ the last change (add or remove an instance) before it permits another) in minute
 
 Set the instance type for the auto-scaling-group (this will re-deploy all the instances.  ouch.)
 
-    ./deploy.sh env itype m3.medium 
+    ./deploy.sh env setitype m3.medium 
 
 Open up the ./deploy.sh script and you can see all of these are
 trivially implemented with editconfig, and it's easy to add more.
-
-### Applications With Bad Hygiene 
-
-Sometimes applications like wordpress come "unconfigured" and the
-first time you access the application in the browser, you "configure"
-it and the application writes some files "locally" inside the deployed
-instance.  These files will not be present in additional instances if
-you autoscale up.
-
-Bad hygiene aside, you need to get those files out of the instance and
-into your git sandbox, so you can check them in.
-
-You can ssh into the app with `eb ssh` but that's not enough to
-succeed in this case.  However, eb figures out the public ip address
-of the instance when you `eb ssh` into it, and you need that.  You can
-log in as *ec2-user* with the ssh key you specified earlier, and tell
-eb to leave port 22 open for you to abuse.
-
-    eb ssh -o    # type ^d to log back out but note the public ip address, leave port 22 open
-    scp -r -i ~/.ssh/my_key    'ec2-user@pub.lic.ip.addr:/var/www/html/*'  .
-    eb ssh       # log back in and out quickly to close port 22
 
 ### Tighten Up The SSH Controls
 
@@ -246,10 +230,23 @@ with
 But limiting the ssh to just our public ip address makes the instance
 much more secure.
 
-### A REAL EXAMPLE
+### The Whole Example Worked For Real
 
 ```
-./deploy.sh create lacing -i m1.small --timeout 60 -db.engine mysql -db.i db.m1.small -db.size 5 -db.pass uzara-Janthinidae-ponchoed -db.user tchervonets
+[you@yourbox ~] $  git clone git@github.com:productOps/best-practices.git
+Cloning into 'best-practices'...
+remote: Counting objects: 1004, done.
+remote: Compressing objects: 100% (761/761), done.
+remote: Total 1004 (delta 204), reused 0 (delta 0), pack-reused 220
+Receiving objects: 100% (1004/1004), 11.19 MiB | 316.00 KiB/s, done.
+Resolving deltas: 100% (321/321), done.
+
+[you@yourbox ~] $  cd best-practices/php-mysql-eb
+
+[you@yourbox php-mysql-eb]$ ./deploy.sh new bdobyns-php-mysql --region us-west-2 --platform php --keyname barry_rsa
+Application bdobyns-php-mysql has been created.
+
+[you@yourbox php-mysql-eb]$ ./deploy.sh create test -i m1.small --timeout 60 -db.engine mysql -db.i db.m1.small -db.size 5 -db.pass uzara-Janthinidae-ponchoed -db.user tchervonets
  BE PATIENT: THIS MAY TAKE A WHILE AND WILL DEPLOY AT LEAST ONE INSTANCE ALONG THE WAY 
 Creating application version archive "app-160226_164956".
 Uploading: [##################################################] 100% Done...
@@ -282,6 +279,4 @@ INFO: Created CloudWatch alarm named: awseb-e-hv2pi24s68-stack-AWSEBCloudwatchAl
 WARN: Environment health has transitioned from Pending to Severe. Command is executing on all instances.
 INFO: Successfully launched environment: lacing-atom-bdobyns
                                 
-
-Enter the VPC ID:  ^C
 ```

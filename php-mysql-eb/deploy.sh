@@ -1,6 +1,6 @@
 #!/bin/bash -e
 # blame: barry@productops.com  Feb 2016
-# you can run this -x to learn what it does under the hood
+
 
 ME=`basename $0`
 
@@ -217,6 +217,10 @@ case $ACTION in
 #        $ME env sgid             get security group id
 	ebsgid
 	;;
+#    addsg)
+#        $ME env addsg            add an existing security group to this env
+#	addsg $*
+#	;;
     security)
 #        $ME env security         describe security group 
 	aws ec2 describe-security-groups --group-names `ebsgn`
