@@ -261,7 +261,7 @@ Environment details for: test-bdobyns-php-mysql
   CNAME: UNKNOWN
   Updated: 2016-02-27 00:50:06.569000+00:00
 Printing Status:
-INFO: createnvironment is starting.
+INFO: createEnvironment is starting.
 INFO: Using elasticbeanstalk-us-west-2-317994125539 as Amazon S3 storage bucket for environment data.
 INFO: Created load balancer named: awseb-e-h-AWSEBLoa-1RK79GWK4LTAX
 INFO: Created security group named: awseb-e-hv2pi24s68-stack-AWSEBSecurityGroup-UM0W8K5E9CDD
