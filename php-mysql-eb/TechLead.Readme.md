@@ -73,9 +73,9 @@ destroy someone else's 'most-excellent-app').  With no args it will
 also try to to guess a sensible name for your app (where sensible is
 `basename $PWD`), pick up the current region as defined in your
 `~/.aws/config` default region.  `eb init` will try to guess the type
-af app by looking for source code in the various supported languages.
+of app by looking for source code in the various supported languages.
 
-note that `eb init` relies on your `AWS_ACCESS_KEY` and
+Note that `eb init` relies on your `AWS_ACCESS_KEY` and
 `AWS_SECRET_KEY` being set to sensible working values, and your having
 already run `aws config`.
 
@@ -84,10 +84,10 @@ software (sadly for PHP4.x) and a mysql dump of the database (again Mysql 4.x) t
 matches the blog.  The database has already been fixed up so it can restore properly. 
 
 `eb init` is idempotent, meaning you can run it again and again, and
-it doesn't hurt.  If there is already an application defined in AWS with the name eb
-chooses, and with those options, it will do nothing.  If there is
-already an application with that name, `eb init` updates the
-application.  
+it doesn't hurt.  If there is already an application defined in AWS
+with the same name, and with those options, it will do nothing.  If
+there is already an application with that name, `eb init` updates the
+application.
 
 In this project the "home dir" of the application is in the top of
 `best-practices/php-mysql-eb/src` and there's three scripts already
@@ -95,7 +95,7 @@ written to run in the instance that move the files up a directory
 level in the target, restore the database into the RDS if the RDS has
 no tables at all, delete deploy.sh and other scripts that are
 unnecesary in the target.  You should review these scripts because you
-will likely need to create similar ones.
+will likely need to create similar ones for your projects.
 
     cat .ebextensions/01movefiles.config
     cat .ebextensions/02database_setup.config
@@ -115,7 +115,8 @@ verb that allows you to add more files to be removed from the target.
 Typically, you have several environments, most commonly [ *dev* *prod*
 ] or [ *dev* *staging* *production* ] or [ *dev* *test* *prod* ].
 
-In this project we need an RDS as well as intances, so we're going to give a lot of argumetns to `./deploy.sh createenv`
+In this project we need an RDS as well as intances, so we are going to
+give a lot of argumetns to `./deploy.sh create`
 
     ./deploy.sh create test -i m1.small --timeout 60 \
     -db.engine mysql -db.i db.m1.small -db.size 5 -db.pass battery-staple -db.user tinfoilhat
@@ -124,15 +125,17 @@ This will grind away for a long long time, that's why we gave it an
 insane timeout of 60 minutes, because the RDS seems to take forever to
 start up.  
 
+After you finally get back a prompt:
+
     ./deploy.sh open
 
 should get you to your instance in your default browser, which will be ... ugly.  sorry.
 
-Here, `./deploy.sh createenv`  wraps `eb create` so that  you and your
+Here, `./deploy.sh create`  wraps `eb create` so that  you and your
 devs can  use a  short name like  'test' and  under the hood,  it will
 append the appname and create test-$appname.
 
-With no other args, `./deploy.sh createenv` sets up a load balancer, a
+With no other args, `./deploy.sh create` sets up a load balancer, a
 web tier, autoscaling group, security group, cloud watch alarms, and
 assigns an s3 bucket for your environment, using the keyname and the
 region you specified eariler with `eb init`.  This defaults are
@@ -143,8 +146,6 @@ ALSO, this will launch an EC2 instance, and deploy everything in the
 current directory into /var/www/html in your newly launched instance,
 and will start up apache in that instance to run your PHP code.
 
-
-    eb create test --instance_type m3.medium--tags Name=`basename $PWD`,Blame=$USER,Env=develop
 
 ### Changing Config After The Fact
 
@@ -228,9 +229,9 @@ with
     eb ssh --force
 
 But limiting the ssh to just our public ip address makes the instance
-much more secure.
+much more The.
 
-### The Whole Example Worked For Real
+### Whole Example Worked For Real
 
 ```
 [you@yourbox ~] $  git clone git@github.com:productOps/best-practices.git
@@ -241,7 +242,7 @@ remote: Total 1004 (delta 204), reused 0 (delta 0), pack-reused 220
 Receiving objects: 100% (1004/1004), 11.19 MiB | 316.00 KiB/s, done.
 Resolving deltas: 100% (321/321), done.
 
-[you@yourbox ~] $  cd best-practices/php-mysql-eb
+[you@yourbox ~] $ cd best-practices/php-mysql-eb
 
 [you@yourbox php-mysql-eb]$ ./deploy.sh new bdobyns-php-mysql --region us-west-2 --platform php --keyname barry_rsa
 Application bdobyns-php-mysql has been created.
@@ -250,8 +251,8 @@ Application bdobyns-php-mysql has been created.
  BE PATIENT: THIS MAY TAKE A WHILE AND WILL DEPLOY AT LEAST ONE INSTANCE ALONG THE WAY 
 Creating application version archive "app-160226_164956".
 Uploading: [##################################################] 100% Done...
-Environment details for: lacing-atom-bdobyns
-  Application name: atom-bdobyns
+Environment details for: test-bdobyns-php-mysql
+  Application name: bdobyns-php-mysql
   Region: us-west-2
   Deployed Version: app-160226_164956
   Environment ID: e-hv2pi24s68
@@ -260,7 +261,7 @@ Environment details for: lacing-atom-bdobyns
   CNAME: UNKNOWN
   Updated: 2016-02-27 00:50:06.569000+00:00
 Printing Status:
-INFO: createEnvironment is starting.
+INFO: createnvironment is starting.
 INFO: Using elasticbeanstalk-us-west-2-317994125539 as Amazon S3 storage bucket for environment data.
 INFO: Created load balancer named: awseb-e-h-AWSEBLoa-1RK79GWK4LTAX
 INFO: Created security group named: awseb-e-hv2pi24s68-stack-AWSEBSecurityGroup-UM0W8K5E9CDD
@@ -277,6 +278,6 @@ INFO: Created Auto Scaling group policy named: arn:aws:autoscaling:us-west-2:317
 INFO: Created CloudWatch alarm named: awseb-e-hv2pi24s68-stack-AWSEBCloudwatchAlarmLow-D9Y892YBGJMC
 INFO: Created CloudWatch alarm named: awseb-e-hv2pi24s68-stack-AWSEBCloudwatchAlarmHigh-6LHXXRN6SCDA
 WARN: Environment health has transitioned from Pending to Severe. Command is executing on all instances.
-INFO: Successfully launched environment: lacing-atom-bdobyns
+INFO: Successfully launched environment: test-bdobyns-php-mysql
                                 
 ```
