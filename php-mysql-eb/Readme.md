@@ -1,6 +1,8 @@
-# PHP Example for AWS Elastic Beanstalk
+# PHP+MySQL Example for AWS Elastic Beanstalk
 
-This is the simplest possible PHP example, with no mysql database, and no extra frills and options.
+This Readme walks you thru using an elastic beanstalk project, using an
+existing php and mysql application (provided in the `src` directory in
+this example)
 
 Instructions for technical leads to begin a new project are in
 *TechLead.Readme.md* and if you are starting a new project, you should
