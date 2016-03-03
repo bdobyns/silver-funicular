@@ -23,6 +23,8 @@ instances (in S3, Git, etc) .
    * including instructions for a tech lead to set a new one up
    * instructions for developers to join the project
    * a working `deploy.sh` showing the common verbs and some project-specific verbs
-* `php-eb-wordpress` a php app with a MySQL database
+* `php-mysql-eb` a php app with a MySQL database
    * mysql is deployed with elastic beanstalk
-   * wordpress has `bad hygiene` and writes files back into the local filesystem
+   * has the code *not* at the root of the eb project (scripts move it during deployment)
+   * has code to initialize the database from a sql dump
+   * cleans up some files that don't need to stay in the deployed target
