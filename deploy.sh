@@ -75,6 +75,17 @@ EOF
 	exit 3
 }
 
+# not all verbs write history, as some are merely informative
+function write_history 
+{
+    HFILE=.deploy_history
+    if [ ! -f $HFILE ] ; then 
+	echo >$HFILE "# History file for $ME" 
+	git add $HFILE
+    fi
+    echo >$HFILE "$ME $*  # by $LOGNAME@$HOST on "`date "%Y-%m-%d %H:%M`
+}
+
 # ----------------------------------------------------------------------
 LIBEBDEPLOY=lib_eb_deploy.sh
 DNZ=`dirname $0`
@@ -102,18 +113,19 @@ case $1 in
 #        $ME new                  create application based on this dir name
 #        $ME new appname          create application appname
 #        $ME new appname args..     create application appname
-	     ebnew $*
+	     ebnew $*        &&      write_history $*
 	     exit
 	     ;;
 	 init)
 #        $ME init                 initialize elastic beanstalk (after git clone)
 #        $ME init appname         initialize elastic beanstalk (after git clone)
 	     ebinit $*
+	     # note this does not write history since it shouldn't create anything
 	     exit
 	     ;;
 	create|createenv)
 #        $ME create env           create environment 'env-appname'
-	    ebcreate $*
+	ebcreate $*           &&	write_history $*
 	    exit 
 	    ;;
 	list)
@@ -168,7 +180,6 @@ else
 fi
 
 
-
 # ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
@@ -184,7 +195,7 @@ case $ACTION in
     update|deploy)
 #	$ME env deploy           deploy to the given environment
 #	$ME env update           just update the artifact 
-	eb deploy 
+	eb deploy         &&          write_history $ENV $ACTION $*
 	;;
     ssh)
 #	$ME env ssh              ssh to the given box
@@ -221,7 +232,7 @@ case $ACTION in
 	;;
     ingress)
 #        $ME env ingress othersg  permit ingress from this env to othersg
-	sgingress $*
+	sgingress $*         &&          write_history $ENV $ACTION $*
 	;;
 #    addsg)
 #        $ME env addsg            add an existing security group to this env
@@ -241,23 +252,23 @@ case $ACTION in
 	;;
     r53cname|r53)
 #        $ME env r53 f.b.com      wire up a route53 name 'f.b.com' to the lb'
-	route53cname $1
+	route53cname $1         &&          write_history $ENV $ACTION $*
 	;;
     scale)
 #        $ME env scale min max    set asg min and max 
-	ebsetscale $1 $2
+	ebsetscale $1 $2         &&          write_history $ENV $ACTION $*
 	;;
     cooldown)
 #        $ME env cooldown n       cooldown in seconds between asg actions
-	ebsetcooldown $1
+	ebsetcooldown $1         &&          write_history $ENV $ACTION $*
 	;;
     count)
 #        $ME env count n          set asg max and min to n
-	ebsetcount $1
+	ebsetcount $1         &&          write_history $ENV $ACTION $*
 	;;
     setitype)
 #        $ME env setitype type    set instance type, like t1.micro or m3.medium
-	ebsetitype $1
+	ebsetitype $1         &&          write_history $ENV $ACTION $*
 	;;
     asg)
 #        $ME env asg              get autoscaling group name
@@ -269,27 +280,28 @@ case $ACTION in
 	;;
     limitip)
 #        $ME env limitip          limit ssh ip to my public ip	
-	eblimitip $1
+	eblimitip $1         &&          write_history $ENV $ACTION $*
 	;;
     swap)
 #        $ME env1 swap env2        swap the lb cnames for env and env2
-	ebswap $ENV $1
+	ebswap $ENV $1         &&          write_history $ENV $ACTION $*
 	;;
     s3logs)
 #        $ME env s3logs true      send logs to s3
 #        $ME env s3logs false     do not send logs to s3 (default)
-	eblogstos3 $1
+	eblogstos3 $1         &&          write_history $ENV $ACTION $*
 	;;
     nodeploy)
 #        $ME env nodeploy file    do not deploy file in instances
-	ebnodeploy $*
-	;;
-    *)
-	givehelp
+	ebnodeploy $*         &&          write_history $ENV $ACTION $*
 	;;
     phperrors)
 #        $ME env phperrors on     turn on display_errors in php.ini
 #        $ME env phperrors off    turn on display_errors in php.ini
-	ebconfigphperrors $*
+	ebconfigphperrors $*         &&          write_history $ENV $ACTION $*
+	;;
+
+    *)
+	givehelp
 	;;
 esac
