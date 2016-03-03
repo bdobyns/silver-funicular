@@ -19,7 +19,16 @@ function randomline
 SHUF=randomline
 
 # make up a sensible password for the database
-WORDS=/usr/share/dict/words
+if [ -f /usr/share/dict/1000 ] ; then 
+    WORDS=/usr/share/dict/1000
+elif [ -f /usr/share/dict/10000 ] ; then 
+    WORDS=/usr/share/dict/10000
+elif [ -f /usr/share/dict/20000 ] ; then 
+    WORDS=/usr/share/dict/20000
+else
+    WORDS=/usr/share/dict/words
+fi
+# make an xkcd.com/936 stype password from $WORDS if we can
 if [ -f $WORDS ] ; then 
     DBUSER=`$SHUF $WORDS`
     DBPASS=`$SHUF $WORDS`-`$SHUF $WORDS`-`$SHUF $WORDS`-`$SHUF $WORDS`
@@ -75,7 +84,7 @@ VPC=vpc-a1fc39c4
 SUBNETS=`vpcsubnets $VPC`
 
 if [ $USEEXISTINGAPP = false ] || [ ! -d .elasticbeanstalk ] ; then 
-    ../deploy.sh new $EBAPPNAME --region us-west-2 --platform php5.3 --keyname barry_rsa
+    ../deploy.sh new $EBAPPNAME --region us-west-2 --platform php5.4 --keyname barry_rsa
 fi
 
 bash -x ../deploy.sh create $EBENVNAME -i m1.small --timeout 60 \

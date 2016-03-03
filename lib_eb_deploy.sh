@@ -4,11 +4,7 @@
 ME=`basename $0`
 DNZ=`dirname $0`
 
-if [ $DNZ = . ] ; then
-    EBCONFIG=".elasticbeanstalk/config.yml"
-else
-    EBCONFIG=$DNZ/".elasticbeanstalk/config.yml"
-fi
+EBCONFIG=".elasticbeanstalk/config.yml"  # must be in current dir
 EC2USER=ec2-user
 AWSCONFIG=~/.aws/config
 
@@ -46,7 +42,11 @@ function yaml2json
 
 function ebregion 
 {
-    cat $EBCONFIG | yaml2json | jq .global.default_region | tr -d '"' 
+    if [ -f $EBCONFIG ] ; then 
+	cat $EBCONFIG | yaml2json | jq .global.default_region | tr -d '"' 
+    else 
+	exit 17
+    fi
 }
 
 function awsregion 
@@ -522,7 +522,7 @@ function ebcreate
 	    if echo $* | grep ' --tags' >/dev/null  ; then 
 		eb create $ENVNAME $*
 	    else
-		eb create $ENVNAME $* --tags "Name=${ENVNAME},Blame=Created_by_$LOGNAME@$HOSTNAME_using_$ME_on_"`date +%Y-%m-%d`
+		eb create $ENVNAME $* --tags "Name=${ENVNAME},Blame=Created_by_${LOGNAME}@${HOSTNAME}_using_${ME}_on_"`date +%Y-%m-%d`
 	    fi
 }
 
