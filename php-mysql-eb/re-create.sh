@@ -48,7 +48,7 @@ if [ $USEEXISTINGAPP = true ]; then
     EBAPPNAME=`./deploy.sh appname`
     if [ -z $EBAPPNAME ] ; then 
 	echo ERROR: we expected that you had already created an app with 
-	echo ./deploy.sh new appname --region us-west-2 --platform php --keyname somekey_rsa
+	echo ../deploy.sh new appname --region us-west-2 --platform php --keyname somekey_rsa
 	exit
     fi
 fi
@@ -75,9 +75,9 @@ VPC=vpc-a1fc39c4
 SUBNETS=`vpcsubnets $VPC`
 
 if [ $USEEXISTINGAPP = false ] || [ ! -d .elasticbeanstalk ] ; then 
-    ./deploy.sh new $EBAPPNAME --region us-west-2 --platform php5.3 --keyname barry_rsa
+    ../deploy.sh new $EBAPPNAME --region us-west-2 --platform php5.3 --keyname barry_rsa
 fi
 
-./deploy.sh create $EBENVNAME -i m1.small --timeout 60 \
+bash -x ../deploy.sh create $EBENVNAME -i m1.small --timeout 60 \
     -db.engine mysql -db.i db.m1.small -db.size 5 -db.pass $DBPASS -db.user $DBUSER 
 #    --vpc.id $VPC --vpc.dbsubnets $SUBNETS --vpc.elbsubnets $SUBNETS --vpc.publicip

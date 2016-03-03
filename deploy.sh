@@ -83,7 +83,10 @@ function write_history
 	echo >$HFILE "# History file for $ME" 
 	git add $HFILE
     fi
-    echo >$HFILE "$ME $*  # by $LOGNAME@$HOST on "`date "%Y-%m-%d %H:%M`
+    NOW=`date "+%Y-%m-%d %H:%M"`
+    cat >>$HFILE <<EOF
+$ME $*  # by $LOGNAME@$HOSTNAME on $NOW
+EOF
 }
 
 # ----------------------------------------------------------------------
