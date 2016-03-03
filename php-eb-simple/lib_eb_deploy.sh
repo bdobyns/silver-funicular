@@ -139,7 +139,49 @@ function ebsgid
 {
 #        $ME env sgid             get security group id
     ID=`ebinstance`  
-    aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecuritGryoups[].GroupId | tr -d \" 
+    aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecurityGroups[].GroupId | tr -d \" 
+}
+
+function sgingress
+{
+#        $ME env ingress othersg  permit ingress from this env to othersg
+    MYSGID=`ebsgid`
+    OTHERSG=$1
+    TODAY=`date +%Y-%m-%d`
+    shift
+    if [ -z $1 ] ; then
+        # just go ahead and do the usual ports that everyone wants: web
+	PORTS="80 443 8080 8443"  # 8000 3306 5432
+    else 
+	PORTS="$*"
+    fi 
+    if [ ! -z $OTHERSG ] && [ ! -z $MYSGID ]; then 
+	if aws ec2 describe-security-groups | jq .SecurityGroups[].GroupId | tee /tmp/$$.sgids |  grep $OTHERSG >/dev/null ; then 
+	    set -x
+	    for PORT in $PORTS # 80 443 8080 8443 8000 3306 5432
+	    do
+		aws ec2 authorize-security-group-ingress --group-id $OTHERSG --source-group $MYSGID --port $PORT --protocol tcp
+	        aws ec2 create-tags --resources $OTHERSG  --tags "Key=Blame_$PORT,Value=\"Modified by $LOGNAME@$HOSTNAME using $ME on $TODAY\""
+		# aws ec2 authorize-security-group-egress --group-id $OTHERSG --source-group $MYSGID --port $PORT --protocol tcp
+		# aws ec2 authorize-security-group-ingress --group-id $MYSGID --source-group $OTHERSG --port $PORT --protocol tcp
+	        # aws ec2 create-tags --resources $MYSGID  --tags "Key=Blame_$PORT,Value=\"Modified by $LOGNAME@$HOSTNAME using $ME on $TODAY\""
+	    done
+	    set +x
+	else 
+	    # aws ec2 describe-security-groups | jq .SecurityGroups[].GroupId >/tmp/$$.sgids
+	    aws ec2 describe-security-groups | jq .SecurityGroups[].GroupName >/tmp/$$.sgnms
+	    echo "ERROR $OTHERSG is not the id of a valid security group"
+	    echo "     maybe you can Try one one of these:"
+	    paste /tmp/$$.sgids /tmp/$$.sgnms
+	fi
+	rm -rf /tmp/$$.sgids /tmp/$$.sgnms
+    elif [ -z $MYSGID ] ; then 
+	echo "ERROR can't determine the security group of this environment"
+	exit 4
+    else # [ -z $OTHERSG ] ; then 
+	echo "ERROR must specify the security group id of a target group"
+	exit 7
+    fi
 }
 
 function ebcname 
@@ -167,7 +209,7 @@ fi
 RESREC=/tmp/route53.$$.json
 cat >$RESREC <<EOF
 {
-  "Comment": "$0 for AWS EB by '$USER' on '$HOSTNAME' in '$PWD'", 
+  "Comment": "$ME for AWS EB by '$LOGNAME' on '$HOSTNAME' in '$PWD'", 
   "Changes": [
     {
       "Action": "UPSERT",
@@ -238,13 +280,13 @@ function ebeditconfig
 # delete the key
 # go back to the top of the section
 # insert the new key right after the section header
-NOW=`date +%Y-%m-%d`
+TODAY=`date +%Y-%m-%d`
 cat >>$EFILE <<EOF
 /  $SECTION/
 /$KEY:/d
 /  $SECTION/
 a
-    $KEY: $VAL # written by $0 on $NOW by $USER
+    $KEY: $VAL # written using $ME on $TODAY by $LOGNAME@$HOSTNAME
 .
 
 EOF
@@ -278,7 +320,7 @@ function ebappendconfig
 # delete the key
 # go back to the top of the section
 # insert the new key right after the section header
-NOW=`date +%Y-%m-%d`
+TODAY=`date +%Y-%m-%d`
 cat >>$EFILE <<EOF
 /  $SECTION/
 /$KEY:/
@@ -480,7 +522,7 @@ function ebcreate
 	    if echo $* | grep ' --tags' >/dev/null  ; then 
 		eb create $ENVNAME $*
 	    else
-		eb create $ENVNAME $* --tags "Name=${ENVNAME},Blame=$USER"
+		eb create $ENVNAME $* --tags "Name=${ENVNAME},Blame=\"Created by $LOGNAME@$HOSTNAME using $ME on "`date +%Y-%m-%d`'"'
 	    fi
 }
 
@@ -602,11 +644,11 @@ function ebnodeploy
 	DT=`date +%Y-%m-%d`
 	if [ ! -f $NDCONFIG ] ; then 
 	    mkdir -p .ebextensions
-	    echo "# $NDCONFIG created using $0 on $DT by $USER" >$NDCONFIG
+	    echo "# $NDCONFIG created using $ME on $DT by $USER" >$NDCONFIG
 	    echo "container_commands:" >>$NDCONFIG
 	fi
     cat >>$NDCONFIG <<EOF
-  remove_$NM: # $NM written using $0 on $DT by $USER
+  remove_$NM: # $NM written using $ME on $DT by $USER
     command: "rm -rf $*"
 EOF
     git add $NDCONFIG
