@@ -209,7 +209,7 @@ fi
 RESREC=/tmp/route53.$$.json
 cat >$RESREC <<EOF
 {
-  "Comment": "$0 for AWS EB by '$LOGNAME' on '$HOSTNAME' in '$PWD'", 
+  "Comment": "$ME for AWS EB by '$LOGNAME' on '$HOSTNAME' in '$PWD'", 
   "Changes": [
     {
       "Action": "UPSERT",
@@ -286,7 +286,7 @@ cat >>$EFILE <<EOF
 /$KEY:/d
 /  $SECTION/
 a
-    $KEY: $VAL # written using $0 on $TODAY by $LOGNAME@$HOSTNAME
+    $KEY: $VAL # written using $ME on $TODAY by $LOGNAME@$HOSTNAME
 .
 
 EOF
@@ -644,11 +644,11 @@ function ebnodeploy
 	DT=`date +%Y-%m-%d`
 	if [ ! -f $NDCONFIG ] ; then 
 	    mkdir -p .ebextensions
-	    echo "# $NDCONFIG created using $0 on $DT by $USER" >$NDCONFIG
+	    echo "# $NDCONFIG created using $ME on $DT by $USER" >$NDCONFIG
 	    echo "container_commands:" >>$NDCONFIG
 	fi
     cat >>$NDCONFIG <<EOF
-  remove_$NM: # $NM written using $0 on $DT by $USER
+  remove_$NM: # $NM written using $ME on $DT by $USER
     command: "rm -rf $*"
 EOF
     git add $NDCONFIG
