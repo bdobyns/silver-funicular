@@ -50,6 +50,7 @@ TECH LEAD VERBS:
         $ME env sgid             get security group id
         $ME env security         describe security group 
         $ME env ingress othersg  permit ingress from this env to othersg
+        $ME env ingress othersg  80 3306 5432 ... (list of ports)
 
         $ME env cname            display the cname of the elastic load balancer
         $ME env r53 f.b.com      wire up a route53 name 'f.b.com' to the lb'
@@ -220,7 +221,7 @@ case $ACTION in
 	;;
     ingress)
 #        $ME env ingress othersg  permit ingress from this env to othersg
-	sgingress $1
+	sgingress $*
 	;;
 #    addsg)
 #        $ME env addsg            add an existing security group to this env
