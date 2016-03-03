@@ -139,7 +139,34 @@ function ebsgid
 {
 #        $ME env sgid             get security group id
     ID=`ebinstance`  
-    aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecuritGryoups[].GroupId | tr -d \" 
+    aws ec2 describe-instances --instance-ids $ID | jq .Reservations[].Instances[].SecurityGroups[].GroupId | tr -d \" 
+}
+
+function sgingress
+{
+#        $ME env ingress othersg  permit ingress from this env to othersg
+    MYSGID=`ebsgid`
+    OTHERSG=$1
+    if [ ! -z $OTHERSG ] && [ ! -z $MYSGID ]; then 
+	if aws ec2 describe-security-groups | jq .SecurityGroups[].GroupId | tee /tmp/$$.sgids |  grep $OTHERSG >/dev/null ; then 
+	    aws ec2 authorize-security-group-ingress --group-id $OTHERSG --source-group $MYSGID
+	    aws ec2 authorize-security-group-egress --group-id $OTHERSG --source-group $MYSGID
+	    aws ec2 authorize-security-group-ingress --group-id $MYSGID --source-group $OTHERSG
+	else 
+	    # aws ec2 describe-security-groups | jq .SecurityGroups[].GroupId >/tmp/$$.sgids
+	    aws ec2 describe-security-groups | jq .SecurityGroups[].GroupName >/tmp/$$.sgnms
+	    echo "ERROR $OTHERSG is not the id of a valid security group"
+	    echo "     maybe you can Try one one of these:"
+	    paste /tmp/$$.sgids /tmp/$$.sgnms
+	fi
+	rm -rf /tmp/$$.sgids /tmp/$$.sgnms
+    elif [ -z $MYSGID ] ; then 
+	echo "ERROR can't determine the security group of this environment"
+	exit 4
+    else # [ -z $OTHERSG ] ; then 
+	echo "ERROR must specify the security group id of a target group"
+	exit 7
+    fi
 }
 
 function ebcname 
