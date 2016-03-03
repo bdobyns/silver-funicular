@@ -15,6 +15,7 @@ function randomline
 
 SHUF=randomline
 
+# make up a sensible password for the database
 WORDS=/usr/share/dict/words
 if [ -f $WORDS ] ; then 
     DBUSER=`$SHUF $WORDS`
@@ -24,13 +25,14 @@ else
     DBPASS=correct-battery-staple-horse  # xkcd.com/936/
 fi
 
+# fabricate a sensible app and environment name
 if [  -z $1 ] && [ ! -z $SHUF ] && [ -f $WORDS ] ; then
-    NAME=`$SHUF $WORDS | tr A-Z a-z`-$USER
+    NAME=$USER-`$SHUF $WORDS | tr A-Z a-z`
     ENV=`$SHUF $WORDS | tr A-Z a-z`
     PASS=`$SHUF $WORDS`-`$SHUF $WORDS`-`$SHUF $WORDS`
     USER=`$SHUF $WORDS`
 elif [ -z $1 ] ; then
-    NAME=zork-$USER
+    NAME=$USER-`basename $PWD`
     ENV=$USER
     PASS=`date | md5`
 elif [ ! -z $1 ] && [ ! -z $2 ] ; then
@@ -42,13 +44,14 @@ elif [ -z $2 ] ; then
     PASS=`$SHUF $WORDS`-`$SHUF $WORDS`
 fi
 
-if $USEEXISTINGAPP ; then 
+# if we are supposed to use the existing app
+if [ $USEEXISTINGAPP = true ]; then 
     NAME=`./deploy.sh appname`
-fi
-if [ -z $NAME ] ; then 
-    echo ERROR: we expected that you had already created an app with 
-    echo ./deploy.sh new appname --region us-west-2 --platform php --keyname somekey_rsa
-    exit
+    if [ -z $NAME ] ; then 
+	echo ERROR: we expected that you had already created an app with 
+	echo ./deploy.sh new appname --region us-west-2 --platform php --keyname somekey_rsa
+	exit
+    fi
 fi
 
 # trim the environment name if it is too long, aws only allows 23 chars
@@ -72,7 +75,10 @@ function vpcsubnets
 VPC=vpc-a1fc39c4
 SUBNETS=`vpcsubnets $VPC`
 
-# ./deploy.sh new $NAME --region us-west-2 --platform php --keyname barry_rsa
+if [ $USEEXISTINGAPP = false ] ; then 
+    ./deploy.sh new $NAME --region us-west-2 --platform php --keyname barry_rsa
+fi
+
 ./deploy.sh create $ENV -i m1.small --timeout 60 \
     -db.engine mysql -db.i db.m1.small -db.size 5 -db.pass $PASS -db.user $USER 
 #    --vpc.id $VPC --vpc.dbsubnets $SUBNETS --vpc.elbsubnets $SUBNETS --vpc.publicip
