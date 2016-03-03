@@ -4,11 +4,7 @@
 ME=`basename $0`
 DNZ=`dirname $0`
 
-if [ $DNZ = . ] ; then
-    EBCONFIG=".elasticbeanstalk/config.yml"
-else
-    EBCONFIG=$DNZ/".elasticbeanstalk/config.yml"
-fi
+EBCONFIG=".elasticbeanstalk/config.yml"  # must be in current dir
 EC2USER=ec2-user
 AWSCONFIG=~/.aws/config
 
@@ -46,7 +42,11 @@ function yaml2json
 
 function ebregion 
 {
-    cat $EBCONFIG | yaml2json | jq .global.default_region | tr -d '"' 
+    if [ -f $EBCONFIG ] ; then 
+	cat $EBCONFIG | yaml2json | jq .global.default_region | tr -d '"' 
+    else 
+	exit 17
+    fi
 }
 
 function awsregion 
@@ -522,7 +522,7 @@ function ebcreate
 	    if echo $* | grep ' --tags' >/dev/null  ; then 
 		eb create $ENVNAME $*
 	    else
-		eb create $ENVNAME $* --tags "Name=${ENVNAME},Blame=\"Created by $LOGNAME@$HOSTNAME using $ME on "`date +%Y-%m-%d`'"'
+		eb create $ENVNAME $* --tags "Name=${ENVNAME},Blame=Created_by_${LOGNAME}@${HOSTNAME}_using_${ME}_on_"`date +%Y-%m-%d`
 	    fi
 }
 
@@ -641,14 +641,14 @@ function ebnodeploy
     NDCONFIG=.ebextensions/${ACTION}.config
     if [ ! -z $1 ] ; then 
 	NM=`echo $1 | tr -dc A-Za-z0-9`
-	DT=`date +%Y-%m-%d`
+	TODAY=`date +%Y-%m-%d`
 	if [ ! -f $NDCONFIG ] ; then 
 	    mkdir -p .ebextensions
-	    echo "# $NDCONFIG created using $ME on $DT by $USER" >$NDCONFIG
+	    echo "# $NDCONFIG created using $ME on $TODAY by $USER" >$NDCONFIG
 	    echo "container_commands:" >>$NDCONFIG
 	fi
     cat >>$NDCONFIG <<EOF
-  remove_$NM: # $NM written using $ME on $DT by $USER
+  remove_$NM: # $NM written using $ME on $TODAY by $USER
     command: "rm -rf $*"
 EOF
     git add $NDCONFIG

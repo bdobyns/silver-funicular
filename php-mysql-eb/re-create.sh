@@ -1,6 +1,9 @@
 #!/bin/bash
 
 USEEXISTINGAPP=true
+if [ ! -d .elasticbeanstalk ] ; then
+    USEEXISTINGAPP=false
+fi
 
 function randomline
 {
@@ -16,7 +19,16 @@ function randomline
 SHUF=randomline
 
 # make up a sensible password for the database
-WORDS=/usr/share/dict/words
+if [ -f /usr/share/dict/1000 ] ; then 
+    WORDS=/usr/share/dict/1000
+elif [ -f /usr/share/dict/10000 ] ; then 
+    WORDS=/usr/share/dict/10000
+elif [ -f /usr/share/dict/20000 ] ; then 
+    WORDS=/usr/share/dict/20000
+else
+    WORDS=/usr/share/dict/words
+fi
+# make an xkcd.com/936 stype password from $WORDS if we can
 if [ -f $WORDS ] ; then 
     DBUSER=`$SHUF $WORDS`
     DBPASS=`$SHUF $WORDS`-`$SHUF $WORDS`-`$SHUF $WORDS`-`$SHUF $WORDS`
@@ -27,38 +39,34 @@ fi
 
 # fabricate a sensible app and environment name
 if [  -z $1 ] && [ ! -z $SHUF ] && [ -f $WORDS ] ; then
-    NAME=$USER-`$SHUF $WORDS | tr A-Z a-z`
-    ENV=`$SHUF $WORDS | tr A-Z a-z`
-    PASS=`$SHUF $WORDS`-`$SHUF $WORDS`-`$SHUF $WORDS`
-    USER=`$SHUF $WORDS`
+    EBAPPNAME=$USER-`$SHUF $WORDS | tr A-Z a-z`
+    EBENVNAME=`$SHUF $WORDS | tr A-Z a-z`
 elif [ -z $1 ] ; then
-    NAME=$USER-`basename $PWD`
-    ENV=$USER
-    PASS=`date | md5`
+    EBAPPNAME=$USER-`basename $PWD`
+    EBENVNAME=$USER
 elif [ ! -z $1 ] && [ ! -z $2 ] ; then
-    NAME=$1-$USER
-    ENV=$2
+    EBAPPNAME=$1-$USER
+    EBENVNAME=$2
 elif [ -z $2 ] ; then 
-    NAME=$1-$USER
-    ENV=`$SHUF $WORDS`
-    PASS=`$SHUF $WORDS`-`$SHUF $WORDS`
+    EBAPPNAME=$1-$USER
+    EBENVNAME=`$SHUF $WORDS`
 fi
 
 # if we are supposed to use the existing app
 if [ $USEEXISTINGAPP = true ]; then 
-    NAME=`./deploy.sh appname`
-    if [ -z $NAME ] ; then 
+    EBAPPNAME=`./deploy.sh appname`
+    if [ -z $EBAPPNAME ] ; then 
 	echo ERROR: we expected that you had already created an app with 
-	echo ./deploy.sh new appname --region us-west-2 --platform php --keyname somekey_rsa
+	echo ../deploy.sh new appname --region us-west-2 --platform php --keyname somekey_rsa
 	exit
     fi
 fi
 
 # trim the environment name if it is too long, aws only allows 23 chars
-EL=`echo ${ENV}-$NAME | wc -c`
+EL=`echo ${EBENVNAME}-$EBAPPNAME | wc -c`
 if [ $EL -ge 23 ] ; then
-    NL=`echo $NAME | wc -c`
-    ENV=`echo $ENV | cut -c 1-$[ 22 - $NL ]`
+    NL=`echo $EBAPPNAME | wc -c`
+    EBENVNAME=`echo $EBENVNAME | cut -c 1-$[ 22 - $NL ]`
 fi
 
 set -x 
@@ -75,10 +83,10 @@ function vpcsubnets
 VPC=vpc-a1fc39c4
 SUBNETS=`vpcsubnets $VPC`
 
-if [ $USEEXISTINGAPP = false ] ; then 
-    ./deploy.sh new $NAME --region us-west-2 --platform php --keyname barry_rsa
+if [ $USEEXISTINGAPP = false ] || [ ! -d .elasticbeanstalk ] ; then 
+    ../deploy.sh new $EBAPPNAME --region us-west-2 --platform php5.4 --keyname barry_rsa
 fi
 
-./deploy.sh create $ENV -i m1.small --timeout 60 \
-    -db.engine mysql -db.i db.m1.small -db.size 5 -db.pass $PASS -db.user $USER 
+bash -x ../deploy.sh create $EBENVNAME -i m1.small --timeout 60 \
+    -db.engine mysql -db.i db.m1.small -db.size 5 -db.pass $DBPASS -db.user $DBUSER 
 #    --vpc.id $VPC --vpc.dbsubnets $SUBNETS --vpc.elbsubnets $SUBNETS --vpc.publicip

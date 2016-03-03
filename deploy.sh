@@ -3,6 +3,8 @@
 
 
 ME=`basename $0`
+DNZ=`dirname $0`
+LIBEBDEPLOY=lib_eb_deploy.sh
 
 givehelp()
 {
@@ -78,17 +80,19 @@ EOF
 # not all verbs write history, as some are merely informative
 function write_history 
 {
+    NOW=`date "+%Y-%m-%d %H:%M"`
     HFILE=.deploy_history
     if [ ! -f $HFILE ] ; then 
-	echo >$HFILE "# History file for $ME" 
+	echo >$HFILE "# History file for "`basename $PWD`" started on $NOW by $LOGNAME@$HOSTNAME "
 	git add $HFILE
     fi
-    echo >$HFILE "$ME $*  # by $LOGNAME@$HOST on "`date "%Y-%m-%d %H:%M`
+    cat >>$HFILE <<EOF
+$DNZ/$ME $*  # by $LOGNAME@$HOSTNAME on $NOW
+EOF
 }
 
 # ----------------------------------------------------------------------
-LIBEBDEPLOY=lib_eb_deploy.sh
-DNZ=`dirname $0`
+
 if [ -f $DNZ/$LIBEBDEPLOY ] ; then 
     source $DNZ/$LIBEBDEPLOY
 elif [ -f $DNZ/lib/$LIBEBDEPLOY ] ; then 
