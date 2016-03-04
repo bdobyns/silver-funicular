@@ -83,13 +83,15 @@ function write_history
     NOW=`date "+%Y-%m-%d %H:%M"`
     HFILE=.deploy_history
     if [ ! -f $HFILE ] ; then 
-	cat >$HFILE <<EOF "
+	HERE=`basename $PWD`
+	cat >$HFILE <<EOF 
 #!/bin/bash -x -e
-# History file for "`basename $PWD`" started on $NOW by $LOGNAME@$HOSTNAME "
+# History file for $HERE started on $NOW by $LOGNAME@$HOSTNAME 
 
 EOF
 	git add $HFILE
     fi
+    if [ $1 = create ] || [ $1 = new ] ; then echo " " >>$HFILE ; fi     # throw an extra newline before a create
     cat >>$HFILE <<EOF
 $DNZ/$ME $*  # by $LOGNAME@$HOSTNAME on $NOW
 EOF
