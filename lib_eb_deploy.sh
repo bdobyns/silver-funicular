@@ -358,8 +358,8 @@ function eblimitip
 	    fi
 	fi
 	echo  INFO: About To Set SSHSourceRestriction: tcp,22,22,$CIDR
-	ebeditconfig aws:autoscaling:launchconfiguration: SSHSourceRestriction tcp,22,22,$CIDR
-	aws ec2 describe-security-groups --group-names `ebsgn` | grep CidrIp
+	ebeditconfig aws:autoscaling:launchconfiguration: SSHSourceRestriction tcp,22,22,$CIDR && \
+	    aws ec2 describe-security-groups --group-names `ebsgn` | grep CidrIp
 }
 
 function ebsetitype 
@@ -385,6 +385,7 @@ function ebsetitype
 		then 
 		    echo "If you failed due to the dreaded VPC problem, read"
 		    echo '  https://mike-thomson.com/blog/?p=2103#more-2103'
+		    exit 1
 		fi
             # fi
 	    asgdescribe | egrep 'Size|Desired|MinInstancesInService|RollingUpdate|MaxBatchSize'
@@ -410,11 +411,12 @@ function ebsetcooldown
 #        $ME env cooldown n       cooldown in seconds between asg actions
 	if [ -z $1 ] ; then 
 	    echo " --- current values ---"
+	    asgdescribe | grep Cooldown
 	else    
 	    # aws autoscaling update-auto-scaling-group --auto-scaling-group-name `asgname` --default-cooldown $1
-	    ebeditconfig aws:autoscaling:asg: Cooldown $1
+	    ebeditconfig aws:autoscaling:asg: Cooldown $1 && \
+		asgdescribe | grep Cooldown
 	fi
-	asgdescribe | grep Cooldown
 }
 
 function ebsetscale 
@@ -444,8 +446,8 @@ function ebsetscale
 	    else 
 		MININSTANCES="aws:autoscaling:updatepolicy:rollingupdate: MinInstancesInService '1'"	    
 	    fi
-	    ebeditconfig $MIN $MAX $MAXBATCH $MININSTANCES $ROLLUPTRUE
-	    asgdescribe | egrep 'Size|Desired|MinInstancesInService|RollingUpdate|MaxBatchSize'
+	    ebeditconfig $MIN $MAX $MAXBATCH $MININSTANCES $ROLLUPTRUE && \
+		asgdescribe | egrep 'Size|Desired|MinInstancesInService|RollingUpdate|MaxBatchSize'
 	fi
 }
 
@@ -682,20 +684,23 @@ function ebconfigphperrors
 {
 #        $ME env phperrors on     turn on display_errors in php.ini
 #        $ME env phperrors off    turn on display_errors in php.ini
-    if cfgget $EBCONFIG global default_platform | grep PHP >/dev/null ; then
+    if cat $EBCONFIG | yaml2json | jq .global.default_platform | grep -i PHP >/dev/null ; then
       case $1 in 
 	on|On|ON|t|T|true|True|TRUE|0)
 	   ERRORS="aws:elasticbeanstalk:container:php:phpini: display_errors 'On'"
-	   eb editconfig $ERRORS
+	   ebeditconfig $ERRORS
 	   ;;
 	off|Off|f|F|False|false|FALSE|0)
 	   ERRORS="aws:elasticbeanstalk:container:php:phpini: display_errors 'On'"
-	   eb editconfig $ERRORS
+	   ebeditconfig $ERRORS
 	   ;;	   
 	*)
-	    echo "ERROR: must specify either on or off" 2>&1
+	    echo "ERROR: must specify either on or off" >&2
 	    ;;
       esac
+    else 
+	echo -n "ERROR: not a php project. " >&2
+	cat $EBCONFIG | yaml2json | jq .global.default_platform  >&2
     fi
 }
 
