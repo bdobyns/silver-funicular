@@ -299,7 +299,9 @@ q
 
 EOF
     export EDITOR="cat $EFILE | ed >/dev/null "
-    eb config # && rm $EFILE
+    # if we don't have the 'cat /dev/null' then eb config reads randomly from the console and blows up on parsing the config later.
+    # this is (effectively) a bug in eb config, but not worth reporting or fixing.
+    cat /dev/null | eb config # && rm $EFILE
 }
 
 # create an ed script for editing a configuration as produced by `eb config`
@@ -336,7 +338,9 @@ q
 
 EOF
     export EDITOR="cat $EFILE | ed >/dev/null "
-    eb config # && rm $EFILE
+    # if we don't have the 'cat /dev/null' then eb config reads randomly from the console and blows up on parsing the config later.
+    # this is (effectively) a bug in eb config, but not worth reporting or fixing.
+    cat /dev/null | eb config # && rm $EFILE
 }
 
 function eblistapps 
