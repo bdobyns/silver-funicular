@@ -83,7 +83,11 @@ function write_history
     NOW=`date "+%Y-%m-%d %H:%M"`
     HFILE=.deploy_history
     if [ ! -f $HFILE ] ; then 
-	echo >$HFILE "# History file for "`basename $PWD`" started on $NOW by $LOGNAME@$HOSTNAME "
+	cat >$HFILE <<EOF "
+#!/bin/bash -x -e
+# History file for "`basename $PWD`" started on $NOW by $LOGNAME@$HOSTNAME "
+
+EOF
 	git add $HFILE
     fi
     cat >>$HFILE <<EOF
