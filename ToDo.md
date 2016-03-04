@@ -1,6 +1,6 @@
 # ElasticBeanstalk ToDo List
 
-- figure out bug in deploy_eb.sh where using editconfig from a script is not the same as using it from the commandline
+- figure out bug in deploy_eb.sh where using editconfig from a script (like the history log) is not the same as using it from the commandline
 - show how to have other ports (on your app) open than just 80 and 8080
 - show how to connect a debugger (like netbeans or intellij) from my laptop to the cloud instance
 - handle route53 n-part names, not just three part foo.example.com
