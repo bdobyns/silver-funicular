@@ -301,6 +301,11 @@ case $ACTION in
 #        $ME env s3logs false     do not send logs to s3 (default)
 	eblogstos3 $1         &&          write_history $ENV $ACTION $*
 	;;
+    cwl)
+#        $ME env cwl true         setup cloudwatch logs
+#        $ME env cwl false         setup cloudwatch logs	
+	ebsetupcwl $1
+	;;
     nodeploy)
 #        $ME env nodeploy file    do not deploy file in instances
 	ebnodeploy $*         &&          write_history $ENV $ACTION $*

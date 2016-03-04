@@ -638,6 +638,24 @@ function eblogstos3
     esac	    
 }
 
+function ebsetupcwl 
+{
+#        $ME env cwl true         setup cloudwatch logs
+#        $ME env cwl false         setup cloudwatch logs	
+    set -x
+    case $1 in 
+	true|True|TRUE)
+	    eb labs setup-cwl
+	    ;;
+	true|True|TRUE)
+	    rm -f .ebextensions/cwl*config
+	    ;;
+	*)
+	    echo "ERROR: you must specify either 'true' or 'false' for the log config"   
+	    ;;
+    esac	    
+}
+
 function ebnodeploy 
 {
 #        $ME env nodeploy file    do not deploy file in instances

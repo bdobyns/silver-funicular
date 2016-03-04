@@ -1,14 +1,23 @@
 # ElasticBeanstalk ToDo List
 
-- show how to have other ports open than just 80 and 8080
-- show how to have better security when you `eb ssh` by limiting the open port to just your public ip address
+- show how to have other ports (on your app) open than just 80 and 8080
 - show how to connect a debugger (like netbeans or intellij) from my laptop to the cloud instance
 - handle route53 n-part names, not just three part foo.example.com
-- connect to a security group that's already been created by CloudFormation
-- show an example that includes an RDS (wordpress)
 - show an example with bad hygiene (wordpress)
-- show an example with two tiers (web, service) and multiple SOA components in each tier, plus RDS
+- show an example with two tiers (web, service) and multiple SOA components in each tier, plus RDS - note well, that by AWS design the worker tier in eb ONLY is allowed to communicate with other workers and with the web tier via SQS
 - refactor route53wire so we can show the current wirings
+
+done 3/4/2016:
+- workaround bug in 'eb create' which reads from stdin when it should not
+- add history mechanism, so deploy writes an executable history log
+- show how to have better security when you `eb ssh` by limiting the open port to just your public ip address
+- show an example that includes an RDS (wordpress)
+- show the source not at the eb root
+- show restoring a database iff the database is empty (just created by eb)
+- connect to a security group that's already been created (created by someone/something else), by adding ingress rules to the other security group for the sg in this environment
+- move deploy.sh up, fix bugs with it executing in a dir not the same as the app
+- rename deploy.sh to deploy_eb.sh
+- add cloudwatch logs verb, which uses 'eb labs setup-cwl' to write some configs in .ebextensions
 
 done 2/24/2016:
 - refactor deploy.sh into a library, so it can be "wrapped" by a project-specific deploy.sh.  
