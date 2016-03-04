@@ -1,5 +1,6 @@
 # ElasticBeanstalk ToDo List
 
+- figure out bug in deploy_eb.sh where using editconfig from a script is not the same as using it from the commandline
 - show how to have other ports (on your app) open than just 80 and 8080
 - show how to connect a debugger (like netbeans or intellij) from my laptop to the cloud instance
 - handle route53 n-part names, not just three part foo.example.com
@@ -15,13 +16,13 @@ done 3/4/2016:
 - show the source not at the eb root
 - show restoring a database iff the database is empty (just created by eb)
 - connect to a security group that's already been created (created by someone/something else), by adding ingress rules to the other security group for the sg in this environment
-- move deploy.sh up, fix bugs with it executing in a dir not the same as the app
-- rename deploy.sh to deploy_eb.sh
+- move deploy_eb.sh up, fix bugs with it executing in a dir not the same as the app
+- rename deploy_eb.sh to deploy_eb.sh
 - add cloudwatch logs verb, which uses 'eb labs setup-cwl' to write some configs in .ebextensions
 
 done 2/24/2016:
-- refactor deploy.sh into a library, so it can be "wrapped" by a project-specific deploy.sh.  
-  strip all 'active' code out of deploy.sh other than the big switch statements.
+- refactor deploy_eb.sh into a library, so it can be "wrapped" by a project-specific deploy_eb.sh.  
+  strip all 'active' code out of deploy_eb.sh other than the big switch statements.
 - add appname and listapps verbs
 - add s3logs verb which turns on/off aws:elasticbeanstalk:hostmanager:  LogPublicationControl
 - add nodeploy verb which allows you to mark files as "not to be deployed"
@@ -51,6 +52,6 @@ done 2/23/2016:
 - add 'swap' verb, which also required refactoring the test for 'does this env exist'
 
 done 2/22/2016:
-- rewrite Readme.md in ph-eb-simple to show usage of the `deploy.sh` script
-- add changing instance type to ./deploy.sh
+- rewrite Readme.md in ph-eb-simple to show usage of the `deploy_eb.sh` script
+- add changing instance type to ./deploy_eb.sh
 - in `new` check the app name does *not* exist before calling `eb init`
