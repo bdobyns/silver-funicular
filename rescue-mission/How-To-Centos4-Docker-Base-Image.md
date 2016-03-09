@@ -81,6 +81,7 @@ Note that 4.9 was never released as ISOs, so you have to `yum update` from 4.8 t
      but that does not allow us to fixup the repo    
 2. In the Dockerfile, we follow [2k0ri's recipe](https://hub.docker.com/r/2k0ri/centos4-64-vault/~/dockerfile/) for pointing the yum repos properly to the vault, which you will need to do to use yum to install anything at all.     
    Because we are trying to make a specific version of the image (4.4 or 4.6) we need to edit the 4.9 in the recipe for the version we intend.  
+3. Also, following the suggestion in "Using Docker, Adrian Mouat, page 309, we install gosu as an alternative to su and sudo.
 3. The example below is for Centos 4.6 
 
 ```
@@ -101,6 +102,11 @@ ADD centos46_i386.tar.gz /
 # note we update here to 4.6, not to 4.9
 RUN sed -ri -e 's/^mirrorlist/#mirrorlist/g' -e 's/#baseurl=http:\/\/mirror\.centos\.org\/centos\/\$releasever/baseurl=http:\/\/vault\.centos\.org\/4\.6/g' /etc/yum.repos.d/CentOS-Base.repo
 
+# need these for anything useful
+RUN yum install -y curl wget
+
+# install gosu, per "Using Docker", Adrian Mouat, p309
+RUN curl -k -o /usr/local/bin/gosu -fsSL "https://github.com/tianon/gosu/releases/download/1.7/gosu-i386" && chmod +x /usr/local/bin/gosu
 
 # you still might want to run yum update, but I didn't
 # RUN yum update -y
