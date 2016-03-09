@@ -1,8 +1,20 @@
-# This is a minimal server installation of 32-bit user land Centos 4.x from the original server iso
+# MINIMAL 32-BIT USERLAND CENTOS 4.X FROM ISO
 
-This describes how I built a base linux image for several ancient distributions that are no longer supported, *and* fixed them up so that they can still `yum install` something useful.
+The objective here is to build a Centos 4.4, 4.6, 4.8 or 4.9 Docker Image with a 32-bit userland.
+
+This How-Tos how I built a base linux image for several ancient distributions that are no longer supported, *and* fixed them up so that they can still `yum install` something useful.
 
 Most of these techniques can be used for any linux image installable from an ISO, whether i386, i586, i686, x86_64.  
+
+
+
+# PRE-REQUISITES
+
+1. Docker installed and working
+2. VirtualBox or VMware or something like it installed and working
+3. wget 
+4. a bittorrent client
+5. working knowledge of basic linux command line tools including ssh, sed, tar, yum, sudo 
 
 
 
@@ -11,12 +23,12 @@ Most of these techniques can be used for any linux image installable from an ISO
 
 I got the installation ISO with:
 
-| Version | How |
+| Centos | How |
 | ------- | --- |
-| Centos 4.4 | `wget http://mirror.symnds.com/distributions/CentOS-vault/4.4/isos/i386/CentOS-4.4.ServerCD-i386.iso` |
-| Centos 4.6 | by torrenting `http://mirror.symnds.com/distributions/CentOS-vault/4.6/isos/i386/CentOS-4.6-i386-binDVD.torrent` |
-| Centos 4.8 | by torrenting `http://mirror.symnds.com/distributions/CentOS-vault/4.8/isos/i386/CentOS-4.8-i386-binDVD.torrent` |
-| Centos 4.9 | by torrenting `http://mirror.symnds.com/distributions/CentOS-vault/4.8/isos/i386/CentOS-4.8-i386-binDVD.torrent` |
+| 4.4 | `wget http://mirror.symnds.com/distributions/CentOS-vault/4.4/isos/i386/CentOS-4.4.ServerCD-i386.iso` |
+| 4.6 | by torrenting `http://mirror.symnds.com/distributions/CentOS-vault/4.6/isos/i386/CentOS-4.6-i386-binDVD.torrent` |
+| 4.8 | by torrenting `http://mirror.symnds.com/distributions/CentOS-vault/4.8/isos/i386/CentOS-4.8-i386-binDVD.torrent` |
+| 4.9 | by torrenting `http://mirror.symnds.com/distributions/CentOS-vault/4.8/isos/i386/CentOS-4.8-i386-binDVD.torrent` |
 
 Note that 4.9 was never released as ISOs, so you have to `yum update` from 4.8 to get there.  Consume the [readme](http://mirror.symnds.com/distributions/CentOS-vault/4.9/isos/i386/readme.txt) for 4.9 to grok this better. 
 
@@ -120,6 +132,17 @@ RUN yum update -y
    1. `docker import centos49_i386.tar bdobyns/centos4.9_i386`
 1. now you have a smaller 4.9 image that has no (mostly wasted) 4.8 layer underneath it.
 1. use `docker rm` and `docker rmi` to cleanup crap you don't need anymore.
+
+
+
+# CLEANUP NOW THAT YOU ARE DONE
+
+2. You should disconnect the disk image from the 'disk-manipulator'
+1. You can delete the VirtualBox image you created to hold the Centos4.x
+1. If you never plan to do this again (but it was so much fun!), you can delete the 'disk-manipulator' as well
+1. use `docker rm` and `docker rmi` to cleanup crap you don't need anymore.
+1. delete the tarball you created.  It's too big to check into github anyway.
+
 
 
 
