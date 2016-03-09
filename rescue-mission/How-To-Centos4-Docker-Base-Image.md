@@ -39,12 +39,14 @@ Note that 4.9 was never released as ISOs, so you have to `yum update` from 4.8 t
 
 (These instructions assume VirtualBox, but using qemu or VMware is basically identical).
 
-1. I created a new VirtualBox, selecting `Other Linux 2.6/3.x`.  The hard disk can be small-ish, 8Gb or even 4GB is more than enough.
+1. I created a new VirtualBox, selecting `Other Linux 2.6/3.x`.  
+   The hard disk can be small-ish, 8GB or even 4GB is more than enough.
 1. I connected the downloaded ISO as a CD/optical device.
 1. When the VirtualBox boots, at the grub prompt, I type 'linux text' so that I'm doing an install in text mode.
    1. I use DiskDruid to partition, since this makes things much easier later.   
       1. Make /dev/sda1 100mb
       1. Make /dev/sda2 the remainder of the free space
+      1. You don't need a swap, although it will warn you.
 1. Most of the settings don't matter (network, selinux, root password).  pick something sensible, so you could actually boot the image if you want or need to.
 1. Unselect every package at the package selection screen (it still installs 500 to 700mb of stuff)
 1. When it says "Press Enter To Reboot"
@@ -56,8 +58,9 @@ Note that 4.9 was never released as ISOs, so you have to `yum update` from 4.8 t
 
 # COLLECT A TARBALL OF THE INSTALLED INSTANCE
 
-1. Edit the settings in a different Linux VirtualBox, add the disk image you just created as another drive (doesn't matter if it was scsi or ide before or now)
-   1. I just made a copy of my Docker 'default' image, and renamed it 'disk-manipulator'
+1. Edit the settings in a different Linux VirtualBox
+   1. add the disk image you just created as another drive in THIS virtual machine
+   1. I just made a copy of my Docker 'default' image, and renamed it 'disk-manipulator' (copying an image is an easy thing to do in VirtualBox)
    1. It needs to be powered off when you're doing this
 1. Start the 'disk-manipulator' VirtualBox
 1. Login and mount the disk.  Your command may vary somewhat, depending on how many drives are in 'disk-manipulator'  
@@ -65,6 +68,8 @@ Note that 4.9 was never released as ISOs, so you have to `yum update` from 4.8 t
 1. From outside, ssh into the VirtualBox and tar up the disk   
    `ssh -i ~/.docker/machine/machines/default/id_rsa docker@192.168.99.101 "cd /mnt/sdb2 ; sudo tar czf - *" >centos46_i386.tar.gz`
 1. You can shut down the 'disk-manipulator' now.   
+
+
 
 
 
@@ -140,6 +145,8 @@ RUN yum update -y
 3. now you have a smaller 4.9 image that has no (mostly wasted) 4.8 layer underneath it.
 4. use `docker rm` and `docker rmi` to cleanup crap you don't need anymore.
 
+This points out a major weakness of the Docker Layer methodology.  If most of the files in a layer are different from the ones in the layer below, then the resulting size is roughly double. 
+
 
 
 # CLEANUP NOW THAT YOU ARE DONE
@@ -166,13 +173,15 @@ While both [fatherlinux/centos4-base](https://hub.docker.com/r/fatherlinux/cento
 # TINFOIL HATS AND PARANOIA
 
 1. Why should you ever build an image at all?  You *know* the [Docker Hub](https://hub.docker.com) is just *full* of tasty images, right?
-2. Because you don't trust most of them.  
+2. Because you don't trust most of them.   
+   You certainly don't trust them for production use.
 2. The [Official Ubuntu](https://hub.docker.com/_/ubuntu/) can be trusted perhaps, or the [Official Debian](https://hub.docker.com/_/debian/) or [Official Centos](https://hub.docker.com/_/centos/), 
   1. but you should *NEVER NEVER* trust any non-official image.   
-  1. It's too easy for a developer to sneak in a layer with their public ssh keys in some tasty image you want to use.  
-  1. Or sneak in a layer with a compromised executable (like apache, or an apache module) that you don't notice.
-    1. it can even be a *vaild* older release, just one that has a vulnerability unpatched.
-  1. *Don't do it.*
+  1. It's too easy for a developer to sneak in a layer with something nasty
+  1. Like, maybe sneak in a layer with a compromised executable (like apache, or an apache module) that you don't notice.
+    1. It can even be a *valid* older release, just one that has a vulnerability unpatched.
+  1. *Don't use untrusted images in your* `FROM`
+  1. It is possible to copy, carefully review, and use someone else's `Dockerfile` safely
 1. Did you know that all your favorite public keys are globally visible?  
   1. For example,  `curl https://github.com/bdobyns.keys` and see.
   1. this makes it easy to add a run line to a Dockerfile like   
