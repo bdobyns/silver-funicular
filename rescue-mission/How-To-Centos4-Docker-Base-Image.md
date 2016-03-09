@@ -2,7 +2,7 @@
 
 The objective here is to build a Centos 4.4, 4.6, 4.8 or 4.9 Docker Image with a 32-bit userland.
 
-This How-Tos how I built a base linux image for several ancient distributions that are no longer supported, *and* fixed them up so that they can still `yum install` something useful.
+How I built a base linux image for several ancient distributions that are no longer supported, *and* fixed them up so that they can still `yum install` something useful.  And got `gosu` into them.cd .
 
 Most of these techniques can be used for any linux image installable from an ISO, whether i386, i586, i686, x86_64.  
 
