@@ -11,6 +11,8 @@ Most of these techniques can be used for any linux image installable from an ISO
 
 I got the installation ISO with:
 
+| Version | How |
+| ------- | --- |
 | Centos 4.4 | `wget http://mirror.symnds.com/distributions/CentOS-vault/4.4/isos/i386/CentOS-4.4.ServerCD-i386.iso` |
 | Centos 4.6 | by torrenting `http://mirror.symnds.com/distributions/CentOS-vault/4.6/isos/i386/CentOS-4.6-i386-binDVD.torrent` |
 | Centos 4.8 | by torrenting `http://mirror.symnds.com/distributions/CentOS-vault/4.8/isos/i386/CentOS-4.8-i386-binDVD.torrent` |
