@@ -22,15 +22,20 @@ mysqld.
 
 Most of the application appears to be in `/data/krugle`
 
-The mysql databases are in the usual location in `/var/lib/mysql`
+The mysql databases are in the usual location in `/var/lib/mysql` and mysqld runs as user 'mysql'
 
-Apache's webroot is someplace in `/data/krugle`
+Apache's webroot is someplace in `/data/krugle` and apache runs as 'webmaster'
+
+The KE ran the `resin` and `jetty` containers as root, we will want to run them as a less priviliged user, most likely with `gosu`.
 
 Lots of files in `/etc` are changed to fixup the configuration
 
-Most of the packages seem to be stock standard packages from the Redhat or Centos repos.
+Most of the packages seem to be stock standard packages from the
+Redhat or Centos repos.  We will figure out subsequently exactly which
+packages are not in a repo, or are different enough they need to be
+updated from the stock 4.6 image.
 
-# GETTING READY
+# RPM DIFF APPROXIMATELY
 
 The
 [bdobyns/centos4.6_i386](https://hub.docker.com/r/bdobyns/centos4.6_i386/)
@@ -41,22 +46,24 @@ In addition the [bdobyns/centos4.6_i386](https://hub.docker.com/r/bdobyns/centos
 (the KE did not, as a security measure), and has
 [gosu](https://github.com/tianon/gosu) installed.
 
-The KE ran the `resin` and `jetty` containers as root, we will `gosu` them as a less priviliged user.
-
 inside a centos46  `rpm -qa | sort >centos46base_rpm_qa.txt`
+
 inside a ke `rpm -qa | sort >ke_rpm_qa.txt`
 
-find the packages only in the ke
+To find the packages only in a ke  `diff -y centos46base_rpm_qa.txt ke_rpm_qa.txt`  
+You can safely ignore lines marked '<' which are packages that are in the Centos4.6 but not in the KE, this is benign.  
+You may be tempted to only look at the lines which are marked with '>' but this is incorrect, as there may be lines marked with '|' which are significantly different too.  
 
-`sort -y centos46base_rpm_qa.txt ke_rpm_qa.txt | grep '>' >only-in-ke.txt`
+Check the list to be sure the exact version of the packages the KE needs are available in http://vault.centos.org/4.6/os/i386/CentOS/RPMS/   
+This is the list of packages that the repo contains and the KE needs: 
 
-check the only-in-ke list to be sure the exact version of those packages are available in http://vault.centos.org/4.6/os/i386/CentOS/RPMS/
-
+```
 apr apr-util atk cpp curl cvs distcache expect gcc gcc-java
 glibc-devel glibc-headers glibc-kernheaders gtk2 httpd httpd-suexec
 java-1.4.2-gcj-compat libgcj libgcj-devel neon mod_python mod_ssl
 mysql mysql-server pango perl-DBD-MySQL perl-DBI perl-URI php php-pear
 postgresql-libs libidn libxslt-devel mod_perl specspo zip
+```
 
 Packages not available in the base repo (came from who knows where)
 
@@ -74,8 +81,7 @@ Packages not available in the base repo (came from who knows where)
 | rsync-3.0.0 | newer version | ? |
 
 
-Start the vm instance of the machine, and use rpm to ininstall and repackage each of these, e.g.    
+Run bash in a container with your docker image, and use rpm to ininstall and repackage each of these, e.g.    
 `rpm --repackage jdk-1.5.0_09-fcs` which puts the rebundled RPM in `/var/spool/repackage/jdk-1.5.0_09-fcs.i586.rpm`    
 and then copy the resulting RPMs out of the vm
 
-docker exec 8e004dbbee00 cat /var/spool/repackage/jdk-1.5.0_09-fcs.i586.rpm >jdk-1.5.0_09-fcs.i586.rpm 
