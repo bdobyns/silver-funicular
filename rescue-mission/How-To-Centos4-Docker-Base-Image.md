@@ -66,7 +66,7 @@ Note that 4.9 was never released as ISOs, so you have to `yum update` from 4.8 t
 1. Login and mount the disk.  Your command may vary somewhat, depending on how many drives are in 'disk-manipulator'  
    `mount /dev/sdb2 /mnt/sdb2`
 1. From outside, ssh into the VirtualBox and tar up the disk   
-   `ssh -i ~/.docker/machine/machines/default/id_rsa docker@192.168.99.101 "cd /mnt/sdb2 ; sudo tar czf - *" >centos46_i386.tar.gz`
+   `ssh -i $DOCKER_CERT_PATH/id_rsa docker@192.168.99.101 "cd /mnt/sdb2 ; sudo tar czf - *" >centos46_i386.tar.gz`
 1. You can shut down the 'disk-manipulator' now.   
 
 

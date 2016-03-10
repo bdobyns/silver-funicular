@@ -1,0 +1,24 @@
+# this adds in the JDK and a few other RPMs we had to --repackage
+
+# start with the centos base that has mysql and some other stuff
+FROM bdobyns/centos4.6_i386_mysql4
+
+# now, there's a few RPMS that we had to --repackage and need to install
+# in most cases we don't really know where the KE developers got them, or
+# how to find a pristine copy again, so we just reuse the RPMS we have
+RUN mkdir /var/spool/nonstd.rpms
+COPY  ke-rpms/compat-slang-1.4.5-8.i386.rpm  /var/spool/nonstd.rpms
+COPY  ke-rpms/enscript-1.6.4-2.i586.rpm  /var/spool/nonstd.rpms
+COPY  ke-rpms/jed-0.99.14-2.i386.rpm  /var/spool/nonstd.rpms
+COPY  ke-rpms/jed-common-0.99.14-2.i386.rpm  /var/spool/nonstd.rpms
+COPY  ke-rpms/rsync-3.0.0-1.el4.rf.i386.rpm  /var/spool/nonstd.rpms
+COPY  ke-rpms/subversion-1.4.6-0.1.el4.rf.i386.rpm  /var/spool/nonstd.rpms
+#  we MUST install with --nosignature since these were repackaged
+RUN rpm --upgrade --nomd5 --nodigest --nosignature /var/spool/nonstd.rpms/*rpm  && rm -rf /var/spool/nonstd.rpms/*rpm
+
+# note the jdk we repackaged from the old KE didn't reinstall cleanly
+# so we went and got the real deal from Sun/Oracle
+# http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase5-419410.html#jdk-1.5.0_09-oth-JPR
+COPY  ke-rpms/jdk-1_5_0_09-linux-i586.rpm  /var/spool/nonstd.rpms
+RUN rpm --upgrade /var/spool/nonstd.rpms/jdk-1_5_0_09-linux-i586.rpm
+

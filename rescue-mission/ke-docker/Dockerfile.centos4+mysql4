@@ -1,0 +1,15 @@
+# this builds an application image that's
+# ready to add the application stack itself to,
+# but without the application itself
+
+# start with the centos base
+FROM bdobyns/centos4.6_i386
+
+# now install all the standard packages we can get from
+# the centos vault server (which the base image above points at)
+RUN yum install -y apr apr-util atk cpp curl cvs distcache expect gcc gcc-java \
+    glibc-devel glibc-headers glibc-kernheaders gtk2 httpd httpd-suexec \
+    java-1.4.2-gcj-compat libgcj libgcj-devel neon mod_python mod_ssl \
+    mysql mysql-server pango perl-DBD-MySQL perl-DBI perl-URI php php-pear \
+    postgresql-libs libidn libxslt-devel mod_perl specspo zip
+

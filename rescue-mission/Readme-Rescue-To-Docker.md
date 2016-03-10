@@ -37,7 +37,7 @@ In General, You need to
    * Get everything inside it except /proc and /dev (the --one-file-system option may or may not be something you want).
       
 ```
-    ssh -i mykey_rsa user@failingserver 'cd / ; sudo tar cf - --exclude=/dev --exclude=/proc --one-file-system *' >failingserver.tar
+    ssh user@failingserver 'cd / ; sudo tar cf - --exclude=/dev --exclude=/proc --one-file-system *' >failingserver.tar
 ```
 
 *  For An instance You Can Stop And Tinker With (like a vmware image).   
@@ -132,3 +132,6 @@ S99local
     /etc/rc3.d/S85httpd-ent start 
     /etc/rc3.d/S86resin-krugle-api 
 ```
+
+
+# UNDERSTAND WHAT'S PART OF THE OS AND WHAT'S THE APPLICATION

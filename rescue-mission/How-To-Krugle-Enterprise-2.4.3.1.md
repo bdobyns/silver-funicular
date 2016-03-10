@@ -35,7 +35,7 @@ Redhat or Centos repos.  We will figure out subsequently exactly which
 packages are not in a repo, or are different enough they need to be
 updated from the stock 4.6 image.
 
-# RPM DIFF APPROXIMATELY
+# SEPARATE THE APP FROM THE OS
 
 The
 [bdobyns/centos4.6_i386](https://hub.docker.com/r/bdobyns/centos4.6_i386/)
@@ -85,3 +85,78 @@ Run bash in a container with your docker image, and use rpm to ininstall and rep
 `rpm --repackage jdk-1.5.0_09-fcs` which puts the rebundled RPM in `/var/spool/repackage/jdk-1.5.0_09-fcs.i586.rpm`    
 and then copy the resulting RPMs out of the vm
 
+# BUILD AN AUGMENTED BASE IMAGE
+
+The goal is to have a base image that consists only of 'standard packages' that are application dependencies, but are not unique to the applicaiton.   We do this by creating a dockerfile for the purpose.
+
+```
+# this builds a Centos OS image that's ready to add the application to,
+# and has all the dependencies of the KE application included, 
+# but without the application itself
+
+# start with the centos base
+FROM bdobyns/centos4.6_i386
+
+# now install all the standard packages we can get from 
+# the centos vault server (which the FROM image above points at)
+RUN yum install -y apr apr-util atk cpp curl cvs distcache expect gcc gcc-java \
+    glibc-devel glibc-headers glibc-kernheaders gtk2 httpd httpd-suexec \
+    java-1.4.2-gcj-compat libgcj libgcj-devel neon mod_python mod_ssl \
+    mysql mysql-server pango perl-DBD-MySQL perl-DBI perl-URI php php-pear \
+    postgresql-libs libidn libxslt-devel mod_perl specspo zip
+
+```
+
+Now we build with the Dockerfile, and can safely push this to a public repository since it doesn't have anything in it (yet) that cannot be redistributed.
+
+```
+	docker build  -t  bdobyns/centos4.6_i386_mysql4  -f  Dockerfile.centos4+mysql4   .
+	docker push bdobyns/centos4.6_mysql4
+```
+
+
+# BUILD AN IMAGE WITH THE REPACKAGED RPMS
+
+Start bash in the first docker image, and try to re-install each of the rpms one by one, to make sure they work right.  You'll need to install with `rpm -U --nomd5 --nodigest --nosignature foo.rpm`.   
+
+We notice that the jdk-1.5 doesn't reinstall cleanly, which is hardly a surprise, since Sun did some weird things with the way that they packaged Java back in the day.   Happily we can go to the Oracle (they bought Sun) website and get the ancient original distribution.   
+   http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase5-419410.html#jdk-1.5.0_09-oth-JPR   
+But you can't just curl the URL because ... accepting the dumb license.
+
+Unfortunately, the JDK you download from this era is packaged as a binary executable that, after execution and acceptance of the license, writes a copy of the RPM that can *then* be installed.   Go ahead and run the executable file and copy the rpm out.  Try installing the rpm just to make sure.
+
+Now we create a dockerfile to add in the JDK and few remaining little bits.
+
+```
+# this adds in the JDK and a few other RPMs we had to --repackage
+
+# start with the centos base that has mysql and some other stuff
+FROM bdobyns/centos4.6_i386_mysql4
+
+# now, there's a few RPMS that we had to --repackage and need to install
+# in most cases we don't really know where the KE developers got them, or
+# how to find a pristine copy again, so we just reuse the RPMS we have
+RUN mkdir /var/spool/nonstd.rpms
+COPY  ke-rpms/compat-slang-1.4.5-8.i386.rpm  /var/spool/nonstd.rpms
+COPY  ke-rpms/enscript-1.6.4-2.i586.rpm  /var/spool/nonstd.rpms
+COPY  ke-rpms/jed-0.99.14-2.i386.rpm  /var/spool/nonstd.rpms
+COPY  ke-rpms/jed-common-0.99.14-2.i386.rpm  /var/spool/nonstd.rpms
+COPY  ke-rpms/rsync-3.0.0-1.el4.rf.i386.rpm  /var/spool/nonstd.rpms
+COPY  ke-rpms/subversion-1.4.6-0.1.el4.rf.i386.rpm  /var/spool/nonstd.rpms
+#  we MUST install with --nosignature since these were repackaged
+RUN rpm --upgrade --nomd5 --nodigest --nosignature /var/spool/nonstd.rpms/*rpm  && rm -rf /var/spool/nonstd.rpms/*rpm
+
+# note the jdk we repackaged from the old KE didn't reinstall cleanly
+# so we went and got the real deal from Sun/Oracle
+# http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase5-419410.html#jdk-1.5.0_09-oth-JPR
+COPY  ke-rpms/jdk-1_5_0_09-linux-i586.rpm  /var/spool/nonstd.rpms
+RUN rpm --upgrade /var/spool/nonstd.rpms/jdk-1_5_0_09-linux-i586.rpm 
+
+```
+
+Build with this Dockerfile and we can safely push this to a public repository as well.
+
+```
+	docker build   -t  bdobyns/centos4.6_i386_mysql4_jdk5  -f Dockerfile.centos4+mysql4+jdk5  .
+	docker push bdobyns/centos4.6_i386_mysql4_jdk5
+```
