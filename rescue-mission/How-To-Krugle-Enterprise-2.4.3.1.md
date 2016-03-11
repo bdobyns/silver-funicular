@@ -9,6 +9,10 @@ First we naievely pack up all the files using the technique outlined in the How-
 Then we import the tarball into a container which we'll use for further work.  This is not our final container.    
    `docker import ketarball.tar bdobyns/ke2431`
 
+
+
+
+
 # FORENSICS 
 
 A first look inside the KE makes it appear that it's running Redhat
@@ -34,6 +38,10 @@ Most of the packages seem to be stock standard packages from the
 Redhat or Centos repos.  We will figure out subsequently exactly which
 packages are not in a repo, or are different enough they need to be
 updated from the stock 4.6 image.
+
+
+
+
 
 # SEPARATE THE APP FROM THE OS
 
@@ -85,6 +93,43 @@ Run bash in a container with your docker image, and use rpm to ininstall and rep
 `rpm --repackage jdk-1.5.0_09-fcs` which puts the rebundled RPM in `/var/spool/repackage/jdk-1.5.0_09-fcs.i586.rpm`    
 and then copy the resulting RPMs out of the vm
 
+
+
+
+
+# BUNDLE UP THE APP WITHOUT THE OS
+
+Since most of  it seems to be in just three places (from FORENSICS, above), we're going to package up only those three directories.  This particular app originally had an installer package (not an RPM) and if we still had the installer, we might make better choices when we pack up the application files.   
+
+Inside the running container, we create three tarballs:
+
+```
+cd /
+tar czf /tmp/etc.tar.gz etc
+tar czf /tmp/mysql-data.tar.gz var/lib/mysql
+tar czf /tmp/data-krugle.tar.gz data/krugle
+```
+
+and then copy them out of the instance:
+
+```
+  mkdir application
+  docker cp e6a61a81a61d:/tmp/etc.tar.gz application
+  docker cp e6a61a81a61d:/tmp/mysql-data.tar.gz application/
+  docker cp e6a61a81a61d:/tmp/data-krugle.tar.gz application/
+```
+
+It's possible that you end up grabbing a copy of some old data down
+inside /data/krugle somewhere, and we'll have to sort that out later.
+It's also possible there's some old data in the mysql database we grab
+up.  In most rescue missions, grabbing up the app-specific data is
+actually thought to be a good thing, but for this app, we actually
+would prefer to have a clean image.
+
+
+
+
+
 # BUILD AN AUGMENTED BASE IMAGE
 
 The goal is to have a base image that consists only of 'standard packages' that are application dependencies, but are not unique to the applicaiton.   We do this by creating a dockerfile for the purpose.
@@ -115,6 +160,9 @@ Now we build with the Dockerfile, and can safely push this to a public repositor
 ```
 
 
+
+
+
 # BUILD AN IMAGE WITH THE REPACKAGED RPMS
 
 Start bash in the first docker image, and try to re-install each of the rpms one by one, to make sure they work right.  You'll need to install with `rpm -U --nomd5 --nodigest --nosignature foo.rpm`.   
@@ -123,7 +171,7 @@ We notice that the jdk-1.5 doesn't reinstall cleanly, which is hardly a surprise
    http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase5-419410.html#jdk-1.5.0_09-oth-JPR   
 But you can't just curl the URL because ... accepting the dumb license.
 
-Unfortunately, the JDK you download from this era is packaged as a binary executable that, after execution and acceptance of the license, writes a copy of the RPM that can *then* be installed.   Go ahead and run the executable file and copy the rpm out.  Try installing the rpm just to make sure.
+Unfortunately, the JDK you download from this era is packaged as a binary executable that, after execution and acceptance of the license, writes a copy of the RPM that can *then* be installed.   Go ahead and run the executable file [per the instructions](http://www.oracle.com/technetwork/java/javase/install-linux-141396.html#install-rpm) and copy the rpm out.  
 
 Now we create a dockerfile to add in the JDK and few remaining little bits.
 
@@ -160,3 +208,30 @@ Build with this Dockerfile and we can safely push this to a public repository as
 	docker build   -t  bdobyns/centos4.6_i386_mysql4_jdk5  -f Dockerfile.centos4+mysql4+jdk5  .
 	docker push bdobyns/centos4.6_i386_mysql4_jdk5
 ```
+
+
+
+
+
+# INSTALL THE APPLICATION ITERATION 1
+
+Now we're ready to start to iterate on a Dockerfile that will install
+the application pieces and try to start it.  We begin with just
+installing the application pieces.
+
+It will take some trial-and-error to figure out how to get everything working right.
+
+```
+FROM bdobyns/centos4.6_mysql4_jdk5
+COPY application/etc.tar.gz /
+COPY application/mysql-data.tar.gz /
+COPY application/data-krugle.tar.gz /
+```
+
+We'll build at this point, tag it, and then try to get the parts running inside from a shell prompt.
+
+```
+docker build -f Dockerfile.iter1 -t bdobyns/ke_iter1 .
+docker run -i -t bdobyns/ke_iter1 /bin/bash
+```
+
