@@ -228,10 +228,103 @@ COPY application/mysql-data.tar.gz /
 COPY application/data-krugle.tar.gz /
 ```
 
-We'll build at this point, tag it, and then try to get the parts running inside from a shell prompt.
+We'll build at this point, tag it, 
 
 ```
 docker build -f Dockerfile.iter1 -t bdobyns/ke_iter1 .
 docker run -i -t bdobyns/ke_iter1 /bin/bash
 ```
 
+Then try to get the parts running inside from a shell prompt.
+
+# INSTALL THE APPLICATION ITERATION 2
+
+It turns out that we need some additional stuff, links and such to be made, which we add to another Dockerfile
+
+```
+# for some reason, the pidfile dir has the wrong onwership and permissions
+RUN chown mysql:mysql /var/run/mysqld && chmod ugo+rwx /var/run/mysqld
+
+# delete some old pid and lock files
+RUN rm -rf /var/lock/subsys/hub /var/run/mysqld/*
+
+# well, somehow this link wasn't made.
+RUN ln -s /usr/java/jdk1.5.0_09/bin/java /usr/local/bin/java
+
+# these are specific to the KE
+RUN ln /usr/sbin/httpd /usr/sbin/httpd-ent
+RUN ln /usr/sbin/httpd /usr/sbin/httpd.org
+```
+
+Now it turns out that we have a bunch of perl modules that are not present, but necessary.  Back in the day, we would have installed them with `pear`, but that's no longer possible with a perl this ancient.  Poot.
+
+LWP::UserAgent  XML::LibXML XML::LibXSLT HTTP::BrowserDetect HTTP::Status HTML::StripScripts::Regex  ModPerl::Registry
+
+Looking inside the KE we packed up we see these are all over the place.  Sigh.
+
+```
+                 
+[root@ea8ce0bf4570 /]# find ls /usr/lib/perl5 -iname LWP
+find: ls: No such file or directory
+/usr/lib/perl5/site_perl/5.8.5/i386-linux-thread-multi/auto/LWP
+/usr/lib/perl5/site_perl/5.8.5/LWP
+[root@ea8ce0bf4570 /]# find /usr/lib/perl5 -iname LWP
+/usr/lib/perl5/site_perl/5.8.5/i386-linux-thread-multi/auto/LWP
+/usr/lib/perl5/site_perl/5.8.5/LWP
+[root@ea8ce0bf4570 /]# find /usr/lib/perl5 -iname XML
+/usr/lib/perl5/site_perl/5.8.5/XML
+/usr/lib/perl5/site_perl/5.8.5/i386-linux-thread-multi/XML
+/usr/lib/perl5/site_perl/5.8.5/i386-linux-thread-multi/auto/XML
+[root@ea8ce0bf4570 /]# find /usr/lib/perl5 -iname HTTP
+/usr/lib/perl5/site_perl/5.8.5/HTTP
+/usr/lib/perl5/site_perl/5.8.5/i386-linux-thread-multi/auto/HTTP
+/usr/lib/perl5/site_perl/5.8.5/Net/HTTP
+[root@ea8ce0bf4570 /]# find /usr/lib/perl5 -iname HTML
+/usr/lib/perl5/site_perl/5.8.5/i386-linux-thread-multi/auto/HTML
+/usr/lib/perl5/site_perl/5.8.5/i386-linux-thread-multi/HTML
+/usr/lib/perl5/site_perl/5.8.5/HTML
+[root@ea8ce0bf4570 /]# find /usr/lib/perl5 -iname ModPerl
+/usr/lib/perl5/vendor_perl/5.8.5/i386-linux-thread-multi/auto/ModPerl
+/usr/lib/perl5/vendor_perl/5.8.5/i386-linux-thread-multi/ModPerl
+[root@ea8ce0bf4570 /]# 
+
+```
+
+So we need to pack up all of `/usr/lib/perl5` which is definitely awkward and wrong, but the only way we can get this stuff.
+
+# INSTALL THE APPLICATION ITERATION 3
+
+It also seems that when we installed mysqld, it didn't get the right
+users created because useradd relies on a kernel call that is
+unavailabe in the kernel we are now using.  We fake it by just editing
+the raw files directly.  And we have to fix up the ownerships as well
+
+We add in the perl files and see if that's enough 
+
+```
+# for some reason, the pidfile dir has the wrong onwership and permissions
+RUN echo mysql:x:27: >>/etc/group  && \
+    echo mysql:x:27:27:MySQL Server:/var/lib/mysql:/bin/bash	>>/etc/passwd && \
+    echo echo mysql:!!:13664:::::: >>/etc/shadow && \
+    chown mysql:mysql /var/run/mysqld && chmod ugo+rwx /var/run/mysqld
+ADD application/usr_lib_perl5.tar.gz /
+```
+
+ 
+
+
+After a `docker build` we can `docker run` and go back to trying to start all the parts.
+
+
+# NOW
+
+Looking around we see that there's already a service that tries to
+start (and restart in the case of failure) the necessary parts of the
+application.  This is exactly what we'd have to write ourselves if it
+wasn't already present.  `/etc/init.d/krugle-monitor` needs `crond`
+running as well to start it (from a crontab) so we need to start both
+of them.
+
+```
+ENTRYPOINT service crond start && service krugle-monitor start
+```

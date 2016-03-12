@@ -1,0 +1,32 @@
+# assemble a working KE 2.4.3.1
+
+# this is the basic substrate
+FROM bdobyns/centos4.6_i386_mysql4_jdk5
+
+# for some reason, the pidfile dir has the wrong onwership and permissions
+RUN chown mysql:mysql /var/run/mysqld && chmod ugo+rwx /var/run/mysqld 
+
+# delete some old pid and lock files
+RUN rm -rf /var/lock/subsys/hub /var/run/mysqld/*
+
+# well, somehow this link wasn't made.
+RUN ln -s /usr/java/jdk1.5.0_09/bin/java /usr/local/bin/java 
+RUN ln /usr/sbin/httpd /usr/sbin/httpd-ent
+RUN ln /usr/sbin/httpd /usr/sbin/httpd.org
+
+
+# these are the application parts
+#ADD application/etc.tar.gz /
+#ADD application/mysql-data.tar.gz /
+#ADD application/data-krugle.tar.gz /
+#ADD application/usr_lib_perl5.tar.gz /
+
+# --CHEATING--
+# get the updater into the box.  this wouldn't have been possible if we
+# didn't have a copy of the upgrader saved separately somewhere else.
+# --CHEATING--
+RUN mkdir -p /data/krugle && mkdir -p /data/updater
+ADD application/krugle_ent_upgrade_2.4.3.1-20081030t124930.zip /data/upgrader
+
+# Using the Updater is a shortcut that most people can't take
+# RUN /data/upgrader/upgrade.sh

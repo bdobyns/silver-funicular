@@ -1,0 +1,18 @@
+    1  ls
+    2  jed cleanup-vmware.sh 
+    3  jed cleanup-vmware.sh 
+    4  bash cleanup-vmware.sh
+    5  halt
+    6  service atd start
+    7  service mysqld start
+    8  service crond start
+    9  service httpd-ent start
+   10  service resin-krugle-api start
+   11  service hub start
+   12  service hub stop ; service hub start
+   13  service krugle-monitor start
+   14  top
+   15  ps -efax 
+   16  ifconfig
+   17  jed /etc/init.d/httpd-ent
+   18  history

@@ -1,0 +1,51 @@
+# assemble a working KE 2.4.3.1
+
+# this is the basic substrate
+FROM bdobyns/centos4.6_i386_mysql4_jdk5
+
+# for some reason, the pidfile dir has the wrong onwership and permissions
+# also, the mysql user didn't get created because audit() kernel interface changed
+RUN echo mysql:x:27: >>/etc/group  && \
+    echo mysql:x:27:27:MySQL Server:/var/lib/mysql:/bin/bash >>/etc/passwd && \
+    echo echo mysql:!!:13664:::::: >>/etc/shadow && \
+    chown mysql:mysql /var/run/mysqld && chmod ugo+rwx /var/run/mysqld 
+
+# delete some old pid and lock files
+# make some links that need to exist
+# make some key directories
+RUN rm -rf /var/lock/subsys/hub /var/run/mysqld/* && \
+    ln -s /usr/java/jdk1.5.0_09/bin/java /usr/local/bin/java && \
+    ln /usr/sbin/httpd /usr/sbin/httpd-ent && \
+    ln /usr/sbin/httpd /usr/sbin/httpd.org && \
+    mkdir -p /data/krugle && mkdir -p /data/upgrader
+
+# only way we can add these perl modules is by copying them in
+# LWP::UserAgent  XML::LibXML XML::LibXSLT HTTP::BrowserDetect HTTP::Status HTML::StripScripts::Regex  ModPerl::Registry
+ADD application/usr_lib_perl5.tar.gz /
+
+# get the updater into the box.  this wouldn't have been possible if we
+# didn't have a copy of the upgrader saved separately somewhere else.
+
+ADD application/krugle_ent_upgrade_2.4.3.1-20081030t124930.zip /data/upgrader
+RUN cd /data/upgrader && \
+    unzip /data/upgrader/krugle_ent_upgrade_2.4.3.1-20081030t124930.zip && \
+    rm /data/upgrader/krugle_ent_upgrade_2.4.3.1-20081030t124930.zip
+
+# Using the Updater is a shortcut that most people can't take
+# it depends on atd to run, so we start that too
+# RUN service atd start && \
+#    /data/upgrader/upgrade.sh
+
+
+# During forensics, we discovered that the 'krugle-monitor' service
+# works to start and/or restart all the necessary services to keep 
+# a ke up and running.  so just starting that service is enough.
+# it depends on atd to run, so we start that too
+# ENTRYPOINT service crond start && service krugle-monitor start
+
+# 80   httpd-ent 
+# 9100 resin-krugle-api
+# 8080 hub
+# 3306 mysqld
+EXPOSE 80 9100 8080 3306
+
