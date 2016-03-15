@@ -1,4 +1,8 @@
-./centos44_i386/centos44_i386.tar.gz
-./centos46_i386/centos46_i386.tar.gz
-./centos48_i386/centos48_i386.tar.gz
-./centos49_i386/centos49_i386.tar.gz
+centos44_i386/centos44_i386.tar.gz
+centos46_i386/centos46_i386.tar.gz
+centos48_i386/centos48_i386.tar.gz
+centos49_i386/centos49_i386.tar.gz
+ke-docker/application/etc.tar.gz
+ke-docker/application/krugle_ent_upgrade_2.4.3.1-20081030t124930.zip
+ke-docker/application/mysql-data.tar.gz
+ke-docker/application/usr_lib_perl5.tar.gz
