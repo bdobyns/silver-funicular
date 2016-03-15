@@ -2,7 +2,7 @@
 
 The objective here is to build a Centos 4.4, 4.6, 4.8 or 4.9 Docker Image with a 32-bit userland.
 
-How I built a base linux image for several ancient distributions that are no longer supported, *and* fixed them up so that they can still `yum install` something useful.  And got `gosu` into them.cd .
+How I built a base linux image for several ancient distributions that are no longer supported, *and* fixed them up so that they can still `yum install` something useful.  And got `gosu` into them.
 
 Most of these techniques can be used for any linux image installable from an ISO, whether i386, i586, i686, x86_64.  
 
@@ -43,9 +43,9 @@ Note that 4.9 was never released as ISOs, so you have to `yum update` from 4.8 t
    The hard disk can be small-ish, 8GB or even 4GB is more than enough.
 1. I connected the downloaded ISO as a CD/optical device.
 1. When the VirtualBox boots, at the grub prompt, I type 'linux text' so that I'm doing an install in text mode.
-   1. I use DiskDruid to partition, since this makes things much easier later.   
-      1. Make /dev/sda1 100mb
-      1. Make /dev/sda2 the remainder of the free space
+   1. I use `DiskDruid` to partition, since this makes things much easier later.   
+      1. Make `/dev/sda1` 100mb mounted on `boot`
+      1. Make `/dev/sda2` the remainder of the free space mounted on `/`
       1. You don't need a swap, although it will warn you.
 1. Most of the settings don't matter (network, selinux, root password).  pick something sensible, so you could actually boot the image if you want or need to.
 1. Unselect every package at the package selection screen (it still installs 500 to 700mb of stuff)
