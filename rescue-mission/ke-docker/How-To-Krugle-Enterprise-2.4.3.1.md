@@ -316,7 +316,7 @@ ADD application/usr_lib_perl5.tar.gz /
 After a `docker build` we can `docker run` and go back to trying to start all the parts.
 
 
-# NOW
+# INSTALL THE APPLICATION ITERATION 4
 
 Looking around we see that there's already a service that tries to
 start (and restart in the case of failure) the necessary parts of the
@@ -328,3 +328,41 @@ of them.
 ```
 ENTRYPOINT service crond start && service krugle-monitor start
 ```
+
+And afer way too much screwing around we cannot get one particular component, the 'hub' to start.
+
+Looking at the docker image, iter4 is not that much smaller than the naked first image (just a tarball).  So we abandon this approach.
+
+```
+REPOSITORY                           TAG                 IMAGE ID            CREATED             SIZE
+bdobyns/iter4                        latest              4876d4f8f1c8        3 days ago          1.547 GB
+bdobyns/ke2431                       latest              865d254b8a1f        5 days ago          1.622 GB
+```
+
+
+
+
+# RETURN TO INITIAL TARBALL-BASED IMAGE
+
+At this point, we have messed around enough inside the image that we think we know how to start everything the applicaiton needs.
+
+Inside a `docker run -i -t bdobyns/ke2431` we do this
+
+```
+service atd start
+service mysqld start
+service crond start
+service httpd-ent start
+service resin-krugle-api start
+service hub stop ; service hub start
+service krugle-monitor start
+```
+
+After a while it's clear everything stays up now, including the troublesome hub.   
+
+
+
+
+# EXPOSE THE PORTS 
+
+To get the ports exposed, we need to have the ports named in the dockerfile we used to create 
