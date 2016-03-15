@@ -44,7 +44,7 @@ Note that 4.9 was never released as ISOs, so you have to `yum update` from 4.8 t
 1. I connected the downloaded ISO as a CD/optical device.
 1. When the VirtualBox boots, at the grub prompt, I type 'linux text' so that I'm doing an install in text mode.
    1. I use `DiskDruid` to partition, since this makes things much easier later.   
-      1. Make `/dev/sda1` 100mb mounted on `boot`
+      1. Make `/dev/sda1` 100mb mounted on `/boot`
       1. Make `/dev/sda2` the remainder of the free space mounted on `/`
       1. You don't need a swap, although it will warn you.
 1. Most of the settings don't matter (network, selinux, root password).  pick something sensible, so you could actually boot the image if you want or need to.
