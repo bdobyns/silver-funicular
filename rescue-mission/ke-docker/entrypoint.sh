@@ -3,7 +3,10 @@
 PATH=/usr/kerberos/sbin:/usr/kerberos/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 for SERVICE in atd crond mysqld httpd-ent resin-krugle-api hub krugle-monitor 
 do
+    # we do a service stop first to cleanup any lingering pid files
+    # hub is especially sensitive to this
     service $SERVICE stop
+    # now we can cleanly start
     service $SERVICE start
 done
 
