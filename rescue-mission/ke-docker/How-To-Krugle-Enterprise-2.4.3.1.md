@@ -517,3 +517,16 @@ eb create -i m3.medium
 ```
 
 Go the the url and it should work!
+
+
+# UNFINISHED WORK
+
+In the original KE, the two java applications were run as root, which
+is terribly unsafe.  In the Docker environment, this is equally
+unsafe, and should not be done.
+
+We should try to change the entrypoint.sh script to use `gosu` to run
+the two java apps as either 'webmaster' or `keadmin` and fixup any
+permissions on the files as necessary (likely enough to chown
+`/data/krugle`).
+
