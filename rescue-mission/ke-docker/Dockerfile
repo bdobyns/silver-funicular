@@ -1,7 +1,4 @@
-# assemble a working ke 2.4.3.1
-#FROM scratch
-#ADD ke243-tarball.tar.gz /
-
+ # assemble a working ke 2.4.3.1
 FROM bdobyns/ke
 
 # install gosu, per "Using Docker", Adrian Mouat, p309

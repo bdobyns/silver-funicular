@@ -1,4 +1,4 @@
-# GENERAL PROCEDURES
+`# GENERAL PROCEDURES
 
 Our starting point is a RAR file of a VMware VM instance named "Krugle Enterprise 2.4.3 32bit 40Gb", and we start this vmware instance with both VMware as well as with VirtualBox.  
 
@@ -39,7 +39,7 @@ Redhat or Centos repos.  We will figure out subsequently exactly which
 packages are not in a repo, or are different enough they need to be
 updated from the stock 4.6 image.
 
-
+Also, in a running (vmware) instance we see that apache runs on port 80, mysqd runs on 3306, hub runs on 8080 and resin-krugle-api runs on 9100.
 
 
 
@@ -415,3 +415,99 @@ From outside the image (our laptop) we connect, and try a search.   It works!
 ![Proof](Success 2016-03-11 at 4.17.22 PM.png)
 
 
+# MAKE AN IMAGE THAT CAN BE STARTED IN DAEMON MODE
+
+We write a short script to use as our version of an 'init' script.
+Note that the `ENTRYPOINT` script CANNOT exit, and while we're just
+doing a series of service start commands, our initscript does in fact
+exit.  We fix that by adding a sleep at the end with LONG_MAX as the
+argument.
+
+```
+#!/bin/sh
+# ENTRYPOINT NEEDS TO START SOME SERVICES
+PATH=/usr/kerberos/sbin:/usr/kerberos/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+for SERVICE in atd crond mysqld httpd-ent resin-krugle-api hub krugle-monitor 
+do
+    # we do a service stop first to cleanup any lingering pid files
+    # hub is especially sensitive to this
+    service $SERVICE stop
+    # now we can cleanly start
+    service $SERVICE start
+done
+
+# the docker container will exit if the entrypoint.sh exits.
+# so this script needs to keep running *forever*
+sleep 9223372036854775807
+# this is LONG_MAX in sensible (64bit) systems
+# which is roughly the year 292,278,994
+
+exit 0
+```
+
+We go ahead and `docker push bdobyns/ke` so that we don't have to copy
+the thing up to AWS every time (including the tarball).  Doing this
+makes our dockerfile a little different, since we're going to start
+FROM bdobyns/ke.
+
+```
+# assemble a working ke 2.4.3.1
+FROM bdobyns/ke
+
+# install gosu, per "Using Docker", Adrian Mouat, p309
+RUN curl -k -o /usr/local/bin/gosu -fsSL "https://github.com/tianon/gosu/releases/download/1.7/gosu-i386" && chmod +x /usr/local/bin/gosu
+
+# 80   httpd-ent
+# 9100 resin-krugle-api
+# 8080 hub
+# 3306 mysqld
+EXPOSE 80 9100 8080 3306
+
+# ENTRYPOINT NEEDS DO DO THIS:
+#  service atd start
+#  service mysqld start
+#  service crond start
+#  service httpd-ent start
+#  service resin-krugle-api start
+#  service hub stop ; service hub start
+#  service krugle-monitor start
+
+ADD entrypoint.sh /home/keadmin 
+RUN chmod ugo+x /home/keadmin/entrypoint.sh
+ENTRYPOINT /home/keadmin/entrypoint.sh
+```
+
+So we can try this locally with
+
+``` 
+docker build -t bdobyns/ke2.4.3.1 .
+docker run -d bdobyns/ke2.4.3.1 
+docker ps -a
+```
+
+We should be able to verify it's *still* running with `docker ps -a`
+and the line for this should not say "Exited" in the status column.
+
+
+
+
+# DEPLOY WITH ELASTIC BEANSTALK
+
+Once we have an image that can be started in daemon mode, it should be
+easy to deploy in AWS ElasticBeanstalk.  Note that ElasticBeanstalk
+only exposes the first port in an EXPOSE statement, so we certainly
+hope that's good enough.
+
+In the directory with the Dockerfile and entrypoint.sh we use eb to
+create an app/project and an environment.  Running both without any
+sensible arguments will invoke interactive mode, and we can answer the
+questions to get an app deployed.  We need to specify at least an
+m3.medium so there's enough room to run all the pieces (a t1.micro is
+too small).
+
+```
+eb init
+eb create -i m3.medium
+```
+
+Go the the url and it should work!
