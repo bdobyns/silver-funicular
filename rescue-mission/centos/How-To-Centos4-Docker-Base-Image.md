@@ -214,6 +214,6 @@ While both [fatherlinux/centos4-base](https://hub.docker.com/r/fatherlinux/cento
 | Centos 4.4 i386 | https://hub.docker.com/r/bdobyns/centos4.4_i386/ |
 | Centos 4.6 i386 | https://hub.docker.com/r/bdobyns/centos4.6_i386/ |
 | Centos 4.9 i386 | https://hub.docker.com/r/bdobyns/centos4.9_i386/ |
-| Centos 4.6 i386 + mysql4  | https://hub.docker.com/r/bdobyns/centos4.9_i386_mysql4/ |
-| Centos 4.6 i386 + mysql4 + jdk5 | https://hub.docker.com/r/bdobyns/centos4.9_i386_mysql4_jdk5/ |
+| Centos 4.6 i386 + mysql4  | https://hub.docker.com/r/bdobyns/centos4.6_i386_mysql4/ |
+| Centos 4.6 i386 + mysql4 + jdk5 | https://hub.docker.com/r/bdobyns/centos4.6_i386_mysql4_jdk5/ |
 
