@@ -316,6 +316,9 @@ ADD application/usr_lib_perl5.tar.gz /
 After a `docker build` we can `docker run` and go back to trying to start all the parts.
 
 
+
+
+
 # INSTALL THE APPLICATION ITERATION 4
 
 Looking around we see that there's already a service that tries to
@@ -331,6 +334,12 @@ ENTRYPOINT service crond start && service krugle-monitor start
 
 And afer way too much screwing around we cannot get one particular component, the 'hub' to start.
 
+
+
+
+
+# FAIL ON BUILDING UP FROM A NAKED OS IMAGE
+
 Looking at the docker image, iter4 is not that much smaller than the naked first image (just a tarball).  So we abandon this approach.
 
 ```
@@ -342,11 +351,12 @@ bdobyns/ke2431                       latest              865d254b8a1f        5 d
 
 
 
-# RETURN TO INITIAL TARBALL-BASED IMAGE
+
+# RETURN TO RAW TARBALL-BASED IMAGE
 
 At this point, we have messed around enough inside the image that we think we know how to start everything the applicaiton needs.
 
-Inside a `docker run -i -t bdobyns/ke2431` we do this
+Inside a `docker run -i -t bdobyns/ke2431` (created at the very top of this narrative) we do this
 
 ```
 service atd start
@@ -358,11 +368,50 @@ service hub stop ; service hub start
 service krugle-monitor start
 ```
 
-After a while it's clear everything stays up now, including the troublesome hub.   
-
-
-
+After a while it's clear everything stays up now, including the troublesome hub. 
 
 # EXPOSE THE PORTS 
 
-To get the ports exposed, we need to have the ports named in the dockerfile we used to create 
+To get the ports exposed, we need to have the ports named in the dockerfile we used to create the image, so we rework that.  Rather than just doing `docker import` of the tarball, we write a short Dockerfile to expose the ports.  
+
+It's much simpler now: 
+
+```
+# assemble a working ke 2.4.3.1
+FROM scratch
+
+ADD ke243-tarball.tar.gz /
+
+# 80   httpd-ent
+# 9100 resin-krugle-api
+# 8080 hub
+# 3306 mysqld
+EXPOSE 80 9100 8080 3306
+``` 
+
+We don't actually know yet if exposing all those is important, or only port 80 is enough.  we'll figure that out later.
+
+We run that with `--net=host` so that we bind all the 'EXPOSE'd ports of the container to the Docker-Host.  This has a number of advantages, including being simpler from an internal routing perspective (According to Adrian Mouat, p226-227).  
+
+```
+    docker build -f Dockerfile -t bdobyns/ke .
+    docker run -i -t --net=host bdobyns/ke /bin/bash 
+```
+ 
+Inside the image, we start the application again, as we did before:
+
+```
+service atd start
+service mysqld start
+service crond start
+service httpd-ent start
+service resin-krugle-api start
+service hub stop ; service hub start
+service krugle-monitor start
+```
+
+From outside the image (our laptop) we connect, and try a search.   It works!
+ 
+![Proof](Success 2016-03-11 at 4.17.22 PM.png)
+
+

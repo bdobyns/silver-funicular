@@ -1,8 +1,17 @@
-    1  ls
-    2  jed cleanup-vmware.sh 
-    3  jed cleanup-vmware.sh 
-    4  bash cleanup-vmware.sh
-    5  halt
+# assemble a working ke 2.4.3.1
+FROM scratch
+
+ADD ke243-tarball.tar.gz /
+
+# 80   httpd-ent
+# 9100 resin-krugle-api
+# 8080 hub
+# 3306 mysqld
+EXPOSE 80 9100 8080 3306
+
+
+# entrypoint stuff
+
     6  service atd start
     7  service mysqld start
     8  service crond start
