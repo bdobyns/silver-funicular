@@ -13,7 +13,9 @@ Then we import the tarball into a container which we'll use for further work.  T
 
 
 
-# FORENSICS 
+# FORENSICS ON A RUNNING SYSTEM 
+
+We want to look around in the running system, so after we pack up the files, we start the source vm and look inside.
 
 A first look inside the KE makes it appear that it's running Redhat
 4.4 `cat /etc/redhat-release` but a comparison of the actual version
@@ -39,7 +41,7 @@ Redhat or Centos repos.  We will figure out subsequently exactly which
 packages are not in a repo, or are different enough they need to be
 updated from the stock 4.6 image.
 
-Also, in a running (vmware) instance we see that apache runs on port 80, mysqd runs on 3306, hub runs on 8080 and resin-krugle-api runs on 9100.
+Using `lsof -i` we see that apache runs on port 80, mysqd runs on 3306, hub runs on 8080 and resin-krugle-api runs on 9100.
 
 
 
@@ -258,7 +260,7 @@ RUN ln /usr/sbin/httpd /usr/sbin/httpd-ent
 RUN ln /usr/sbin/httpd /usr/sbin/httpd.org
 ```
 
-Now it turns out that we have a bunch of perl modules that are not present, but necessary.  Back in the day, we would have installed them with `pear`, but that's no longer possible with a perl this ancient.  Poot.
+Now it turns out that we have a bunch of perl modules that are not present, but necessary.  Back in the day, we would have installed them with `cpan`, but that's no longer possible with a perl this ancient.  Poot.
 
 LWP::UserAgent  XML::LibXML XML::LibXSLT HTTP::BrowserDetect HTTP::Status HTML::StripScripts::Regex  ModPerl::Registry
 
@@ -488,7 +490,7 @@ docker ps -a
 ```
 
 We should be able to verify it's *still* running with `docker ps -a`
-and the line for this should not say "Exited" in the status column.
+and the line for this should *not* say "Exited" in the status column.
 
 Stop it with `docker stop` and the container id.
 
