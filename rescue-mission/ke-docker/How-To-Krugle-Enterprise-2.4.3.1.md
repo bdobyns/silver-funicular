@@ -132,7 +132,9 @@ would prefer to have a clean image.
 
 # BUILD AN AUGMENTED BASE IMAGE
 
-The goal is to have a base image that consists only of 'standard packages' that are application dependencies, but are not unique to the applicaiton.   We do this by creating a dockerfile for the purpose.
+The goal is to have a base image that consists only of 'standard
+packages' that are application dependencies, but are not unique to the
+application.  We do this by creating a dockerfile for the purpose.
 
 ```
 # this builds a Centos OS image that's ready to add the application to,
@@ -487,6 +489,8 @@ docker ps -a
 
 We should be able to verify it's *still* running with `docker ps -a`
 and the line for this should not say "Exited" in the status column.
+
+Stop it with `docker stop` and the container id.
 
 
 
