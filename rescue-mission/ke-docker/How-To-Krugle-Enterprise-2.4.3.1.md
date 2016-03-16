@@ -525,8 +525,13 @@ In the original KE, the two java applications were run as root, which
 is terribly unsafe.  In the Docker environment, this is equally
 unsafe, and should not be done.
 
-We should try to change the entrypoint.sh script to use `gosu` to run
+We should try to change the startup script to use `gosu` to run
 the two java apps as either 'webmaster' or `keadmin` and fixup any
 permissions on the files as necessary (likely enough to chown
 `/data/krugle`).
+
+Simply running `gosu webmaster service hub start` or `gosu webmaster
+service resin-krugle-api start` is insufficient, so there's probably
+some work to do inside these init.d scripts to properly start just the
+java executable with lowered privilege.
 
