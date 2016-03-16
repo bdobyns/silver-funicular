@@ -1,4 +1,4 @@
-`# GENERAL PROCEDURES
+# GENERAL PROCEDURES
 
 Our starting point is a RAR file of a VMware VM instance named "Krugle Enterprise 2.4.3 32bit 40Gb", and we start this vmware instance with both VMware as well as with VirtualBox.  
 
