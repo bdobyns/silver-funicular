@@ -535,3 +535,9 @@ service resin-krugle-api start` is insufficient, so there's probably
 some work to do inside these init.d scripts to properly start just the
 java executable with lowered privilege.
 
+Docker standard practice is to run just one service/process per
+container.  The KE has four main processes, and relies on atd and
+crond to do some other work.  Separating these out would be valuable.
+
+The admin password to this instance is unknown, and still needs to be
+recovered.
