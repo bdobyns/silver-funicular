@@ -28,7 +28,7 @@ instances (in S3, Git, etc) .
    * mysql is deployed with elastic beanstalk
    * has the code *not* at the root of the eb project (scripts move it during deployment)
    * has code to initialize the database from a sql dump
-   * cleans up some files that don't need to stay in the deployed targetrescue-mission/How-To-Centos4-Docker-Base-Image.md
+   * cleans up some files that don't need to stay in the deployed target
 
 * rescue-mission/centos
    * shows how to build a custom base image for an ancient unsupported linux
