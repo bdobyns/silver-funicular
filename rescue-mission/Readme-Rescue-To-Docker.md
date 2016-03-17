@@ -24,19 +24,40 @@ In General, You need to
 
 # LINUX DISTRO SPECIFIC ISSUES
 
-* Note that Debian is much more harsh about taking down public
-  repositories of ancient distributions.  There is no way to get a
-  copy of Debian Etch (for example) anymore.
+* Centos (RedHat) is much better about making EOL distributions
+  available still (both individual packages and iso images), although
+  you may need to edit the repo urls so that you point at a different
+  place.  See the [Centos Vault](http://vault.centos.org).  However,
+  be aware that once a release has transtioned to the vault, that
+  means that developers for RedHat and Centos are no longer apps up to
+  date with security patches, so you will have vulnerable binaries.
 
-* Centos (RedHat) is much better about making ancient distributions
-  available still, although you may need to edit the repo urls so that
-  you point at a different place.  See the [Centos
-  Vault](http://vault.centos.org).  However, be aware that once a
-  release has transtioned to the vault, that means that developers for
-  RedHat and Centos are no longer apps up to date with security
-  patches, so you will have vulnerable binaries.
+* Note that Debian is pretty swift about taking down public iso images
+  of EOL distributions. Unless you know where to look, you won't find
+  them easily, however copies of EOL 3.x and up iso images are at
+  [cdimage.debian.org](http://cdimage.debian.org) with very early 2.x
+  images at
+  [cdimage.debian.org](http://cdimage.debian.org/older-contrib).
 
-* It may be helpful (or may not) to make a base image for your distribution, but it is not strictly necessary.  A separate companion document to this one shows how.
+  * At the [Debian archive](http://archive.debian.org/debian/dists)
+    you can find the raw packages and some of the parts necessary to
+    build from a net-boot image, although you're probably sad if you
+    try this.  (For instance, Debian 5.0 has a 6MB mini.iso installer
+    that wants to fetch packages over the network, and probably won't
+    work right today.)
+
+* Fedora has an archive of old releases also, at
+  [archive.fedoraproject.org](http://archive.fedoraproject.org/pub/fedora/linux/releases/)
+  which goes back to Fedora Core 7 (circa 2009), which may or may not
+  be far enough for you.  There's also a [FC6 live
+  CD](http://archive.fedoraproject.org/pub/archive/fedora/projects/live/)
+  but none of the rest of FC6.
+
+* It may be helpful (or may not) to make a base image for your
+  distribution, but note that it is not strictly necessary.  At the
+  very least it is helpful to be able to compare the thing you're
+  trying to rescue to a contemporary base OS. A separate companion
+  document to this one shows how.
 
 
 
