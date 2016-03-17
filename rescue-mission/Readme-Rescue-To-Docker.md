@@ -24,9 +24,17 @@ In General, You need to
 
 # LINUX DISTRO SPECIFIC ISSUES
 
-* Note that Debian is much more harsh about taking down public repositories of ancient distributions.  There is no way to get a copy of Debian Potato (for example) anymore.
+* Note that Debian is much more harsh about taking down public
+  repositories of ancient distributions.  There is no way to get a
+  copy of Debian Etch (for example) anymore.
 
-* Centos (RedHat) is much better about making ancient distributions available still, although you may need to edit the repo urls so that you point at a different place.  See the [Centos Vault](http://vault.centos.org)
+* Centos (RedHat) is much better about making ancient distributions
+  available still, although you may need to edit the repo urls so that
+  you point at a different place.  See the [Centos
+  Vault](http://vault.centos.org).  However, be aware that once a
+  release has transtioned to the vault, that means that developers for
+  RedHat and Centos are no longer apps up to date with security
+  patches, so you will have vulnerable binaries.
 
 * It may be helpful (or may not) to make a base image for your distribution, but it is not strictly necessary.  A separate companion document to this one shows how.
 
@@ -264,3 +272,19 @@ Sigh.  Sometimes things don't work the way you want.
 
 
 
+
+
+
+
+# SECURITY ISSUES AND TINFOIL HATS
+
+Before you deploy this container straight thru to production consider:
+
+* the image you just got running is probably full of application binaries that have bugs you wish they didn't have.
+  * `bash` - shellshocked
+  * `openssl` - heartbleed (affects your `httpd` and `mod_ssl` most likely)
+  * `tomcat` - too many bugs to count
+  * etc etc etc
+* you need to determine if you can selectively update affected binaries to more recent patched versions that close the security loophole, without moving to a version that's too new to support your application.   For well-behaved distributions like Redhat and Centos, this is likely easy enough to do.
+* you will *probably not* have patches for applications after the EOL date for the OS.  This is simply too bad.
+* The real long term solution is to go ahead and migrate the app anyway, which means fixing the problems that make it incompatible with modern software, whatever those are.

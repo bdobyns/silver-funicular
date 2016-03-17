@@ -540,4 +540,6 @@ container.  The KE has four main processes, and relies on atd and
 crond to do some other work.  Separating these out would be valuable.
 
 The admin password to this instance is unknown, and still needs to be
-recovered.
+recovered.  Or, rather, we can't login to /admin/ or :8080 using the
+expected default user/password 'admin/admin'.
+
