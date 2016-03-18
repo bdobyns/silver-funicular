@@ -299,6 +299,10 @@ Using a browser, you should be able to connect to the application (if it's that 
 
 
 
+# DEPLOYING TO AWS USING ELASTICBEANSTALK
+
+
+
 
 
 # DEBUGGING IF THIS DIDN'T WORK
@@ -332,3 +336,4 @@ Before you deploy this container straight thru to production consider:
 * you need to determine if you can selectively update affected binaries to more recent patched versions that close the security loophole, without moving to a version that's too new to support your application.   For well-behaved distributions like Redhat and Centos, this is likely easy enough to do.
 * you will *probably not* have patches for applications after the EOL date for the OS.  This is simply too bad.
 * The real long term solution is to go ahead and migrate the app anyway, which means fixing the problems that make it incompatible with modern software, whatever those are.
+
