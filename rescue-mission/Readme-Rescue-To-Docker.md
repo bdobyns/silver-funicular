@@ -24,6 +24,23 @@ In General, You need to
 
 # LINUX DISTRO SPECIFIC ISSUES
 
+Most production servers are on a well-known distribution, usually one
+of Centos, RedHat, Debian, Fedora, Ubuntu.  If you have a strange
+distribution that a production server is based on, you should consider
+moving it to one of these more common distributions as soon as
+possible.  Not that there aren't good reasons to run a weird
+distribution (gentoo, slackware) but there's no *justifiable
+reason* to do so.
+
+If the server you're trying to rescue is based on something other than
+Linux, like Nexenta, Debian/kFreeBSD, OpenBSD, FreeBSD, Solaris,
+StormOS, V7, SystemV, Venix, HP/UX, Idris, AIX, Plan9, NetBSD, OSX, Windows, XV6,
+OpenVMS or anything else, this is the wrong how-to.
+
+
+* Remember that RedHat N is exactly the same as Centos N for all N, so
+  you can mix and match packages *and security updates* between these safely.
+
 * Centos (RedHat) is much better about making EOL distributions
   available still (both individual packages and iso images), although
   you may need to edit the repo urls so that you point at a different
@@ -32,7 +49,12 @@ In General, You need to
   means that developers for RedHat and Centos are no longer apps up to
   date with security patches, so you will have vulnerable binaries.
 
-* Note that Debian is pretty swift about taking down public iso images
+  * The EOL'd EPEL (Extra Packages for Enterprise Linux) packages are
+    at the [Fedora archive](http://archive.fedoraproject.org/pub/epel/) 
+    (with essential things like drupal6 on EL5). These packages are
+    for the corresponding version of RedHat or Centos.
+
+* Debian works hard to hide ISO images
   of EOL distributions. Unless you know where to look, you won't find
   them easily, however copies of EOL 3.x and up iso images are at
   [cdimage.debian.org](http://cdimage.debian.org) with very early 2.x
@@ -49,9 +71,10 @@ In General, You need to
 * Fedora has an archive of old releases also, at
   [archive.fedoraproject.org](http://archive.fedoraproject.org/pub/fedora/linux/releases/)
   which goes back to Fedora Core 7 (circa 2009), which may or may not
-  be far enough for you.  There's also a [FC6 live
-  CD](http://archive.fedoraproject.org/pub/archive/fedora/projects/live/)
-  but none of the rest of FC6.
+  be far enough back in time for you.  
+  There's also a  
+  [FC6 live CD](http://archive.fedoraproject.org/pub/archive/fedora/projects/live/)
+  but none of the rest of FC6 or anything earlier.
 
 * It may be helpful (or may not) to make a base image for your
   distribution, but note that it is not strictly necessary.  At the
