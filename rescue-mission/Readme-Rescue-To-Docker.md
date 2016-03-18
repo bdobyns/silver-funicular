@@ -299,7 +299,43 @@ Using a browser, you should be able to connect to the application (if it's that 
 
 
 
+
+
+
 # DEPLOYING TO AWS USING ELASTICBEANSTALK
+
+If you naievely deploy to AWS ElasticBeanstalk now, you'll end up copying the entire tarball up each time you deploy.   Which is probably gigabytes of data.  
+
+You'd be better off to `docker push productops/failingserver` the image you have now to a private Docker repo, and create a simplified Dockerfile that `FROM`s that image.   
+
+Here's a new Dockerfile for AWS/EB use, if we push the image we created above to the hub.docker.com repo
+
+```
+FROM productops/failingserver
+EXPOSE 80
+ENTRYPOINT /entrypoint.sh
+```
+
+We don't need to specify anything else, because the tarball is already
+in the image `productops/failingserver` as are the other things we've
+done, and a copy of `entrypoint.sh`.  If we want to override anything
+in the image (including the entrypoint script), we can add it to
+*this* Dockerfile, but still be based on the near-raw tarball.
+
+
+Note that when you `eb deploy` or `eb create` elasticbeanstalk will
+copy the *entire contents* of the current directory to AWS, so you
+want to move that tarball out of the way first.
+
+If you did things right, deploying to EB only copies a few tens of K bytes.
+
+```
+eb init -p docker failingserver
+eb create test-failingserver
+```
+
+And you shold be able to connect to the exposed port on the url AWS gives you.  
+
 
 
 
