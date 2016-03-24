@@ -111,6 +111,44 @@ in a docker container.
 
 
 
+# FETCH AND PREPARE THE SWAGGER SPEC YOU WANT TO USE
+
+1.  I just fetched a spec that Kevin Albert had written recently, but you'll use yours.   
+    `wget -O api-docs.json http://kevin-demo-app01.test.cirrostratus.org/v2/api-docs`
+
+1. If you are unlucky and your Swagger specification complies with version 1.2, you *might* be able to succeed by installing `swagger-converter` and `swagger-tools to convert it.  This may be easy or hard depending on how many prerequisites you already have installed.   
+ `npm install swagger-converter --save`   
+ `npm install -g swagger-tools`   
+ `swagger-tools convert your-api-docs.json`   
+
+1.  If you are fabulously unlucky, your Swagger specification complies with version 1.1, and you'll need to rewrite it manually.  Wah wah wah. 
+
+
+
+
+
+
+
+
+# INSTALL AND GET READY TO USE `aws-gateway-importer`
+
+You need to have `aws-gateway-importer` available to use it, which
+(sadly) means downloading and building it first.  Because fail.
+
+I found it 'easy' (for infinitesmal values of easy) to do this by
+including `aws-gateway-importer` as a submodule.  Following the
+simplified tutorial in the [git
+wiki](https://git.wiki.kernel.org/index.php/GitSubmoduleTutorial) will
+lead you astry.
+
+```
+   cd ~/some/path/myproject/api-lambda-mock
+   git submodule add git@github.com:awslabs/aws-apigateway-importer.git 
+```
+
+
+
+
 # REFERENCES
 
 * Git Submodule Tutorial  
@@ -130,6 +168,13 @@ in a docker container.
 
 * Java 8   
   <http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html>
+
+* Setting up Java$N on Mac OSX properly
+  <http://stackoverflow.com/a/15306564/5167278>
+  The higher rated answers are older and generally wrong, while this one is the right answer.  Upvotes please.
+
+* Switching between different Java versions on Mac OSX
+  <http://mikemainguy.blogspot.com/2014/11/easily-changing-java-versions-in-osx.html>
 
 * Swagger homepage   
   <http://swagger.io>

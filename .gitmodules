@@ -1,0 +1,3 @@
+[submodule "api-lambda-mock/aws-apigateway-importer"]
+	path = api-lambda-mock/aws-apigateway-importer
+	url = git@github.com:awslabs/aws-apigateway-importer.git
