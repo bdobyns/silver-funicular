@@ -68,7 +68,7 @@ can begin to call something.
     installed, and your `JAVA_HOME` needs to correctly point to Java8.
 
     *  on a Mac, this means you put something sensible like   
-       `export  JAVA_HOME=\`/usr/libexec/java_home -v 1.8\` `   
+       ``export  JAVA_HOME=`/usr/libexec/java_home -v 1.8`  ``   
        in your `.bash_profile` and `.bashrc`
 
 1.  We assume you have set up your AWS credentials for your IAM role so that you can use the AWS cli sensibly.
@@ -90,15 +90,15 @@ in a docker container.
       deploying a container.
 
     *  Your lambda can exec any binary that's in a basic Amazon Linux AMI 
-       (see [lambdash](https://alestic.com/2015/06/aws-lambda-shell-2/) 
+       (see [lambdash](https://alestic.com/2015/06/aws-lambda-shell-2/) for example)
 
-    * Because you are based on docker containers, you can payload
+    * Because you are based on docker containers, you can payload in
       anything you want that makes sense in a container (up to the 
       [size limits](http://docs.aws.amazon.com/lambda/latest/dg/limits.html)
       defined by AWS)   
 
       *  This includes binary executables, so you are not limited to the officially supported languages.
-      *  AWS acknowledges and supports
+      *  AWS acknowledges and supports doing so
          [Running Arbitrary Executables](http://aws.amazon.com/blogs/compute/running-executables-in-aws-lambda/)
 	 (for small values of support).
 
@@ -114,25 +114,28 @@ in a docker container.
 # REFERENCES
 
 * Git Submodule Tutorial  
-  https://git.wiki.kernel.org/index.php/GitSubmoduleTutorial
+  <https://git.wiki.kernel.org/index.php/GitSubmoduleTutorial>
 
 * Amazon API Gateway Importer   
-  https://github.com/awslabs/aws-apigateway-importer
+  <https://github.com/awslabs/aws-apigateway-importer>
 
-* Shell commands as AWS Lambdas (used to explore the execution environment)
-  https://alestic.com/2015/06/aws-lambda-shell-2/
+* Shell commands as AWS Lambdas (used to explore the execution environment)   
+  <https://alestic.com/2015/06/aws-lambda-shell-2/>
 
 * Running Arbitrary Executables in AWS Lambda   
-  http://aws.amazon.com/blogs/compute/running-executables-in-aws-lambda/
+  <http://aws.amazon.com/blogs/compute/running-executables-in-aws-lambda/>
 
-* A different, but interesting, use case for the API Gateway
-  https://alestic.com/2015/11/amazon-api-gateway-aws-cli-redirect/
+* A different, but interesting, use case for the API Gateway   
+  <https://alestic.com/2015/11/amazon-api-gateway-aws-cli-redirect/>
 
-* Java 8
-  http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+* Java 8   
+  <http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html>
 
-* Swagger homepage
-  http://swagger.io
+* Swagger homepage   
+  <http://swagger.io>
 
-* Swagger 2.0 specification
-  https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md
+* Swagger 2.0 specification   
+  <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md>
+
+* AWS Lambda size limits
+  <http://docs.aws.amazon.com/lambda/latest/dg/limits.html>
