@@ -113,8 +113,10 @@ in a docker container.
 
 # FETCH AND PREPARE THE SWAGGER SPEC YOU WANT TO USE
 
-1.  I just fetched a spec that Kevin Albert had written recently, but you'll use yours.   
-    `wget -O api-docs.json http://kevin-demo-app01.test.cirrostratus.org/v2/api-docs`
+1. I got a copy of the petstore swagger API to use for the
+   demonstration.  This specification is *already* in the 2.0 format and
+   ready to use.  You will, of course use your own specification.   
+   `wget -O petstore.json http://petstore.swagger.io/v2/swagger.json`
 
 1. If you are unlucky and your Swagger specification complies with version 1.2, you *might* be able to succeed by installing `swagger-converter` and `swagger-tools to convert it.  This may be easy or hard depending on how many prerequisites you already have installed.   
  `npm install swagger-converter --save`   
@@ -130,21 +132,84 @@ in a docker container.
 
 
 
-# INSTALL AND GET READY TO USE `aws-gateway-importer`
+# INSTALL AND GET READY TO USE THE `aws-gateway-importer`
 
 You need to have `aws-gateway-importer` available to use it, which
-(sadly) means downloading and building it first.  Because fail.
+(sadly) means downloading and building it first.  I tried to use
+`brew` to fetch a built version, but no. Because fail.
 
 I found it 'easy' (for infinitesmal values of easy) to do this by
 including `aws-gateway-importer` as a submodule.  Following the
-simplified tutorial in the [git
+submodule tutorial in the [git
 wiki](https://git.wiki.kernel.org/index.php/GitSubmoduleTutorial) will
-lead you astry.
+lead you down an alternative path of fail.   Do this instead:
 
 ```
    cd ~/some/path/myproject/api-lambda-mock
    git submodule add git@github.com:awslabs/aws-apigateway-importer.git 
 ```
+
+I suppose you could install the `aws-gateway-importer` in `~/bin` or
+`/usr/local/bin` but that has problems of it's own, because it's not
+really a singular binary, as we will see.
+
+Now you need to build `aws-gateway-importer` because you checked out
+the sources.  Which may require you install maven first if you haven't
+already.  If you've never used `mvn` before, you might be a little
+alarmed at how many random things are fetched in order to build this.
+
+```
+if [ -z `which mvm` ] ; then brew install mvn ; fi
+cd aws-apigateway-importer
+mvn assembly:assembly
+```
+
+You can safely go use the panini maker while `mvn` does it's job.
+
+
+
+
+
+
+
+
+
+
+# SOMETIMES THINGS GO TERRIBLY WRONG 
+
+1. I also fetched a spec that Kevin Albert had written recently   
+   `wget -O api-docs.json http://kevin-demo-app01.test.cirrostratus.org/v2/api-docs`
+
+1. Running `aws-gateway-importer` on it failed with a   
+   `java.lang.StackOverflowError` (infinite recursion) error. 
+
+1. This is because in the models, 'Product' is defined recursively as
+   containing other 'Products', and the importer is too dumb to detect
+   this loop.  
+
+1. I fixed it by creating a new model element, 'Item' (essentially the
+   same as a 'Product' but without the loop) and making 'Product'
+   composed of 'Item's.  This is an acceptable hack (in the API
+   definition) since we now model 'Item' as a named pointer to an
+   entitlement, and a 'Product' is an array of such 'Item'
+   entitlements which itself also has an entitlement.
+
+1. From the point of view of the Product Catalog API we don't expect
+   anyone to need to crawl the entitlement tree from a Product like
+   *Arts and Sciences 32* to an individual leaf article.  Or for that
+   matter no one expects that 'counting' the 'items' at the top level
+   of a product gives a count of the leaves.  So making a Product
+   not-crawlable by the provided API model probably makes sense, even
+   though as a matter of strict fact it is crawlable.
+
+1. This has the side effect of forcing you to use EME to answer the
+   question of whether a particular leaf item is contained in a
+   particular product (e.g. "is this article in this Arts And Sciences MCMLXXVII ?").
+   You'd ask that by getting the entitlement for the Item (from it's
+   individual leaf Product), and the entitlement for the Product you
+   are asking the question of, and call the one of the ItemHaz apis on EME.
+
+
 
 
 
