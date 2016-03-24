@@ -72,7 +72,7 @@
           "application/json"
         ],
         "produces": [
-          "*/*"
+          "application/json"
         ],
         "parameters": [
           {
@@ -91,7 +91,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/DeferredResult«object»"
+              "$ref": "#/definitions/DeferredResultObject"
             }
           },
           "201": {
@@ -121,7 +121,7 @@
           "application/json"
         ],
         "produces": [
-          "*/*"
+          "application/json"
         ],
         "parameters": [
           {
@@ -168,7 +168,7 @@
           "application/json"
         ],
         "produces": [
-          "*/*"
+          "application/json"
         ],
         "parameters": [
           {
@@ -210,7 +210,7 @@
           "application/json"
         ],
         "produces": [
-          "*/*"
+          "application/json"
         ],
         "parameters": [
           {
@@ -252,7 +252,7 @@
           "application/json"
         ],
         "produces": [
-          "*/*"
+          "application/json"
         ],
         "parameters": [
           {
@@ -294,7 +294,7 @@
           "application/json"
         ],
         "produces": [
-          "*/*"
+          "application/json"
         ],
         "parameters": [
           {
@@ -542,7 +542,7 @@
         }
       }
     },
-    "DeferredResult«ProductTopSellers»": {
+    "DeferredResultProductTopSellers": {
       "properties": {
         "result": {
           "type": "object"
@@ -721,7 +721,7 @@
         }
       }
     },
-    "DeferredResult«Product»": {
+    "DeferredResultProduct": {
       "properties": {
         "result": {
           "type": "object"
@@ -731,7 +731,7 @@
         }
       }
     },
-    "DeferredResult«ProductLineListing»": {
+    "DeferredResultProductLineListing": {
       "properties": {
         "result": {
           "type": "object"
@@ -749,7 +749,7 @@
         }
       }
     },
-    "DeferredResult«ProductStatsListing»": {
+    "DeferredResultProductStatsListing": {
       "properties": {
         "result": {
           "type": "object"
@@ -769,7 +769,7 @@
         }
       }
     },
-    "DeferredResult«ProductListing»": {
+    "DeferredResultProductListing": {
       "properties": {
         "result": {
           "type": "object"
@@ -819,7 +819,7 @@
         }
       }
     },
-    "DeferredResult«object»": {
+    "DeferredResultObject": {
       "properties": {
         "result": {
           "type": "object"

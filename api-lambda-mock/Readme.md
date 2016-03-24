@@ -209,7 +209,13 @@ You can safely go use the panini maker while `mvn` does it's job.
    individual leaf Product), and the entitlement for the Product you
    are asking the question of, and call the one of the ItemHaz apis on EME.
 
+1. Once the loopy model was corrected, we discover that the way
+   SpringFox annotations creates model names that are
+   non-alphanumeric, like `DeferredResult«object»` and therefore
+   unacceptable to `aws-gateway-importer`
 
+1. The importer also does not allow content type `*/*`. I replaced all
+   of these with `application/json` whether it's right or not.
 
 
 
