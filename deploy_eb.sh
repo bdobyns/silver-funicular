@@ -77,26 +77,6 @@ EOF
 	exit 3
 }
 
-# not all verbs write history, as some are merely informative
-function write_history 
-{
-    NOW=`date "+%Y-%m-%d %H:%M"`
-    HFILE=.deploy_history
-    if [ ! -f $HFILE ] ; then 
-	HERE=`basename $PWD`
-	cat >$HFILE <<EOF 
-#!/bin/bash -x -e
-# History file for $HERE started on $NOW by $LOGNAME@$HOSTNAME 
-
-EOF
-	git add $HFILE
-    fi
-    if [ $1 = create ] || [ $1 = new ] ; then echo " " >>$HFILE ; fi     # throw an extra newline before a create
-    cat >>$HFILE <<EOF
-$DNZ/$ME $*  # by $LOGNAME@$HOSTNAME on $NOW
-EOF
-}
-
 # ----------------------------------------------------------------------
 
 if [ -f $DNZ/$LIBEBDEPLOY ] ; then 

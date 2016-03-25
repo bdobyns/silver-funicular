@@ -102,6 +102,19 @@ esac
 GWAY=$1
 ACTION=$2
 
+if api_gway_name_exists "$GWAY" >/dev/null ; then
+    GWAY_NAME="$GWAY"
+    GWAY_ID=`api_gway_id_from_name "$GWAY"`
+elif api_gway_id_exists "$GWAY" >/dev/null ; then
+    GWAY_ID="$GWAY"
+    GWAY_NAME=`api_gway_name_from_id "$GWAY"`
+else
+    echo "ERROR: '$GWAY' is not a valid gateway name"
+    echo "    maybe you meant one of "
+    api_gway_names
+    exit
+fi
+
 # detect no "Verb" at all
 if [ -z $ACTION ] ; then
     givehelp
