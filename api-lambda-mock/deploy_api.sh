@@ -15,33 +15,34 @@ STANDARD VERBS:
 	$ME gway env deploy endpoint     deploy one named endpoint
 
 AWS API GATEWAY VERBS:
-        $ME import some.json     import swagger 2.0 and make an api gateway
-        $ME list                 list defined gateways
-        $ME gway endpoints       list the endpoints (resources)
-        $ME gway models          list the models
+        $ME import some.json       import swagger 2.0 and make an api gateway
+        $ME list                   list defined gateways
+        $ME gway update some.json  import swagger 2.0 and update gway
+        $ME gway endpoints         list the endpoints (resources)
+        $ME gway models            list the models
 
-        $ME gway mockall         mock all the endpoints in this gateway
-        $ME gway stubs java      create lambda stubs in java for all endpoints
-        $ME gway stubs python    create lambda stubs in python for all endpoints
-        $ME gway stubs node      create lambda stubs in node.js for all endpoints
+        $ME gway mockall           mock all the endpoints in this gateway
+        $ME gway stubs java        create lambda stubs in java for all endpoints
+        $ME gway stubs python      create lambda stubs in python for all endpoints
+        $ME gway stubs node        create lambda stubs in node.js for all endpoints
 
-        $ME gway mock endpoint   mock one endpoint in this gateway
-        $ME gway stub java endpt create one lambda stub in java for one endpoint
-        $ME gway stub py endpt   create one lambda stub in python for one endpoint
-        $ME gway stub node endpt create one lambda stub in node.js for one endpoint
+        $ME gway mock endpoint     mock one endpoint in this gateway
+        $ME gway stub java endpt   create one lambda stub in java for one endpoint
+        $ME gway stub py endpt     create one lambda stub in python for one endpoint
+        $ME gway stub node endpt   create one lambda stub in node.js for one endpoint
 
 ENVIRONMENT VERBS:
-        $ME gway list             list defined environments (stages)
-        $ME gway create env       create an environment (stage) for this gateway
-        $ME gway env describe     describe the gateway and environment (stage)
-        $ME gway env cname        display cname of this gateway+env 
-        $ME gway env r53 f.b.com  wire up the route 53 name to the gateway
+        $ME gway list               list defined environments (stages)
+        $ME gway create env         create an environment (stage) for this gateway
+        $ME gway env describe       describe the gateway and environment (stage)
+        $ME gway env cname          display cname of this gateway+env 
+        $ME gway env r53 f.b.com    wire up the route 53 name to the gateway
 
 OTHER HANDY STUFF:
-        $ME vpcs                 show all available vpcs and subnets
-        $ME vpcs vpc-id          show subnets for a given vpc
+        $ME vpcs                   show all available vpcs and subnets
+        $ME vpcs vpc-id            show subnets for a given vpc
 
-OOPS:
+SORRY FAIL:
 	$ME gway env update      (same as deploy)
 	$ME env ssh              not implemented/nonsense
 	$ME env put here there   not implemented/nonsense
@@ -127,6 +128,11 @@ fi
 # ----------------------------------------------------------------------
 # Process the 'no env' verbs
 case $ACTION in
+#        $ME gway update some.json  import swagger 2.0 and update gway
+        udpate)
+	   api_update_json $1
+	   exit
+	   ;;
 #        $ME gway endpoints       list the endpoints (resources)
         endpoints)
 	    api_list_endpoints
@@ -211,8 +217,23 @@ esac
 
 # ----------------------------------------------------------------------
 
-ENV=$ACTION
+ENVARG=$ACTION
 ACTION=$3
+
+if api_env_name_exists "$ENVARG" >/dev/null ; then
+    ENV_NAME="$GWAY"
+    ENV_ID=`api_gway_id_from_name "$GWAY"`
+elif api_env_id_exists "$ENVARG" >/dev/null ; then
+    ENV_ID="$GWAY"
+    ENV_NAME=`api_gway_name_from_id "$GWAY"`
+else
+    echo "ERROR: '$ENVARG' is not a valid environment (stage) name in '$GWAY_NAME'"
+    echo "    maybe you meant one of "
+    api_env_names
+    exit
+fi
+
+
 if [ -z $ACTION ] ; then
     givehelp
     exit 57
