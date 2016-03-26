@@ -66,30 +66,30 @@ export API_ENDPOINTS=`api_endpoints` # cache it for subsequent use
 function api_endpoint_ids
 {
     # use $GWAY_ID to list the endpoint paths and ids
-    api_endpoints | jq -r '.items[].id'
+    api_endpoints | jq -r '.items[].id' 2>/dev/null
 }
 
 function api_endpoint_paths
 {
     # use $GWAY_ID to list the endpoint paths and ids
-    api_endpoints | jq -r '.items[].path'
+    api_endpoints | jq -r '.items[].path' 2>/dev/null
 }
 
 function api_endpoint_id_from_path
 {
     # path in $1
-    api_endpoints | jq -r ' .items[] | select(.path == "'"$1"'") | .id '
+    api_endpoints | jq -r ' .items[] | select(.path == "'"$1"'") | .id ' 2>/dev/null
 }
 
 function api_endpoint_path_from_id
 {
     # id in $1
-    api_endpoints | jq -r ' .items[] | select(.id == "'"$1"'") | .path '
+    api_endpoints | jq -r ' .items[] | select(.id == "'"$1"'") | .path ' 2>/dev/null
 }
 
 function api_endpoint_methods_from_id
 {
-    api_endpoints | jq -r ' .items[] | select(.id == "'"$1"'") | .resourceMethods | keys ' | tr -dc 'A-Z \n'
+    api_endpoints | jq -r ' .items[] | select(.id == "'"$1"'") | .resourceMethods | keys ' | tr -dc 'A-Z \n' 2>/dev/null
 }
 
 # ----------------------------------------------------------------------
@@ -116,7 +116,7 @@ function api_import_json
     if [ ! -f $1 ] ; then
 	echo "ERROR: the json swagger 2.0 spec '$1' does not exist"
 	givehelp
-    elif ! cat $1 | jq . >/dev/null 2>/dev/null
+    elif ! cat $1 | jq . >/dev/null 2>/dev/null ; then
 	echo "ERROR: '$1' is not valid json"
 	givehelp
     elif [ -f $IMPORTER ] ; then
@@ -138,7 +138,7 @@ function api_update_json
     if [ ! -f $1 ] ; then
 	echo "ERROR: the json swagger 2.0 spec '$1' does not exist"
 	givehelp
-    elif ! cat $1 | jq . >/dev/null 2>/dev/null
+    elif ! cat $1 | jq . >/dev/null 2>/dev/null ; then
 	echo "ERROR: '$1' is not valid json"
 	givehelp
     elif [ -f $IMPORTER ] ; then
@@ -167,9 +167,9 @@ function api_mockall
 {
 #        $ME gway mockall         mock all the endpoints in this gateway
 
-    for ID in `api_endpoint_ids`
+    for ENDPOINT_ID in `api_endpoint_ids`
     do
-	api_mock_one_by_id 
+	api_mock_one_by_id $ENDPOINT_ID
     done
 }
 
@@ -177,8 +177,9 @@ function api_mock_one_by_id
 {
 #    $1 is the resource-id of the endpoint in question
     ENDPOINT_ID=$1
-    for METHOD in `api_endpoint_menthods_from_id $ENDPOINT_ID`
+    for METHOD in `api_endpoint_methods_from_id $ENDPOINT_ID`
     do
+	echo "$METHOD "`api_endpoint_path_from_id $ENDPOINT_ID`
 	aws apigateway put-integration --rest-api-id $GWAY_ID --resource-id $ENDPOINT_ID --http-method $METHOD --type MOCK
     done
 }
