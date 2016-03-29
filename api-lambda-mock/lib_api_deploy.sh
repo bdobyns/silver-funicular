@@ -92,6 +92,28 @@ function api_endpoint_methods_from_id
     api_endpoints | jq -r ' .items[] | select(.id == "'"$1"'") | .resourceMethods | keys ' | tr -dc 'A-Z \n' 2>/dev/null
 }
 
+# ENVIRONMENTS (STAGES) IN $GWAY_ID
+function api_env_name_exists
+{
+    api_stage_list | jq -r .item[].stageName | grep '^'"$1"'$' >/dev/null
+}
+
+# ROUTE53 MAGIC
+
+function route53_find_cname
+{
+# given a cname in $1 return the route53 name bound to it, if any
+    aws route53 list-hosted-zones | jq -r .HostedZones[].Id | cut -d / -f 3 | while read ZONE
+    do
+	RRSET=`aws route53 list-resource-record-sets --hosted-zone-id $ZONE `
+	if echo $RRSET | jq . | grep "$1">/dev/null ; then
+	    # yep this one is in there
+	    echo $RRSET | jq -r ' .ResourceRecordSets[] | select(.ResourceRecords[].Value == "'"$1"'") | .Name '
+	    break
+	fi
+    done
+}
+
 # ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
 # METHODS CALLED DIRECTLY BY THE VERB CASES
@@ -121,7 +143,7 @@ function api_import_json
 	givehelp
     elif [ -f $IMPORTER ] ; then
 	cd $IMPORTERDIR
-	./$IMPORTERSH -c ../$1
+	./$IMPORTERSH -c ../$* # could have --name foo
     else
 	echo "ERROR: you do not have '$IMPORTER' available"
 	echo "   ... did you "
@@ -129,9 +151,10 @@ function api_import_json
 	givehelp
     fi
 }
+
 function api_update_json
 {
-#        $ME gway update some.json  import swagger 2.0 and update gway   
+#        $ME gway update some.json  update gateway with swagger spec
     IMPORTER=aws-apigateway-importer/aws-api-import.sh
     IMPORTERDIR=`dirname $IMPORTER`
     IMPORTERSH=`basename $IMPORTER`
@@ -143,7 +166,7 @@ function api_update_json
 	givehelp
     elif [ -f $IMPORTER ] ; then
 	cd $IMPORTERDIR
-	./$IMPORTERSH --update $GWAY_ID ../$1
+	./$IMPORTERSH --update $GWAY_ID ../$* # could have --name foo
     else
 	echo "ERROR: you do not have '$IMPORTER' available"
 	echo "   ... did you "
@@ -159,7 +182,7 @@ function api_update_json
 function api_gway_endpoints
 {
 #        $ME gway endpoints       list the endpoints (resources)
-    api_list_all $GWAY_ID
+    api_endpoints
 }
 
 
@@ -208,10 +231,35 @@ function api_mock_one
 #        $ME gway stub py endpt   create one lambda stub in pythonfor one endpoint
 #        $ME gway stub node endpt create one lambda stub in node.js for one endpoint
 #        $ME gway models          list the models
+
+function api_stage_list
+{
 #        $ME gway list             list defined environments (stages)
+    aws apigateway get-stages --rest-api-id $GWAY_ID
+}
+
 #        $ME gway create env       create an environment (stage) for this gateway
 #  	 $ME gway env deploy     deploy to the given environment
 #	 $ME gway env update     (same as deploy)
 #        $ME gway env describe     describe the gateway and environment (stage)
+
+function api_uri
+{
 #        $ME gway env cname        display cname of this gateway+env 
+    AWSHOST=$GWAY_ID.execute-api.`awsregion`.amazonaws.com
+    R53NAME=` route53_find_cname "$AWSHOST" `
+    if [ ! -z "$R53NAME" ] ; then
+	echo "https://"$R53NAME/$ENV_NAME
+    else
+	echo "https://"$AWSHOST/$ENV_NAME
+    fi
+    
+}
+
+function api_route53_wire
+{
 #        $ME gway env r53 f.b.com  wire up the route 53 name to the gateway
+    route53wire ` api_uri | cut -f 3 -d / ` $1
+}
+
+#eof

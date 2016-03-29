@@ -17,7 +17,7 @@ STANDARD VERBS:
 AWS API GATEWAY VERBS:
         $ME import some.json       import swagger 2.0 and make an api gateway
         $ME list                   list defined gateways
-        $ME gway update some.json  import swagger 2.0 and update gway
+        $ME gway update some.json  update api gateway with swagger spec
         $ME gway endpoints         list the endpoints (resources)
         $ME gway models            list the models
 
@@ -30,13 +30,13 @@ AWS API GATEWAY VERBS:
         $ME gway stub java endpt   create one lambda stub in java for one endpoint
         $ME gway stub py endpt     create one lambda stub in python for one endpoint
         $ME gway stub node endpt   create one lambda stub in node.js for one endpoint
+        $ME gway route53 a.b.com   wire up the gateway to route53 name a.b.com
 
 ENVIRONMENT VERBS:
         $ME gway list               list defined environments (stages)
         $ME gway create env         create an environment (stage) for this gateway
         $ME gway env describe       describe the gateway and environment (stage)
-        $ME gway env cname          display cname of this gateway+env 
-        $ME gway env r53 f.b.com    wire up the route 53 name to the gateway
+        $ME gway env uri            display uri of this gateway+env 
 
 OTHER HANDY STUFF:
         $ME vpcs                   show all available vpcs and subnets
@@ -69,18 +69,18 @@ fi
 # ----------------------------------------------------------------------
 
 # detect no args whatsoever
-if [ -z $1 ] ; then 
+if [ -z "$1" ] ; then 
     givehelp
     exit 31
 fi
 
 # Process the 'no gway' verbs
-case $1 in
+case "$1" in
     # first arg is usually the gateway
     # but sometiemes it's a verb
 #        $ME import some.json     import swagger 2.0 and make an api gateway
 	import)
-	    api_import_json $1
+	    api_import_json $*  # could have --name foo
 	    exit 
 	    ;;
 #        $ME list                 list defined gateways
@@ -100,8 +100,8 @@ esac
 # ----------------------------------------------------------------------
 # detect bad environment name by trying to switch to it
 
-GWAY=$1
-ACTION=$2
+GWAY="$1"
+ACTION="$2"
 
 if api_gway_name_exists "$GWAY" >/dev/null ; then
     GWAY_NAME="$GWAY"
@@ -130,12 +130,12 @@ fi
 case $ACTION in
 #        $ME gway update some.json  import swagger 2.0 and update gway
         udpate)
-	   api_update_json $1
+	   api_update_json ""$1""
 	   exit
 	   ;;
 #        $ME gway endpoints       list the endpoints (resources)
         endpoints)
-	    api_list_endpoints
+	    api_gway_endpoints
 	    exit
 	    ;;
 #        $ME gway mockall         mock all the endpoints in this gateway
@@ -149,7 +149,7 @@ case $ACTION in
 	    exit
 	    ;;       
         stubs)
-	    LANG=$3
+	    LANG="$3"
 	    shift
 	    case $LANG in 
 #        $ME gway stubs java      create lambda stubs in java for all endpoints
@@ -174,7 +174,7 @@ case $ACTION in
 	    esac
 	    ;;
 	 stub)
-	    LANG=$3
+	    LANG="$3"
 	    shift
 	    case $LANG in 
 #        $ME gway stub java endpt create one lambda stub in java for one endpoint
@@ -213,19 +213,24 @@ case $ACTION in
 	    api_create $*
 	    exit
 	    ;;
+#        $ME gway r53 f.b.com  wire up the route 53 name to the gateway
+     r53|route53)
+	api_route53_wire $*
+	exit
+	;;
 esac
 
 # ----------------------------------------------------------------------
 
 ENVARG=$ACTION
-ACTION=$3
+ACTION="$1"
 
 if api_env_name_exists "$ENVARG" >/dev/null ; then
-    ENV_NAME="$GWAY"
-    ENV_ID=`api_gway_id_from_name "$GWAY"`
-elif api_env_id_exists "$ENVARG" >/dev/null ; then
-    ENV_ID="$GWAY"
-    ENV_NAME=`api_gway_name_from_id "$GWAY"`
+    ENV_NAME="$ENVARG"
+#    ENV_ID=`api_gway_id_from_name "$GWAY"`
+#elif api_env_id_exists "$ENVARG" >/dev/null ; then
+#    ENV_ID="$GWAY"
+#    ENV_NAME=`api_gway_name_from_id "$GWAY"`
 else
     echo "ERROR: '$ENVARG' is not a valid environment (stage) name in '$GWAY_NAME'"
     echo "    maybe you meant one of "
@@ -256,12 +261,8 @@ case $ACTION in
 	api_describe
 	;;
 #        $ME gway env cname        display cname of this gateway+env 
-    cname)
-	api_cname
-	;;
-#        $ME gway env r53 f.b.com  wire up the route 53 name to the gateway
-    r53)
-	api_route53_wire $*
+    uri)
+	api_uri
 	;;
     *)
 	givehelp
