@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "version": "0.0.x",
-    "title": "Product Catalog",
+    "title": "ProductCatalog",
     "contact": {
       "name": "productOps"
     },

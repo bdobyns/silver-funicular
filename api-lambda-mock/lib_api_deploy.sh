@@ -142,8 +142,16 @@ function api_import_json
 	echo "ERROR: '$1' is not valid json"
 	givehelp
     elif [ -f $IMPORTER ] ; then
-	cd $IMPORTERDIR
-	./$IMPORTERSH -c ../$* # could have --name foo
+	APINAME=$( cat $1 | jq -r .info.title )
+	if api_gway_name_exists "$APINAME"
+	then
+	    echo "ERROR: API '$APINAME' already exists, maybe you want to update instead"
+	    echo " "
+	    givehelp
+	else
+	    cd $IMPORTERDIR
+	    ./$IMPORTERSH --create ../$1
+	fi
     else
 	echo "ERROR: you do not have '$IMPORTER' available"
 	echo "   ... did you "
@@ -165,8 +173,17 @@ function api_update_json
 	echo "ERROR: '$1' is not valid json"
 	givehelp
     elif [ -f $IMPORTER ] ; then
-	cd $IMPORTERDIR
-	./$IMPORTERSH --update $GWAY_ID ../$* # could have --name foo
+	APINAME=$( cat $1 | jq -r .info.title )
+	if api_gway_name_exists "$APINAME"
+	then
+	    cd $IMPORTERDIR
+	    ./$IMPORTERSH --update $GWAY_ID ../$1
+	else
+	    echo "ERROR: API '$APINAME' does not exist, cannot update. "
+	    echo "       maybe you wanted to create instead"
+	    echo " "
+	    givehelp
+	fi
     else
 	echo "ERROR: you do not have '$IMPORTER' available"
 	echo "   ... did you "
@@ -200,10 +217,41 @@ function api_mock_one_by_id
 {
 #    $1 is the resource-id of the endpoint in question
     ENDPOINT_ID=$1
+    REGION=`awsregion`
+    STATUS200="--status-code 200"
     for METHOD in `api_endpoint_methods_from_id $ENDPOINT_ID`
     do
+	# see https://alestic.com/2015/11/amazon-api-gateway-aws-cli-redirect/
 	echo "$METHOD "`api_endpoint_path_from_id $ENDPOINT_ID`
-	aws apigateway put-integration --rest-api-id $GWAY_ID --resource-id $ENDPOINT_ID --http-method $METHOD --type MOCK
+	METHODARGS="--region $REGION --rest-api-id $GWAY_ID --resource-id $ENDPOINT_ID --http-method $METHOD "
+	# this is not necessary if we already have a method response defined (as in via swagger)
+	if ! aws apigateway get-method-response $METHODARGS $STATUS200 2>/dev/null >/dev/null
+	then
+	aws apigateway put-method-response \
+	    $METHODARGS \
+	    $STATUS200 \
+	    --response-models '{"application/json":"Empty"}' \
+	    --response-parameters '{"method.response.header.Location":true}'
+	fi
+
+	# not necessary if already done
+	if ! aws apigateway get-integration $METHODARGS 2>/dev/null >/dev/null
+        then
+	aws apigateway put-integration \
+	    $METHODARGS \
+	    --request-templates '{"application/json":"{\"statusCode\": 200}"}'  \
+	    --type MOCK
+	fi
+
+	if ! aws apigateway get-integration-response $METHODARGS $STATUS200 2>/dev/null >/dev/null
+	then
+	aws apigateway put-integration-response \
+	    $METHODARGS \
+	    $STATUS200 \
+	    --response-templates '{"application/json": null }' \
+	    --response-parameters \
+	    '{"method.response.header.Location":"'"'$target_url'"'"}'
+	fi
     done
 }
 

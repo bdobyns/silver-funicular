@@ -80,6 +80,7 @@ case "$1" in
     # but sometiemes it's a verb
 #        $ME import some.json     import swagger 2.0 and make an api gateway
 	import)
+	    shift
 	    api_import_json $*  # could have --name foo
 	    exit 
 	    ;;
@@ -91,6 +92,7 @@ case "$1" in
         vpcs)
 #        $ME vpcs                 show available vpcs and subnets
 #        $ME vpcs vpc-id          show subnets for given vpc
+	    shift
 	    vpcsubnets $*
 	    exit
 	    ;;
