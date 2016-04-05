@@ -2,8 +2,8 @@
 # blame: barry@productops.com  Feb 2016
 
 
-ME=`basename $0`
-DNZ=`dirname $0`
+ME=$( basename $0 )
+DNZ=$( dirname $0 )
 LIBAPIDEPLOY=lib_api_deploy.sh
 
 givehelp()
@@ -107,10 +107,10 @@ ACTION="$2"
 
 if api_gway_name_exists "$GWAY" >/dev/null ; then
     GWAY_NAME="$GWAY"
-    GWAY_ID=`api_gway_id_from_name "$GWAY"`
+    GWAY_ID=$( api_gway_id_from_name "$GWAY" )
 elif api_gway_id_exists "$GWAY" >/dev/null ; then
     GWAY_ID="$GWAY"
-    GWAY_NAME=`api_gway_name_from_id "$GWAY"`
+    GWAY_NAME=$( api_gway_name_from_id "$GWAY" )
 else
     echo "ERROR: '$GWAY' is not a valid gateway name"
     echo "    maybe you meant one of "
@@ -229,14 +229,14 @@ ACTION="$1"
 
 if api_env_name_exists "$ENVARG" >/dev/null ; then
     ENV_NAME="$ENVARG"
-#    ENV_ID=`api_gway_id_from_name "$GWAY"`
+#    ENV_ID=$( api_gway_id_from_name "$GWAY" )
 #elif api_env_id_exists "$ENVARG" >/dev/null ; then
 #    ENV_ID="$GWAY"
-#    ENV_NAME=`api_gway_name_from_id "$GWAY"`
+#    ENV_NAME=$( api_gway_name_from_id "$GWAY" )
 else
     echo "ERROR: '$ENVARG' is not a valid environment (stage) name in '$GWAY_NAME'"
     echo "    maybe you meant one of "
-    api_env_names
+    api_stage_list 
     exit
 fi
 
