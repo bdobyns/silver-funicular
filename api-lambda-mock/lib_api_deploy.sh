@@ -89,7 +89,7 @@ function api_endpoint_path_from_id
 
 function api_endpoint_methods_from_id
 {
-    api_endpoints | jq -r ' .items[] | select(.id == "'"$1"'") | .resourceMethods | keys ' | tr -dc 'A-Z \n' 2>/dev/null
+    api_endpoints | jq -r ' .items[] | select(.id == "'"$1"'") | .resourceMethods | keys ' 2>/dev/null | tr -dc 'A-Z \n'
 }
 
 # ENVIRONMENTS (STAGES) IN $GWAY_ID
@@ -289,12 +289,27 @@ function api_stage_list
     aws apigateway get-stages --rest-api-id $GWAY_ID | jq -r .item[].stageName
 }
 
+function api_env_create
+{
 #        $ME gway create env       create an environment (stage) for this gateway
-#  	 $ME gway env deploy     deploy to the given environment
-#	 $ME gway env update     (same as deploy)
-#        $ME gway env describe     describe the gateway and environment (stage)
+    aws apigateway create-deployment --rest-api-id $GWAY_ID --stage-name $1
+}
 
-function api_uri
+function api_env_deploy
+{
+#	 $ME gway env update     (same as deploy)
+#  	 $ME gway env deploy     deploy to the given environment
+    aws apigateway create-deployment --rest-api-id $GWAY_ID --stage-name $ENV_NAME 
+}
+
+function api_env_describe
+{
+#        $ME gway env describe     describe the gateway and environment (stage)
+    aws apigateway get-stage --rest-api-id $GWAY_ID --stage-name $ENV_NAME
+}
+
+
+function api_env_uri
 {
 #        $ME gway env cname        display cname of this gateway+env 
     AWSHOST=$GWAY_ID.execute-api.$( awsregion ).amazonaws.com
@@ -312,5 +327,6 @@ function api_route53_wire
 #        $ME gway env r53 f.b.com  wire up the route 53 name to the gateway
     route53wire $( api_uri | cut -f 3 -d / ) $1
 }
+
 
 #eof

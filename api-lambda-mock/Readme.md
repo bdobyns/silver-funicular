@@ -76,6 +76,10 @@ can begin to call something.
 
 
 
+
+
+
+
 # MENTAL PREREQUISITES
 
 1.  We assume you've already defined the APIs you want to mock
@@ -102,7 +106,50 @@ in a docker container.
          [Running Arbitrary Executables](http://aws.amazon.com/blogs/compute/running-executables-in-aws-lambda/)
 	 (for small values of support).
 
+1. It's helpful to understand the differences between execution of a lambda in different languages
 
+   * Lambdas written in node.js start up more quickly than either
+     python or java ones.  But if the lambda itself is computationally
+     expensive, you may discover that it runs longer (clock time) overall.
+
+   * Lambdas written in java take the longest to start up (because you
+     still have to start up a JVM).  However since you don't also have to
+     start up a servlet container, or autowire beans or any of the
+     other usual stuff, it's still much faster than starting up a
+     traditional Spring-based REST service.
+
+   * Lambdas written in python are intermediate between node.js and
+     java for startup time, and comparable to java in execution time
+     (python is pretty good at JIT compilation).  Because of the
+     cheaper startup cost, you ought to consider python as the right
+     target for most lambdas that do non-trivial work.
+
+1. It's possible that the docker container with your lambda in it will get re-used on subsequent executions.
+
+   * you cannot ever *depend* on this behavior.  You may be given a
+     fresh container with a freshly started copy of your Lambda on any
+     invocation, and for reasons outside of your control.
+
+   * If you get the same container again you don't pay the startup
+     cost again (espcially important for a Java Lambda).
+
+   * If you get the same container again that means you may be able to
+     keep intermediate state in either the filesystem, JVM or some
+     other means.
+
+   * Your Lambda cannot assume it's in a *clean* container, or freshly
+     started.  So if you bind something big into your lambda, like all
+     of lucene, then you can't assume it is uninitialized.
+
+   * AWS *might* keep your container around for up to five minutes,
+     just in case you invoke it again.  This means you can arragnge to
+     schedule a call to your lambda every few minutes (say) to keep it
+     alive.  
+
+     * Amazingly AWS is okay with this, even though it basically gives
+       you full-time docker container (approximately a t1.micro or
+       t2.micro) at a much lower cost than an EC2 or ElasticBeanstalk
+       version of the same.
 
 
 
@@ -142,13 +189,12 @@ installed.
 # INSTALL AND GET READY TO USE THE `aws-gateway-importer`
 
 You need to have `aws-gateway-importer` available to use it, which
-(sadly) means downloading and building it first.  I tried to use
+(sadly) means downloading and *building it from source* first.  I tried to use
 `brew` to fetch a built version, but no. Because fail.
 
 I found it 'easy' (for infinitesmal values of easy) to do this by
 including `aws-gateway-importer` as a submodule.  Following the
-submodule tutorial in the [git
-wiki](https://git.wiki.kernel.org/index.php/GitSubmoduleTutorial) will
+submodule tutorial in the [git wiki](https://git.wiki.kernel.org/index.php/GitSubmoduleTutorial) will
 lead you down an alternative path of fail.   Do this instead:
 
 ```
@@ -163,8 +209,8 @@ really a singular binary, as we will see.
 Now you need to build `aws-gateway-importer` because you checked out
 the sources.  Which may require you install maven first if you haven't
 already.  If you've never used `mvn` before, you might be a little
-alarmed at how many random things are fetched from who-knows-where in
-order to build this.
+horrified / alarmed at how many random dependencies are fetched from
+who-knows-where in order to build this.
 
 ```
 if [ -z `which mvm` ] ; then brew install mvn ; fi
@@ -172,7 +218,112 @@ cd aws-apigateway-importer
 mvn assembly:assembly
 ```
 
-You can safely go use the panini maker while `mvn` does it's job.
+You can safely go use the panini maker while `mvn` does it's job.  (In
+other words, it is not quick.)
+
+
+
+
+
+
+
+
+# MOCK OUT THE API USING THE INTERNAL GATEWAY MOCK
+
+The AWS API Gateway offering has an internal loopback facility, and
+you can use this to create callable versions of your API *almost*
+effortlessly.
+
+Of course, these callable things don't actually do anything useful,
+and they don't return anything valuable.  But it gives you endpoints
+to begin calling, which may be handy.
+
+The API Gateway has four distinct control points inside it (and these
+are represented graphically in a little picture for each endpoint in
+the AWS Web Console).  For each REST endpoint/HTTP Method pair that
+you define, there's two control points inbound from the caller to your
+implementation, and two control points outbound from the
+implementation back to the caller.  You can do some complex and
+frightening transformations at some of these control points, using the
+[Apache Velocity](https://velocity.apache.org) template engine.  
+
+To really get value out of the API Gateway system, you'll eventually
+need to learn all this, but not at first when you're just trying to
+get anything at all going.
+
+The work plan is pretty simple:
+1. ingest the swagger using the `deploy_api.sh` script
+2. mock all the endpoints in the swagger using the `deploy_api.sh` script
+
+## INGEST THE SWAGGER
+
+Using the `deploy_api.sh` script, we just gobble up the swagger spec.
+There will be a lot of output, most of it can be ignored.  All that
+matters is that you locate the name of the API so you can find it in
+the web console if you want to, and can refer to it later.
+
+```
+	SWAGGER2=product-catalog.json
+	APINAME=$( cat $SWAGGER2 | jq -r .info.title )
+	echo $APINAME
+	./deploy_api.sh import $SWAGGER2
+```
+
+Now you can use the AWS Web Console to go see that your API got
+imported.  visit http//console.aws.amazon.com/apigateway/home and you
+should see your API and all it's endpoints, methods and models.  
+
+It's handy if this is your first time to click around and see what got
+created.  In particular, click on 'Resources' for your API, and then
+click on the HTTP method for an endpoint.  You'll see a simplified
+flow diagram of how that endpoint will get processed.  At the moment,
+only the *Method Request* has been defined (from the swagger spec),
+although all your object models also got imported.
+
+
+
+## MOCK ALL THE ENDPOINTS USING THE INTERNAL LOOPBACK
+
+The `deploy_api.sh` script can take the name of the API or the id of
+the API interchangeably, and will internally figure out which one you
+gave it and rearrange what it does accordingly.  You are welcome.
+
+Now you can use `deploy_api.sh` to mock all the endpoints.   
+
+Behind the scenes, `deploy_api.sh` will
+
+  * validate that the API you asked to mock exists
+  * turn the name of the api (if that's what you gave it) into the id
+  * iterate over all the endpoint/method pairs in your api  
+    for each endpoint/method pair
+    * define the Integration Request type and target as 'MOCK'
+    * define the Integration Response sensibly so that you can return at all
+    * define the Method Response sensibly so that you can return anything at all
+
+```
+	./deploy_api.sh $APINAME mockall
+```
+
+This does not take long enough for a panini-maker trip.  But it
+outputs a lot of stuff, most of which you can ignore as long as none
+of it is an error message.
+
+## DEPLOY AN ENVIRONMENT (STAGE)
+
+What we would call an environment (test or prod) the AWS API Gateway calls a stage.   
+
+At this point you can now crate a stage (this will also force the
+first deploy of your API) and expect it to work!
+
+```
+	ENVNAME=test
+        ./deploy_api.sh $APINAME create $ENVNAME
+
+	ENV_URL=$( ./deploy_api.sh $APINAME $ENVNAME uri )
+	echo $ENV_URL
+```
+
+That last bit gets us the raw URL that we can begin to call our apis with.  
 
 
 

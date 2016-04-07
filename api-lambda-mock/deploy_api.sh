@@ -212,7 +212,7 @@ case $ACTION in
 	    ;;
 #        $ME gway create env       create an environment (stage) for this gateway
         create)
-	    api_create $*
+	    api_env_create $*
 	    exit
 	    ;;
 #        $ME gway r53 f.b.com  wire up the route 53 name to the gateway
@@ -256,15 +256,15 @@ case $ACTION in
 #	$ME gway env deploy     deploy to the given environment
 #	$ME gway env update     (same as deploy)
     deploy|update)
-	lambda_deploy 
+	api_env_deploy 
 	;;
 #        $ME gway env describe     describe the gateway and environment (stage)
     describe)
-	api_describe
+	api_env_describe
 	;;
 #        $ME gway env cname        display cname of this gateway+env 
     uri)
-	api_uri
+	api_env_uri
 	;;
     *)
 	givehelp
