@@ -22,7 +22,8 @@ AWS API GATEWAY VERBS:
         $ME gway models            list the models
 
         $ME gway mockall           mock all the endpoints in this gateway
-        $ME gway stubs java        create lambda stubs in java for all endpoints
+        $ME gway stubs java com.you.project.packagename 
+                                   create lambda stubs in java for all endpoints
         $ME gway stubs python      create lambda stubs in python for all endpoints
         $ME gway stubs node        create lambda stubs in node.js for all endpoints
 
@@ -123,9 +124,9 @@ if [ -z $ACTION ] ; then
     givehelp
     exit 43
 else
-    shift; shift
+    shift # move past gateway name
+    shift # move past action name
 fi
-
 
 # ----------------------------------------------------------------------
 # Process the 'no env' verbs
@@ -140,6 +141,10 @@ case $ACTION in
 	    api_gway_endpoints
 	    exit
 	    ;;
+        models)
+	    api_get_model_names
+	    exit
+	    ;;
 #        $ME gway mockall         mock all the endpoints in this gateway
 	mockall)
 	    api_mockall $*
@@ -151,22 +156,22 @@ case $ACTION in
 	    exit
 	    ;;       
         stubs)
-	    LANG="$3"
+	    CGLANG="$1"
 	    shift
-	    case $LANG in 
+	    case $CGLANG in 
 #        $ME gway stubs java      create lambda stubs in java for all endpoints
 		java)
-		    api_stub_java_all
+		    api_stub_java_all $*
 		    exit
 		    ;;
 #        $ME gway stubs python    create lambda stubs in pythonfor all endpoints
 		py|python)
-		    api_stub_python_all
+		    api_stub_python_all $*
 		    exit
 		    ;;
 #        $ME gway stubs node      create lambda stubs in node.js for all endpoints
 		node|node.js|js)
-		    api_stub_node_all
+		    api_stub_node_all $*
 		    exit
 		    ;;
 		*)
@@ -176,9 +181,9 @@ case $ACTION in
 	    esac
 	    ;;
 	 stub)
-	    LANG="$3"
+	    CGLANG="$3"
 	    shift
-	    case $LANG in 
+	    case $CGLANG in 
 #        $ME gway stub java endpt create one lambda stub in java for one endpoint
 		java)
 		    api_stub_java_one $*

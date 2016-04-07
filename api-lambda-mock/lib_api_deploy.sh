@@ -75,6 +75,27 @@ function api_endpoint_paths
     api_endpoints | jq -r '.items[].path' 2>/dev/null
 }
 
+function api_endpoint_id_exists
+{
+    FOO=$( api_endpoint_path_from_id )
+    if [ -z "$FOO" ] ; then
+	return false
+    else
+	return true
+    fi
+}
+
+function api_endpoint_path_exists
+{
+    BAR=$( api_endpoint_id_from_path )
+    if [ -z "$BAR" ] ; then
+	return false
+    else
+	return true
+    fi
+
+}
+
 function api_endpoint_id_from_path
 {
     # path in $1
@@ -233,6 +254,7 @@ function api_mock_one_by_id
 	aws apigateway put-method-response \
 	    $METHODARGS \
 	    $STATUS200 \
+
 	    --response-models '{"application/json":"Empty"}' \
 	    --response-parameters '{"method.response.header.Location":true}'
 	fi
@@ -275,7 +297,91 @@ function api_mock_one
     fi
 }
 
-#        $ME gway stubs java      create lambda stubs in java for all endpoints
+function api_get_model_names
+{
+# return the names of the models in this $GWAY_ID
+    aws apigateway get-models --rest-api-id $GWAY_ID --query items[].name | jq -r '.[]'
+}
+
+function api_stub_models_java # com.you.project.packagename
+{
+# $1 = com.you.project.packagename    
+PKGNAME="$1"
+if [ -z "$PKGNAME" ]; then
+    echo "ERROR: you must specify a package name for the top of the package to be generated"
+    echo "       e.g.   com.1e80.farce.comedyapi   or    org.cirrostratus.subman.productcatalog"
+    givehelp
+    exit 1
+fi
+    JAVACODE=src/main/java
+    mkdir -p $JAVACODE
+    JSMODELPATH=src/nodejs/model
+    MODEL_LIST=$( api_get_model_names )
+    for MODELNAME in $MODEL_LIST
+    do
+	mkdir -p $JSMODELPATH
+	JSMODEL=$JSMODELPATH/${MODELNAME}.js
+	aws apigateway get-model --rest-api-id $GWAY_ID --model-name $MODELNAME | jq -r .schema >$JSMODEL
+
+	jsonschema2pojo \
+	    --source $JSMODEL \
+	    --target $JAVACODE \
+	    --annotation-style JACKSON2 \
+	    --class-prefix ${PKGNAME}.model \
+	    --package ${PKGNAME}.model
+#	    --generate-builders \
+#	    --generate-constructors \
+#	    --joda-dates \
+
+    done
+}
+
+function api_stub_java_one
+{
+    ENDPOINTID="$1"
+#        $ME gway stub java endpt create one lambda stub in java for one endpoint
+    if ! api_endpoint_id_exists "$ENDPOINTID" ; then
+	echo "ERROR: 'id' is not an endpoint id"
+	givehelp
+	exit
+    else
+        # make some models first, since any one lambda probably needs all the models
+	if ! api_stub_models_java $ENDPOINTID ; then exit ; fi
+    
+	api_stub_java_one_by_id $ENDPOINTID
+    fi
+}
+
+function api_stub_java_one_by_id
+{
+    ENDPOINTID="$1"
+    if ! api_endpoint_id_exists "$ENDPOINTID" ; then
+	echo "ERROR: 'id' is not an endpoint id"
+	givehelp
+	exit
+    else
+	for METHOD in $( api_endpoint_methods_from_id $ENDPOINTID )
+	do
+	    ENDPOINT_PATH=$( api_endpoint_path_from_id )
+	    METHOD_DETAILS=$( apigateway get-method --rest-api-id $GWAY_ID --resource-id $ENDPOINTID --http-method $METHOD )
+	done
+    fi
+}
+
+function api_stub_java_all
+{
+#        $ME gway stubs java com.you.project.packagename 
+#                                   create lambda stubs in java for all endpoints
+
+    # make some models first, since any one lambda probably needs all the models
+    if ! api_stub_models_java $1 ; then exit ; fi
+
+    for ENDPOINT_ID in $( api_endpoint_ids )
+    do
+	api_stub_java_one_by_id $ENDPOINT_ID
+    done
+}
+
 #        $ME gway stubs python    create lambda stubs in pythonfor all endpoints
 #        $ME gway stubs node      create lambda stubs in node.js for all endpoints
 #        $ME gway stub java endpt create one lambda stub in java for one endpoint

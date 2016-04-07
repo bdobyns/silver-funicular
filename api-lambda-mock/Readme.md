@@ -73,6 +73,9 @@ can begin to call something.
 
 1.  We assume you have set up your AWS credentials for your IAM role so that you can use the AWS cli sensibly.
 
+1.  You need to have [jsonschema2pojo](https://github.com/joelittlejohn/jsonschema2pojo) installed.
+    On a sensible development machine this is easily accomplished with `brew install jsonschema2pojo`
+    
 
 
 
@@ -178,6 +181,21 @@ in a docker container.
       sure you clean up properly (temp files and in-memory objects)
       after each invocation.
 
+1.  Your schemas for input and output objects are described with json,
+    following the [json-schema standard](http://json-schema.org) which
+    I'm sure you've already memorized.
+
+1.  To take full advantage of the AWS API Gateway, it's useful to
+    learn to use the templating and transformation language that is
+    embedded in there, the [Apache
+    Velocity](https://velocity.apache.org) template engine.
+
+
+
+
+
+
+
 
 
 
@@ -191,18 +209,19 @@ in a docker container.
    `wget -O petstore.json http://petstore.swagger.io/v2/swagger.json`
 
 1. If you are unlucky and your Swagger specification complies with
-version 1.2, you *might* be able to succeed by installing
-`swagger-converter` and `swagger-tools` to convert it.  This may be
-easy or hard depending on how many prerequisites you already have
-installed.
-```
-   npm install swagger-converter --save    
-   npm install -g swagger-tools   
-   swagger-tools convert your-api-docs.json   
-```
+   version 1.2, you *might* be able to succeed by installing
+   `swagger-converter` and `swagger-tools` to convert it.  This may be
+   easy or hard depending on how many prerequisites you already have
+   installed.  ``` npm install swagger-converter --save npm install -g
+   swagger-tools swagger-tools convert your-api-docs.json ```
 
-1.  If you are fabulously unlucky, your Swagger specification complies with version 1.1, and you'll need to rewrite it manually.  Wah wah wah. 
-    * most of the early Sequoia services have a Swagger 1.1 specification.
+1. If you are fabulously unlucky, your Swagger specification complies
+   with version 1.1, and you'll need to rewrite it manually.  Wah wah
+   wah.
+
+   * most of the early Sequoia services have a Swagger 1.1 specification.
+
+
 
 
 
@@ -238,7 +257,7 @@ horrified / alarmed at how many random dependencies are fetched from
 who-knows-where in order to build this.
 
 ```
-if [ -z `which mvm` ] ; then brew install mvn ; fi
+awsif [ -z `which mvn` ] ; then brew install mvn ; fi
 cd aws-apigateway-importer
 mvn assembly:assembly
 ```
