@@ -105,7 +105,7 @@ in a docker container.
       *  AWS acknowledges and supports doing so
          [Running Arbitrary Executables](http://aws.amazon.com/blogs/compute/running-executables-in-aws-lambda/)
 	 (for small values of support).
-      * your lambda could kick off an ansible task to do *anything you want* on first execution.  Or anything else you might fear or desire.
+      * your lambda could even kick off an ansible task or use puppet or chef to do *anything you want* on first execution.  Or anything else you might fear or desire.
 
 1. It's helpful to understand the differences between execution of a lambda in different languages
 
@@ -130,28 +130,32 @@ in a docker container.
      support (libraries or frameworks) for the work you need to do in
      your Lambda.
 
-     * For instance, if you need to parse broken xml that doesn't
-       conform properly to a DTD, and is missing close tags and has
+     * For instance, if you need to parse broken XML that doesn't
+       conform properly to a DTD, is missing close tags and has
        other syntax errors, then you want `beautiful soup` which is an
        incredible python library for just this purpose, and so you'd
-       write in python.  By the way, you should consider all XML
+       write in python.  *By the way, you should consider all XML
        received from an outside source as probably broken, full of
-       syntax errors, and likely non-conformant.
+       syntax errors, and likely non-conformant.*
 
 1. It's possible that the docker container with your lambda in it will
-get re-used on subsequent executions.  [here's a blog post about
-that](https://alestic.com/2014/12/aws-lambda-persistence/)
+   get re-used on subsequent executions.  [here's a blog post about
+   that](https://alestic.com/2014/12/aws-lambda-persistence/)
 
    * you cannot ever *depend* on this behavior.  You may be given a
      fresh container with a freshly started copy of your Lambda on any
      invocation, and for reasons outside of your control.
 
    * If you get the same container again you don't pay the startup
-     cost again (espcially important for a Java Lambda).
+     cost again (espcially handy for a Java Lambda).
 
    * If you get the same container again that means you may be able to
      keep intermediate state in either the filesystem, JVM or some
      other means.
+
+   * if you started an external process (mysqld, say) inside your
+     Lambda's container, that will be running again when you re-use
+     the container.  But it won't be running when your Lambda is not.
 
    * Your Lambda cannot assume it's in a *clean* container, or freshly
      started.  So if you bind something big into your lambda, like all
@@ -159,10 +163,11 @@ that](https://alestic.com/2014/12/aws-lambda-persistence/)
 
    * AWS *might* keep your container around for up to five minutes,
      just in case you invoke it again.  This means you can arragnge to
-     schedule a call to your lambda every few minutes (say) to keep it
+     schedule a keepalive event for your lambda every minute to keep it
      alive.  
 
-     * Amazingly AWS is okay with this, even though it basically gives
+     * [Amazingly AWS is okay](https://aws.amazon.com/blogs/compute/container-reuse-in-lambda/)
+       with this, even though it basically gives
        you full-time docker container (approximately a t1.micro or
        t2.micro) at a much lower cost than an EC2 or ElasticBeanstalk
        version of the same.
@@ -354,17 +359,17 @@ That last bit gets us the raw URL that we can begin to call our apis with.
 
 
 
-# SOMETIMES THINGS GO TERRIBLY WRONG 
+# SOMETIMES THINGS GO TERRIBLY WRONG: A CASE STUDY
 
 1. I also fetched a spec that Kevin Albert had written recently   
-   `wget -O api-docs.json http://kevin-demo-app01.test.cirrostratus.org/v2/api-docs`
+   `wget -O product-catalog.json   http://kevin-demo-app01.test.cirrostratus.org/v2/api-docs`
 
 1. Running `aws-gateway-importer` on it failed with a   
    `java.lang.StackOverflowError` (infinite recursion) error. 
 
 1. This is because in the models, 'Product' is defined recursively as
    containing other 'Products', and the importer naievely tries to
-   crawl to the bottom of the object model tree ...
+   crawl to the bottom of the object model tree ... forever.
 
 1. I fixed it by creating a new model element, 'Item' (essentially the
    same as a 'Product' but without the loop) and making 'Product'
@@ -402,6 +407,26 @@ That last bit gets us the raw URL that we can begin to call our apis with.
 1. The importer also does not allow content type `*/*`. 
    * I replaced all
      of these with `application/json` whether it's right or not.
+
+1. While AWS API Gateway will allow api names with embedded spaces,
+   for a lot of reasons, it's more convenient to not have embedded
+   spaces, so I changed the API name (this is the `info.Title` element
+   in the json) from "Product Catalog" to "ProductCatalog".
+
+
+
+
+# DON'T TRY THIS AT HOME KIDS
+
+1. Since lambda containers get reused, and you can do anything you want inside one, it's conceivable that you could
+   * install and start mysqld inside your lambda container, pointing it at /tmp for it's file storage
+   * schedule a keep-alive event to keep your container alive
+   * accept a string of sql as the event data (like the lambdash example) which is piped to the mysql client in the container
+   * return the result set as the xml (a simple command line argument to the mysql client)
+   * `npm install xml2json` to do conversion to json, if you prefer
+
+
+
 
 
 
