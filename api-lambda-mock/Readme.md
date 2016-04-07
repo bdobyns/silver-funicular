@@ -105,12 +105,14 @@ in a docker container.
       *  AWS acknowledges and supports doing so
          [Running Arbitrary Executables](http://aws.amazon.com/blogs/compute/running-executables-in-aws-lambda/)
 	 (for small values of support).
+      * your lambda could kick off an ansible task to do *anything you want* on first execution.  Or anything else you might fear or desire.
 
 1. It's helpful to understand the differences between execution of a lambda in different languages
 
    * Lambdas written in node.js start up more quickly than either
      python or java ones.  But if the lambda itself is computationally
-     expensive, you may discover that it runs longer (clock time) overall.
+     expensive, you may discover that node.js takes longer (clock
+     time) overall compared to java and python.
 
    * Lambdas written in java take the longest to start up (because you
      still have to start up a JVM).  However since you don't also have to
@@ -124,7 +126,21 @@ in a docker container.
      cheaper startup cost, you ought to consider python as the right
      target for most lambdas that do non-trivial work.
 
-1. It's possible that the docker container with your lambda in it will get re-used on subsequent executions.
+   * You should pick the language based on which language has better
+     support (libraries or frameworks) for the work you need to do in
+     your Lambda.
+
+     * For instance, if you need to parse broken xml that doesn't
+       conform properly to a DTD, and is missing close tags and has
+       other syntax errors, then you want `beautiful soup` which is an
+       incredible python library for just this purpose, and so you'd
+       write in python.  By the way, you should consider all XML
+       received from an outside source as probably broken, full of
+       syntax errors, and likely non-conformant.
+
+1. It's possible that the docker container with your lambda in it will
+get re-used on subsequent executions.  [here's a blog post about
+that](https://alestic.com/2014/12/aws-lambda-persistence/)
 
    * you cannot ever *depend* on this behavior.  You may be given a
      fresh container with a freshly started copy of your Lambda on any
@@ -151,7 +167,11 @@ in a docker container.
        t2.micro) at a much lower cost than an EC2 or ElasticBeanstalk
        version of the same.
 
-
+   * This creates a potential security leakage problem, as data from a
+      previous invocation of the Lambda may still be available to
+      subsequent invocations.  If this is a concern, you should make
+      sure you clean up properly (temp files and in-memory objects)
+      after each invocation.
 
 
 
