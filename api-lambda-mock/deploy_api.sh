@@ -23,7 +23,7 @@ AWS API GATEWAY VERBS:
 
         $ME gway mockall           mock all the endpoints in this gateway
         $ME gway stubs java com.you.project.packagename 
-                                   create lambda stubs in java for all endpoints
+                                   create lambda stubs in java (meodel only)
         $ME gway stubs python      create lambda stubs in python for all endpoints
         $ME gway stubs node        create lambda stubs in node.js for all endpoints
 
