@@ -1,4 +1,4 @@
-<#!/bin/bash -e
+#!/bin/bash -e
 # blame: barry@productops.com  Feb 2016
 
 
@@ -171,7 +171,7 @@ case $ACTION in
 		    ;;
 #        $ME gway stubs node      create lambda stubs in node.js for all endpoints
 		node|node.js|js)
-		    api_stub_node_all $*
+		    api_stub_nodejs_all $*
 		    exit
 		    ;;
 		*)
