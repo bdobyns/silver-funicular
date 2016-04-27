@@ -309,9 +309,10 @@ function api_get_model_names
 
 function api_nodejs_one_by_id # ENDPOINT_ID
 {
+#        $ME gway stub node endpt create one lambda stub in node.js for one endpoint
     TODAY=$( date +%Y-%m-%d )
-    ENDPOINT_ID=$( api_endpoint_id_from_path "$1" )
-    ENDPOINT_PATH=$( api_endpoint_path_from_id "$1" )
+    ENDPOINT_ID=$( api_endpoint_id_from_path "$1" )   # we don't care if they gave us a endpoint id
+    ENDPOINT_PATH=$( api_endpoint_path_from_id "$1" ) # or a endpoint path, because we convert it 
     for METHOD in $( api_endpoint_methods_from_id $ENDPOINT_ID )
     do
 	JSPATH=nodejs/$( $ENDPOINT_PATH/$METHOD )
@@ -337,6 +338,19 @@ exports.handler = function(event, context) {
     );
 }
 EOF
+    done
+}
+
+function api_stub_nodejs_all
+{
+
+#        $ME gway stubs node      create lambda stubs in node.js for all endpoints
+    # make some models first, since any one lambda probably needs all the models
+    if ! api_stub_models_java $1 ; then exit ; fi
+
+    for ENDPOINT_ID in $( api_endpoint_ids )
+    do
+	api_stub_nodejs_one_by_id $ENDPOINT_ID
     done
 }
 
@@ -402,22 +416,6 @@ fi
     done
 }
 
-function api_stub_java_one
-{
-    ENDPOINTID="$1"
-#        $ME gway stub java endpt create one lambda stub in java for one endpoint
-    if ! api_endpoint_id_exists "$ENDPOINTID" ; then
-	echo "ERROR: 'id' is not an endpoint id"
-	givehelp
-	exit
-    else
-        # make some models first, since any one lambda probably needs all the models
-	if ! api_stub_models_java $ENDPOINTID ; then exit ; fi
-    
-#	api_stub_java_one_by_id $ENDPOINTID
-    fi
-}
-
 function api_stub_java_one_by_id
 {
     ENDPOINTID="$1"
@@ -431,6 +429,23 @@ function api_stub_java_one_by_id
 	    ENDPOINT_PATH=$( api_endpoint_path_from_id )
 	    METHOD_DETAILS=$( apigateway get-method --rest-api-id $GWAY_ID --resource-id $ENDPOINTID --http-method $METHOD )
 	done
+    fi
+}
+
+function api_stub_java_one
+{
+#        $ME gway stub java endpt create one lambda stub in java for one endpoint
+    ENDPOINTID=$( api_endpoint_id_from_path "$1" )   # we don't care if they gave us a endpoint id
+    ENDPOINTPATH=$( api_endpoint_path_from_id "$1" ) # or a endpoint path, because we convert it 
+#    ENDPOINTID="$1"
+    if ! api_endpoint_id_exists "$ENDPOINTID" ; then
+	echo "ERROR: 'id' is not an endpoint id"
+	givehelp
+	exit
+    else
+        # make some models first, since any one lambda probably needs all the models
+	if ! api_stub_models_java $ENDPOINTID ; then exit ; fi
+#	api_stub_java_one_by_id $ENDPOINTID
     fi
 }
 
@@ -452,7 +467,6 @@ function api_stub_java_all
 #        $ME gway stubs node      create lambda stubs in node.js for all endpoints
 #        $ME gway stub java endpt create one lambda stub in java for one endpoint
 #        $ME gway stub py endpt   create one lambda stub in pythonfor one endpoint
-#        $ME gway stub node endpt create one lambda stub in node.js for one endpoint
 #        $ME gway models          list the models
 
 function api_stage_list
