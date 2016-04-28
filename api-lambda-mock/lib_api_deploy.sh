@@ -22,9 +22,9 @@ fi
 # ----------------------------------------------------------------------
 # helper functions for API work
 
-function endpoint_path_to_camelcase
+function txt_to_camelcase
 {
-    echo "$1" | tr -d s 'a-zA-Z0-9' '_' | sed 's/_\([a-z]\)/\u\1/g'
+    echo "$1" | tr -c -s 'a-zA-Z0-9' '_' | gsed -e 's/_\([a-z]\)/_\u\1/g' -e 's/^_//' -e 's/_$//'
 }
 
 # GATEWAYS
@@ -59,14 +59,14 @@ function api_endpoints
 {
     if [ ! -z $GWAY_ID ] ; then
         # use $GWAY_ID to list the endpoint paths and ids
-	if [ -z "$API_ENDPOINTS" ] ; then 
+	if [ -z "$CACHED_API_ENDPOINTS" ] ; then 
 	    aws apigateway get-resources --rest-api-id $GWAY_ID
 	else
-	    echo "$API_ENDPOINTS"
+	    echo "$CACHED_API_ENDPOINTS"
 	fi
     fi
 }
-export API_ENDPOINTS=$( api_endpoints ) # cache it for subsequent use
+export CACHED_API_ENDPOINTS=$( api_endpoints ) # cache it for subsequent use
 
 function api_endpoint_ids
 {
@@ -80,9 +80,9 @@ function api_endpoint_paths
     api_endpoints | jq -r '.items[].path' 2>/dev/null
 }
 
-function api_endpoint_id_exists
+function api_endpoint_id_exists # ID
 {
-    FOO=$( api_endpoint_path_from_id )
+    FOO=$( api_endpoints | jq -r ' .items[] | select(.id == "'"$1"'") | .path ' 2>/dev/null )
     if [ -z "$FOO" ] ; then
 	false
     else
@@ -90,9 +90,9 @@ function api_endpoint_id_exists
     fi
 }
 
-function api_endpoint_path_exists
+function api_endpoint_path_exists # PATH
 {
-    BAR=$( api_endpoint_id_from_path )
+    BAR=$( api_endpoints | jq -r ' .items[] | select(.path == "'"$1"'") | .id ' 2>/dev/null )
     if [ -z "$BAR" ] ; then
 	false
     else
@@ -101,19 +101,31 @@ function api_endpoint_path_exists
 
 }
 
-function api_endpoint_id_from_path
+function api_endpoint_id_from_path # PATH
 {
-    # path in $1
-    api_endpoints | jq -r ' .items[] | select(.path == "'"$1"'") | .id ' 2>/dev/null
+    if api_endpoint_id_exists "$1"
+    then
+	# pfft they gave us the answer, not the question
+	echo "$1"
+    else
+        # path in $1
+	api_endpoints | jq -r ' .items[] | select(.path == "'"$1"'") | .id ' 2>/dev/null
+    fi
 }
 
-function api_endpoint_path_from_id
+function api_endpoint_path_from_id # ID
 {
-    # id in $1
-    api_endpoints | jq -r ' .items[] | select(.id == "'"$1"'") | .path ' 2>/dev/null
+    if api_endpoint_path_exists "$1"
+    then
+	# pfft they gave us the answer, not the question
+	echo "$1"
+    else
+        # id in $1
+	api_endpoints | jq -r ' .items[] | select(.id == "'"$1"'") | .path ' 2>/dev/null
+    fi
 }
 
-function api_endpoint_methods_from_id
+function api_endpoint_methods_from_id # ID
 {
     api_endpoints | jq -r ' .items[] | select(.id == "'"$1"'") | .resourceMethods | keys ' 2>/dev/null | tr -dc 'A-Z \n'
 }
@@ -162,7 +174,7 @@ function api_import_json
     IMPORTERDIR=$( dirname $IMPORTER )
     IMPORTERSH=$( basename $IMPORTER )
     if [ ! -f $1 ] ; then
-	echo "ERROR: the json swagger 2.0 spec '$1' does not exist"
+	echo "ERROR: the json swagger 2.0 spec '$1' does not exist ($FUNCNAME)"
 	givehelp
     elif ! cat $1 | jq . >/dev/null 2>/dev/null ; then
 	echo "ERROR: '$1' is not valid json"
@@ -171,7 +183,7 @@ function api_import_json
 	APINAME=$( cat $1 | jq -r .info.title )
 	if api_gway_name_exists "$APINAME"
 	then
-	    echo "ERROR: API '$APINAME' already exists, maybe you want to update instead"
+	    echo "ERROR: API '$APINAME' already exists, maybe you want to update instead ($FUNCNAME)"
 	    echo " "
 	    givehelp
 	else
@@ -228,6 +240,15 @@ function api_gway_endpoints
     api_endpoints
 }
 
+
+function api_get_model_names
+{
+# return the names of the models in this $GWAY_ID
+    aws apigateway get-models --rest-api-id $GWAY_ID --query items[].name | jq -r '.[]'
+}
+
+
+#==== M O C K ======================================================================
 
 function api_mockall
 {
@@ -287,43 +308,69 @@ function api_mock_one_by_id
 function api_mock_one  # [ $ENDPOINT_ID | $ENDPOINT_PATH ]
 {
 #        $ME gway mock endpoint   mock one endpoint in this gateway
-    ID=$( api_endpint_id_from_path "$1" )
-    PATH=$( api_endpoint_path_from_id "$1" )
-    if [ ! -z "$ID" ] ; then
+    if api_endpoint_id_exists "$1" ; then
+	ENDPOINT_ID="$1"
+	ENDPOINT_PATH=$( api_endpoint_path_from_id $ENDPOINT_ID)
+    elif api_endpoint_path_exists "$1" ; then
+	ENDPOINT_ID=$( api_endpoint_id_from_path "$1" )
+	ENDPOINT_PATH="$1"
+    else
+	echo "ERROR: '$1' is not an endpoint id ($FUNCNAME)"
+	exit
+    fi
+
+    if [ ! -z "$ENDPOINT_ID" ] ; then
 	# they gave us the path, we found the id
 	api_mock_one_by_id "$ID"
-    elif [ ! -z "$PATH" ] ; then
+    elif [ ! -z "$ENDPOINT_PATH" ] ; then
 	# they gave us the id, we validated by finding a path
-	api_mock_one_by_id "$1"
+	api_mock_one_by_id "$ENDPOINT_ID"
     else
-	echo "ERROR: '$1' is neither the path of an endpoint, nor the id"
+	echo "ERROR: '$1' is neither the path of an endpoint, nor the id (api_mock_one)"
 	givehelp
     fi
 }
 
-function api_get_model_names
-{
-# return the names of the models in this $GWAY_ID
-    aws apigateway get-models --rest-api-id $GWAY_ID --query items[].name | jq -r '.[]'
-}
+#= N O D E  = S T U B S =====================================================================
 
-function api_nodejs_one_by_id # ENDPOINT_ID
+function 	api_stub_nodejs_one_by_id # ENDPOINT_ID
 {
 #        $ME gway stub node endpt create one lambda stub in node.js for one endpoint
     TODAY=$( date +%Y-%m-%d )
-    ENDPOINT_ID=$( api_endpoint_id_from_path "$1" )   # we don't care if they gave us a endpoint id
-    ENDPOINT_PATH=$( api_endpoint_path_from_id "$1" ) # or a endpoint path, because we convert it 
+
+    if api_endpoint_id_exists "$1" ; then
+	ENDPOINT_ID="$1"
+	ENDPOINT_PATH=$( api_endpoint_path_from_id $ENDPOINT_ID)
+    elif api_endpoint_path_exists "$1" ; then
+	ENDPOINT_ID=$( api_endpoint_id_from_path "$1" )
+	ENDPOINT_PATH="$1"
+    else
+	echo "ERROR: '$1' is not an endpoint id ($FUNCNAME)"
+	exit
+    fi
+
     for METHOD in $( api_endpoint_methods_from_id $ENDPOINT_ID )
     do
-	JSPATH=nodejs/$( $ENDPOINT_PATH/$METHOD )
+	METHOD_DETAILS=$( aws apigateway get-method --rest-api-id $GWAY_ID --resource-id $ENDPOINT_ID --http-method $METHOD )
+	JSPATH=nodejs/$( txt_to_camelcase "$ENDPOINT_PATH/$METHOD" )
 	mkdir -p $JSPATH
 	JSMETHOD=$JSPATH/handler.js
+	FULLNAME=$( id -F )
+	if [ -z "$FULLNAME" ] ; then FULLNAME="$USER@$HOSTNAME" ; fi
+	echo endpoint "$ENDPOINT_PATH" method "$METHOD" in $JSMETHOD
+
+
+# this is the actual lambda method itself
 cat >$JSMETHOD <<EOF
 // $JSMETHOD
-// AWS Lambda Handler for $METHOD $ENDPOINT_PATH
-// for $GWAY_NAME
+// node.js AWS Lambda Handler for $METHOD on $ENDPOINT_PATH
+//     in gateway $GWAY_NAME
 // 
-// auto-generated by $0 on $TODAY by $USER
+// auto-generated 
+//   by $0 
+//   on $TODAY 
+//   by $FULLNAME ($USER@$HOSTNAME) 
+//   in $PWD
 
 var AWS = require('aws-sdk');
 var MAX_OUTPUT = 1024 * 1024 * 1024; // 1 GB
@@ -338,19 +385,27 @@ exports.handler = function(event, context) {
     );
 }
 EOF
-    done
-}
 
-function api_stub_nodejs_all
+# this is going to need a package.json
+cat >$JSPATH/package.json <<EOF  
 {
-
-#        $ME gway stubs node      create lambda stubs in node.js for all endpoints
-    # make some models first, since any one lambda probably needs all the models
-    if ! api_stub_models_java $1 ; then exit ; fi
-
-    for ENDPOINT_ID in $( api_endpoint_ids )
-    do
-	api_stub_nodejs_one_by_id $ENDPOINT_ID
+  "name": "$JSMETHOD",
+  "description": "node.js AWS Lambda Handler for $METHOD on endpoint '$ENDPOINT_PATH' in '$GWAY_NAME' ",
+  "version": "0.0.1",
+  "author": {
+      "name": "$FULLNAME"
+      "email": "$USER@$HOSTNAME",
+      "__blame": "auto-generated by $0 on $TODAY by $USER@$HOSTNAME in $PWD"
+  },
+  "license": "private, not open source"
+  "dependencies": {
+      "aws-sdk"   
+  },
+  "devDependencies": {
+   
+  }
+}
+EOF
     done
 }
 
@@ -358,18 +413,22 @@ function api_stub_models_json_one # $MODELNAME $MODELPATH
 {
 MODELNAME="$1" # $1 = $MODELNAME  typically GET foo/${id}/baz -> fooIdBazGet
 JSMODELPATH="$2" # $2 = $MODELPATH  typically nodejs/endpoint
-if [ -z "$MODENAME" ] ; then 
-    echo ERROR: you must specify a modelname to download
-elif [ -z "$MODELPATH" ] ; then
-    echo ERROR: you must specify a modelpath to write to
+if [ -z "$MODELNAME" ] ; then 
+    echo "ERROR: you must specify a modelname to download ($FUNCNAME)"
+    exit # kill -ABRT $$
+elif [ -z "$JSMODELPATH" ] ; then
+    echo "ERROR: you must specify a modelpath to write to ($FUNCNAME)"
+    exit # kill -ABRT $$
 fi
-	echo model $MODELNAME
 	mkdir -p $JSMODELPATH
 	JSMODEL=$JSMODELPATH/${MODELNAME}.json
-	aws apigateway get-model --rest-api-id $GWAY_ID --model-name $MODELNAME | jq -r .schema >$JSMODEL
+	if [ ! -e $JSMODEL ] ; then 
+	    echo model $MODELNAME
+	    aws apigateway get-model --rest-api-id $GWAY_ID --model-name $MODELNAME | jq -r .schema >$JSMODEL
+	fi
 }
 
-function api_stub_models_json_all
+function api_stub_models_node
 {
     JSMODELPATH=nodejs/model
     MODEL_LIST=$( api_get_model_names )
@@ -377,20 +436,31 @@ function api_stub_models_json_all
     do
 	api_stub_models_json_one $MODELNAME $JSMODELPATH
     done
+}
 
-    
+function api_stub_nodejs_all
+{
+echo "ENTER: stub nodejs all"
+#        $ME gway stubs node      create lambda stubs in node.js for all endpoints
+    # make some models first, since any one lambda probably needs all the models
     for ENDPOINT_ID in $( api_endpoint_ids )
     do
-        api_nodejs_one_by_id $ENDPOINT_ID
+	if ! api_stub_nodejs_one_by_id $ENDPOINT_ID ; then exit ; fi
     done
+
+    if ! api_stub_models_node $1 ; then exit ; fi
+echo "EXIT: stub nodejs all"
+
 }
+
+#= J A V A = S T U B S =====================================================================
 
 function api_stub_models_java # com.you.project.packagename
 {
 # $1 = com.you.project.packagename    
 PKGNAME="$1"
 if [ -z "$PKGNAME" ]; then
-    echo "ERROR: you must specify a package name for the top of the package to be generated"
+    echo "ERROR: you must specify a package name for the top of the package to be generated ($FUNCNAME)"
     echo "       e.g.   com.1e80.farce.comedyapi   or    org.cirrostratus.subman.productcatalog"
     givehelp
     exit 1
@@ -416,37 +486,44 @@ fi
     done
 }
 
-function api_stub_java_one_by_id
+function api_stub_java_one_by_id # $ENDPOINT_ID
 {
-    ENDPOINTID="$1"
-    if ! api_endpoint_id_exists "$ENDPOINTID" ; then
-	echo "ERROR: 'id' is not an endpoint id"
-	givehelp
-	exit
+    if api_endpoint_id_exists "$1" ; then
+	ENDPOINT_ID="$1"
+	ENDPOINT_PATH=$( api_endpoint_path_from_id $ENDPOINT_ID)
+    elif api_endpoint_path_exists "$1" ; then
+	ENDPOINT_ID=$( api_endpoint_id_from_path "$1" )
+	ENDPOINT_PATH="$1"
     else
-	for METHOD in $( api_endpoint_methods_from_id $ENDPOINTID )
-	do
-	    ENDPOINT_PATH=$( api_endpoint_path_from_id )
-	    METHOD_DETAILS=$( apigateway get-method --rest-api-id $GWAY_ID --resource-id $ENDPOINTID --http-method $METHOD )
-	done
+	echo "ERROR: '$1' is not an endpoint id ($FUNCNAME)"
+	exit
     fi
+
+    # oky, now work
+    for METHOD in $( api_endpoint_methods_from_id $ENDPOINT_ID )
+    do
+	echo endpoint $ENDPOINT_PATH method $METHOD
+	METHOD_DETAILS=$( aws apigateway get-method --rest-api-id "$GWAY_ID" --resource-id "$ENDPOINT_ID" --http-method "$METHOD" )
+    done
 }
 
-function api_stub_java_one
+function api_stub_java_one # ENDPOINT_ID
 {
 #        $ME gway stub java endpt create one lambda stub in java for one endpoint
-    ENDPOINTID=$( api_endpoint_id_from_path "$1" )   # we don't care if they gave us a endpoint id
-    ENDPOINTPATH=$( api_endpoint_path_from_id "$1" ) # or a endpoint path, because we convert it 
-#    ENDPOINTID="$1"
-    if ! api_endpoint_id_exists "$ENDPOINTID" ; then
-	echo "ERROR: 'id' is not an endpoint id"
-	givehelp
-	exit
+    if api_endpoint_id_exists "$1" ; then
+	ENDPOINT_ID="$1"
+	ENDPOINT_PATH=$( api_endpoint_path_from_id $ENDPOINT_ID)
+    elif api_endpoint_path_exists "$1" ; then
+	ENDPOINT_ID=$( api_endpoint_id_from_path "$1" )
+	ENDPOINT_PATH="$1"
     else
-        # make some models first, since any one lambda probably needs all the models
-	if ! api_stub_models_java $ENDPOINTID ; then exit ; fi
-#	api_stub_java_one_by_id $ENDPOINTID
+	echo "ERROR: '$1' is not an endpoint id ($FUNCNAME)"
+	exit
     fi
+
+    # make some models first, since any one lambda probably needs all the models
+    if ! api_stub_models_java $ENDPOINT_ID ; then exit ; fi
+    api_stub_java_one_by_id $ENDPOINT_ID
 }
 
 function api_stub_java_all
@@ -468,6 +545,8 @@ function api_stub_java_all
 #        $ME gway stub java endpt create one lambda stub in java for one endpoint
 #        $ME gway stub py endpt   create one lambda stub in pythonfor one endpoint
 #        $ME gway models          list the models
+
+#==== I N F O ======================================================================
 
 function api_stage_list
 {
