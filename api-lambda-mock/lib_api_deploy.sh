@@ -24,7 +24,7 @@ fi
 
 function txt_to_camelcase
 {
-    echo "$1" | tr -c -s 'a-zA-Z0-9' '_' | gsed -e 's/_\([a-z]\)/_\u\1/g' -e 's/^_//' -e 's/_$//'
+    echo "$1" | tr 'A-Z' 'a-z' | tr -c -s 'a-zA-Z0-9' '_' | gsed -e 's/_\([a-z]\)/_\u\1/g' -e 's/^_//' -e 's/_$//'
 }
 
 # GATEWAYS
@@ -333,28 +333,28 @@ function api_mock_one  # [ $ENDPOINT_ID | $ENDPOINT_PATH ]
 
 #= N O D E  = S T U B S =====================================================================
 
-function 	api_stub_nodejs_one_by_id # ENDPOINT_ID
+function api_write_nodejs_code # ENDPOINT_ID METHOD_NAME
 {
-#        $ME gway stub node endpt create one lambda stub in node.js for one endpoint
-    TODAY=$( date +%Y-%m-%d )
-
-    if api_endpoint_id_exists "$1" ; then
-	ENDPOINT_ID="$1"
-	ENDPOINT_PATH=$( api_endpoint_path_from_id $ENDPOINT_ID)
-    elif api_endpoint_path_exists "$1" ; then
-	ENDPOINT_ID=$( api_endpoint_id_from_path "$1" )
-	ENDPOINT_PATH="$1"
-    else
-	echo "ERROR: '$1' is not an endpoint id ($FUNCNAME)"
+    ENDPOINT_ID=$1
+    METHOD_NAME=$2
+    if [ -z $ENDPOINT_ID ] ; then
+	echo "ERROR: '$1' is not a vaild endpoint ($FUNCNAME)"
+    elif [ -z $METHOD_NAME ] ; then
+	echo "ERROR: '$2' is not a valid method name ($FUNCNAME)"
 	exit
     fi
+    TODAY=$( date +%Y-%m-%d )
 
     for METHOD in $( api_endpoint_methods_from_id $ENDPOINT_ID )
     do
 	METHOD_DETAILS=$( aws apigateway get-method --rest-api-id $GWAY_ID --resource-id $ENDPOINT_ID --http-method $METHOD )
-	JSPATH=nodejs/$( txt_to_camelcase "$ENDPOINT_PATH/$METHOD" )
+
+	if [ -z $METHOD_NAME ] ; then
+	    echo ERROR "$ENDPOINT_PATH/$METHOD ($FUNCNAME)"
+	fi
+	JSPATH=nodejs/$METHOD_NAME
 	mkdir -p $JSPATH
-	JSMETHOD=$JSPATH/handler.js
+	JSMETHOD=$JSPATH/${METHOD_NAME}.js
 	FULLNAME=$( id -F )
 	if [ -z "$FULLNAME" ] ; then FULLNAME="$USER@$HOSTNAME" ; fi
 	echo endpoint "$ENDPOINT_PATH" method "$METHOD" in $JSMETHOD
@@ -362,31 +362,77 @@ function 	api_stub_nodejs_one_by_id # ENDPOINT_ID
 
 # this is the actual lambda method itself
 cat >$JSMETHOD <<EOF
-// $JSMETHOD
-// node.js AWS Lambda Handler for $METHOD on $ENDPOINT_PATH
-//     in gateway $GWAY_NAME
-// 
-// auto-generated 
-//   by $0 
-//   on $TODAY 
-//   by $FULLNAME ($USER@$HOSTNAME) 
-//   in $PWD
+/* $JSMETHOD
+ * node.js AWS Lambda Handler for $METHOD on $ENDPOINT_PATH
+ *     in gateway $GWAY_NAME
+ * 
+ * auto-generated 
+ *   by $0 
+ *   on $TODAY 
+ *   by $FULLNAME ($USER@$HOSTNAME) 
+ *   in $PWD
+ *   MUST use nodejs4.3
+ */
 
+EOF
+
+     RESULT_MODEL=$( echo $METHOD_DETAILS | jq -r ' .methodResponses."200".responseModels[]' )
+     if [ ! -z "$RESULT_MODEL" ] ; then
+cat >>$JSMETHOD <<EOF
+/* the returned result of the $METHOD needs to be a '$RESULT_MODEL' object
+ *
+ * so we give you a schema model that you can extend with a constructor
+ *   and comes with a validator that you can use right away
+ */
+import SchemaClass from 'json-schema-class';  // https://www.npmjs.com/package/json-schema-class
+class ${RESULT_MODEL}Schema = new SchemaClass(
+EOF
+JSMODELPATH=nodejs/model
+	 cat $JSMODELPATH/${RESULT_MODEL}.json | jq . >>$JSMETHOD
+cat >>$JSMETHOD <<EOF
+);
+
+// write your own class with a constructor here.  something like this:
+//
+// class $RESULT_MODEL extends ${RESULT_MODEL}Schema {
+//   constructor(id, foo, bar ...) {
+//     this.id = id;
+//     this.foo = foo;
+//     this.bar = bar;
+//
+//     this.validate(this);
+//   }
+// }
+
+EOF
+     fi	 
+
+cat >>$JSMETHOD <<EOF
 var AWS = require('aws-sdk');
-var MAX_OUTPUT = 1024 * 1024 * 1024; // 1 GB
-var ctx = context;
-exports.handler = function(event, context) {
-            var result = {
-                 "event": = event,
-                 "context": = ctx
-            };
-            context.succeed(result);
+var _ = require('lodash');
+
+/* This is your handler for the AWS Gateway $GWAY_NAME on endpoint $ENDPOINT_PATH method $METHOD
+ *
+ * @param event {object} the event data given to your method.  your REST parameters will be event.paramname or event.body
+ *    see https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-handler.html
+ * @param context {object} a context object for your invocation
+ *    see https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html
+ * @param callback {function} takes two args (Error error, Object result)
+ *    see https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-handler.html#nodejs-prog-model-handler-callback
+ */
+exports.handler = function(event, context, callback) {
+
+            var result = event;  // this is just a passthru until you write your own code
+            // var result = new ${RESULT_MODEL}();
+
+            // for nodejs4.3 you use the callback
+            callback(null,result);
         }
     );
 }
 EOF
 
-# this is going to need a package.json
+# $JSMETHOD is going to need a package.json
 cat >$JSPATH/package.json <<EOF  
 {
   "name": "$JSMETHOD",
@@ -400,6 +446,8 @@ cat >$JSPATH/package.json <<EOF
   "license": "private, not open source"
   "dependencies": {
       "aws-sdk"   
+      "json-schema-class",
+      "lodash"
   },
   "devDependencies": {
    
@@ -407,6 +455,38 @@ cat >$JSPATH/package.json <<EOF
 }
 EOF
     done
+}
+
+function api_wire_nodejs_code # ENDPOINT_ID METHOD_NAME
+{
+    ENDPOINT_ID=$1
+    METHOD_NAME=$2
+    if [ -z $ENDPOINT_ID ] ; then
+	echo "ERROR: '$1' is not a vaild endpoint ($FUNCNAME)"
+    elif [ -z $METHOD_NAME ] ; then
+	echo "ERROR: '$2' is not a valid method name ($FUNCNAME)"
+	exit
+    fi
+    echo "$FUNCNAME not implemented yet, not really"
+}
+
+function 	api_stub_nodejs_one_by_id # ENDPOINT_ID 
+{
+#        $ME gway stub node endpt create one lambda stub in node.js for one endpoint
+    if api_endpoint_id_exists "$1" ; then
+	ENDPOINT_ID="$1"
+	ENDPOINT_PATH=$( api_endpoint_path_from_id $ENDPOINT_ID)
+    elif api_endpoint_path_exists "$1" ; then
+	ENDPOINT_ID=$( api_endpoint_id_from_path "$1" )
+	ENDPOINT_PATH="$1"
+    else
+	echo "ERROR: '$1' is not an endpoint id ($FUNCNAME)"
+	exit
+    fi
+
+    METHOD_NAME=$( txt_to_camelcase "$ENDPOINT_PATH/$METHOD" | tr -d _ )
+    api_write_nodejs_code $ENDPOINT_ID $METHOD_NAME
+    api_wire_nodejs_code $ENDPOINT_ID $METHOD_NAME
 }
 
 function api_stub_models_json_one # $MODELNAME $MODELPATH
@@ -442,13 +522,15 @@ function api_stub_nodejs_all
 {
 echo "ENTER: stub nodejs all"
 #        $ME gway stubs node      create lambda stubs in node.js for all endpoints
-    # make some models first, since any one lambda probably needs all the models
+    # make some models first, since any one lambda probably needs at least one model
+    if ! api_stub_models_node $1 ; then exit ; fi
+
+    # now create a lambda for each endpoint/method pair    
     for ENDPOINT_ID in $( api_endpoint_ids )
     do
 	if ! api_stub_nodejs_one_by_id $ENDPOINT_ID ; then exit ; fi
     done
 
-    if ! api_stub_models_node $1 ; then exit ; fi
 echo "EXIT: stub nodejs all"
 
 }
