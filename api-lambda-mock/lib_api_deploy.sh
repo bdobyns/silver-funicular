@@ -467,7 +467,7 @@ function api_wire_nodejs_code # ENDPOINT_ID METHOD_NAME
 	echo "ERROR: '$2' is not a valid method name ($FUNCNAME)"
 	exit
     fi
-    echo "$FUNCNAME not implemented yet, not really"
+#   echo "$FUNCNAME not implemented yet, not really"
 }
 
 function 	api_stub_nodejs_one_by_id # ENDPOINT_ID 

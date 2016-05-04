@@ -76,25 +76,26 @@ if [ -z "$1" ] ; then
 fi
 
 # Process the 'no gway' verbs
-case "$1" in
+ACTION=$1
+case "$ACTION" in
     # first arg is usually the gateway
     # but sometiemes it's a verb
 #        $ME import some.json     import swagger 2.0 and make an api gateway
 	import)
 	    shift
-	    api_import_json $*  # could have --name foo
+	    api_import_json $*     ; write_history $ACTION $* # could have --name foo
 	    exit 
 	    ;;
 #        $ME list                 list defined gateways
         list)
-            api_list_all
+            api_list_all | jq -r .items[].name    && write_history $ACTION
 	    exit
 	    ;;
         vpcs)
 #        $ME vpcs                 show available vpcs and subnets
 #        $ME vpcs vpc-id          show subnets for given vpc
 	    shift
-	    vpcsubnets $*
+	    vpcsubnets $*	&& write_history $ACTION $*
 	    exit
 	    ;;
 esac
@@ -133,26 +134,26 @@ fi
 case $ACTION in
 #        $ME gway update some.json  import swagger 2.0 and update gway
         udpate)
-	   api_update_json ""$1""
+	   api_update_json ""$1""      && write_history $GWAY_NAME $ACTION $*
 	   exit
 	   ;;
 #        $ME gway endpoints       list the endpoints (resources)
         endpoints)
-	    api_gway_endpoints
+	    api_gway_endpoints     && write_history $GWAY_NAME $ACTION
 	    exit
 	    ;;
         models)
-	    api_get_model_names
+	    api_get_model_names     && write_history $GWAY_NAME $ACTION
 	    exit
 	    ;;
 #        $ME gway mockall         mock all the endpoints in this gateway
 	mockall)
-	    api_mockall $*
+	    api_mockall $*     && write_history $GWAY_NAME $ACTION $*
 	    exit
 	    ;;
 #        $ME gway mock endpoint   mock one endpoint in this gateway
 	mock)
-	    api_mock_one $*
+	    api_mock_one $*     && write_history $GWAY_NAME $ACTION $*
 	    exit
 	    ;;       
         stubs)
@@ -161,17 +162,17 @@ case $ACTION in
 	    case $CGLANG in 
 #        $ME gway stubs java      create lambda stubs in java for all endpoints
 		java)
-		    api_stub_java_all $*
+		    api_stub_java_all $*      && write_history $GWAY_NAME $ACTION $CGLANG $*
 		    exit
 		    ;;
 #        $ME gway stubs python    create lambda stubs in pythonfor all endpoints
 		py|python)
-		    api_stub_python_all $*
+		    api_stub_python_all $*     && write_history $GWAY_NAME $ACTION $CGLANG $*
 		    exit
 		    ;;
 #        $ME gway stubs node      create lambda stubs in node.js for all endpoints
 		node|node.js|js)
-		    api_stub_nodejs_all $*
+		    api_stub_nodejs_all $*      && write_history $GWAY_NAME $ACTION $CGLANG $*
 		    exit
 		    ;;
 		*)
@@ -186,17 +187,17 @@ case $ACTION in
 	    case $CGLANG in 
 #        $ME gway stub java endpt create one lambda stub in java for one endpoint
 		java)
-		    api_stub_java_one $*
+		    api_stub_java_one $*      && write_history $GWAY_NAME $ACTION $CGLANG $*
 		    exit
 		    ;;
 #        $ME gway stub py endpt   create one lambda stub in pythonfor one endpoint
 		py|python)
-		    api_stub_python_one $*
+		    api_stub_python_one $*      && write_history $GWAY_NAME $ACTION $CGLANG $*
 		    exit
 		    ;;
 #        $ME gway stub node endpt create one lambda stub in node.js for one endpoint
 		node|node.js|js)
-		    api_stub_nodejs_one_by_id $*
+		    api_stub_nodejs_one_by_id $*       && write_history $GWAY_NAME $ACTION $CGLANG $*
 		    exit
 		    ;;
 		*)
@@ -207,22 +208,22 @@ case $ACTION in
 	    ;;
 #        $ME gway models          list the models
          models)
-	    api_model_list
+	    api_model_list      && write_history $GWAY_NAME $ACTION 
 	    exit
 	    ;;
 #        $ME gway list             list defined environments (stages)
          stages|list)
-	    api_stage_list
+	    api_stage_list      && write_history $GWAY_NAME $ACTION 
 	    exit
 	    ;;
 #        $ME gway create env       create an environment (stage) for this gateway
         create)
-	    api_env_create $*
+	    api_env_create $*      && write_history $GWAY_NAME $ACTION  $*
 	    exit
 	    ;;
 #        $ME gway r53 f.b.com  wire up the route 53 name to the gateway
      r53|route53)
-	api_route53_wire $*
+	api_route53_wire $*      && write_history $GWAY_NAME $ACTION $*
 	exit
 	;;
 esac
@@ -261,15 +262,15 @@ case $ACTION in
 #	$ME gway env deploy     deploy to the given environment
 #	$ME gway env update     (same as deploy)
     deploy|update)
-	api_env_deploy 
+	api_env_deploy       && write_history $GWAY_NAME $ACTION $ENV_NAME
 	;;
 #        $ME gway env describe     describe the gateway and environment (stage)
     describe)
-	api_env_describe
+	api_env_describe       && write_history $GWAY_NAME $ACTION $ENV_NAME
 	;;
 #        $ME gway env cname        display cname of this gateway+env 
     uri)
-	api_env_uri
+	api_env_uri       && write_history $GWAY_NAME $ACTION $ENV_NAME
 	;;
     *)
 	givehelp

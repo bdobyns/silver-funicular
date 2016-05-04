@@ -24,7 +24,10 @@ function write_history
 EOF
 	git add $HFILE
     fi
-    if [ $1 = create ] || [ $1 = new ] ; then echo " " >>$HFILE ; fi     # throw an extra newline before a create
+    if [ ! -z $1 ] ; then
+        # throw an extra newline before a create
+	if [ $1 = create ] || [ $1 = import ] || [ $1 = new ] ; then echo " " >>$HFILE ; fi     
+    fi
     cat >>$HFILE <<EOF
 $DNZ/$ME $*  # by $LOGNAME@$HOSTNAME on $NOW
 EOF
