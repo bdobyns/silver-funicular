@@ -384,26 +384,31 @@ cat >>$JSMETHOD <<EOF
  * so we give you a schema model that you can extend with a constructor
  *   and comes with a validator that you can use right away
  */
+/*
 import SchemaClass from 'json-schema-class';  // https://www.npmjs.com/package/json-schema-class
 class ${RESULT_MODEL}Schema = new SchemaClass(
 EOF
 JSMODELPATH=nodejs/model
+         # we pipe it thru jq to format it pretty
 	 cat $JSMODELPATH/${RESULT_MODEL}.json | jq . >>$JSMETHOD
 cat >>$JSMETHOD <<EOF
 );
+*/
 
+
+/*
 // write your own class with a constructor here.  something like this:
-//
-// class $RESULT_MODEL extends ${RESULT_MODEL}Schema {
-//   constructor(id, foo, bar ...) {
-//     this.id = id;
-//     this.foo = foo;
-//     this.bar = bar;
-//
-//     this.validate(this);
-//   }
-// }
 
+class $RESULT_MODEL extends ${RESULT_MODEL}Schema {
+    constructor(id, foo, bar ...) {
+        this.id = id;
+        this.foo = foo;
+        this.bar = bar;
+
+        this.validate(this);
+    }
+}
+*/
 EOF
      fi	 
 

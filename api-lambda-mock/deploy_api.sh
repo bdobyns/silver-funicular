@@ -83,7 +83,8 @@ case "$ACTION" in
 #        $ME import some.json     import swagger 2.0 and make an api gateway
 	import)
 	    shift
-	    api_import_json $*     ; write_history $ACTION $* # could have --name foo
+	    api_import_json $*     # could have --name foo
+	    write_history $ACTION $* 
 	    exit 
 	    ;;
 #        $ME list                 list defined gateways
